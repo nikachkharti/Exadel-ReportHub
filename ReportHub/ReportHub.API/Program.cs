@@ -17,6 +17,7 @@ namespace ReportHub.API
             var app = builder.Build();
 
             //app.MapOpenApi();
+            app.UseDataSeeder();
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseHttpsRedirection();

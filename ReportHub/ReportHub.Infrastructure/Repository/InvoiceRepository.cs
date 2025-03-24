@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using ReportHub.Application.Contracts;
 using ReportHub.Domain.Entities;
+using ReportHub.Infrastructure.Helper;
 
 namespace ReportHub.Infrastructure.Repository
 {

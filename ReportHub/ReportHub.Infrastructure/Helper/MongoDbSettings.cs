@@ -1,4 +1,4 @@
-﻿namespace ReportHub.Infrastructure
+﻿namespace ReportHub.Infrastructure.Helper
 {
     public class MongoDbSettings
     {
