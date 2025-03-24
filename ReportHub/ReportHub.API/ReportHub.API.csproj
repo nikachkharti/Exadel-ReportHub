@@ -24,6 +24,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\ReportHub.Application\ReportHub.Application.csproj" />
+		<ProjectReference Include="..\ReportHub.Infrastructure\ReportHub.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -11,6 +11,7 @@ namespace ReportHub.API
             builder.AddControllers();
             //builder.AddOpenApi();
             builder.AddSwagger();
+            builder.AddInfrastructureLayer();
 
 
             var app = builder.Build();
