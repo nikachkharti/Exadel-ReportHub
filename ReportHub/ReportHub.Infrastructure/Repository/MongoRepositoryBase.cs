@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using ReportHub.Application.Contracts;
 using System.Linq.Expressions;
 
@@ -8,10 +9,11 @@ namespace ReportHub.Infrastructure.Repository
     {
         private readonly IMongoCollection<T> _collection;
 
-        public MongoRepositoryBase(string connectionString, string databaseName, string collectionName)
+        public MongoRepositoryBase(IOptions<MongoDbSettings> options, string collectionName)
         {
-            var client = new MongoClient(connectionString);
-            var db = client.GetDatabase(databaseName);
+            var settings = options.Value;
+            var client = new MongoClient(settings.ConnectionString);
+            var db = client.GetDatabase(settings.DatabaseName);
             _collection = db.GetCollection<T>(collectionName);
         }
 
