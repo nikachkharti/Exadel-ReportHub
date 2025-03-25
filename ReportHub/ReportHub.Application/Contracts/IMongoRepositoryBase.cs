@@ -7,7 +7,7 @@ namespace ReportHub.Application.Contracts
         /// <summary>
         /// Get all documents
         /// </summary>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll();
 
         /// <summary>
@@ -15,7 +15,7 @@ namespace ReportHub.Application.Contracts
         /// </summary>
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is ascending</param>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
@@ -24,7 +24,7 @@ namespace ReportHub.Application.Contracts
         /// </summary>
         /// <param name="pageNumber">Page number</param>
         /// <param name="pageSize">Page size</param>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize);
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="pageSize">Page size</param>
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is ascending</param>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
@@ -43,7 +43,7 @@ namespace ReportHub.Application.Contracts
         /// Get filtered documents
         /// </summary>
         /// <param name="filter">Filter</param>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter);
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="filter">Filter</param>
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is asending</param>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
@@ -63,7 +63,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="filter">Filter</param>
         /// <param name="pageNumber">Page number</param>
         /// <param name="pageSize">Page size</param>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize);
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="pageSize">Page size</param>
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is ascending</param>
-        /// <returns>Task List T</returns>
+        /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
