@@ -9,8 +9,5 @@ namespace ReportHub.Infrastructure.Repository
     {
         public InvoiceRepository(IOptions<MongoDbSettings> options)
             : base(options, "Invoices") { }
-
-        public InvoiceRepository(IOptions<MongoDbSettings> options, string collection)
-            : base(options, collection) { }
     }
 }
