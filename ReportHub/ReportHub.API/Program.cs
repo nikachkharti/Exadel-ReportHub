@@ -11,11 +11,13 @@ namespace ReportHub.API
             builder.AddControllers();
             //builder.AddOpenApi();
             builder.AddSwagger();
+            builder.AddInfrastructureLayer();
 
 
             var app = builder.Build();
 
             //app.MapOpenApi();
+            app.UseDataSeeder();
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseHttpsRedirection();

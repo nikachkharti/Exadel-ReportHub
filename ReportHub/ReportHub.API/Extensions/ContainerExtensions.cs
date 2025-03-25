@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using ReportHub.Infrastructure;
 using System.Reflection;
 
 namespace ReportHub.API.Extensions
@@ -54,6 +55,11 @@ namespace ReportHub.API.Extensions
                 #endregion
 
             });
+        }
+
+        public static void AddInfrastructureLayer(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddInfrastructure(builder.Configuration);
         }
     }
 }

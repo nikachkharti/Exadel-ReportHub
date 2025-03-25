@@ -6,11 +6,15 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
+		<UserSecretsId>072494ff-6755-4529-900f-24c0e83a3cf1</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.3" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
 	</ItemGroup>
 
@@ -20,6 +24,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\ReportHub.Application\ReportHub.Application.csproj" />
+		<ProjectReference Include="..\ReportHub.Infrastructure\ReportHub.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>
