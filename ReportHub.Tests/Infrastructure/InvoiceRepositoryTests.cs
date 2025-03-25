@@ -4,10 +4,11 @@ using MongoDB.Driver;
 using ReportHub.Domain.Entities;
 using ReportHub.Infrastructure.Helper;
 using ReportHub.Infrastructure.Repository;
+using System.Reflection;
 
 namespace ReportHub.Tests.Infrastructure
 {
-    public class InvoiceRepositoryTests : IDisposable
+    public class InvoiceRepositoryTests : IAsyncLifetime
     {
         private readonly MongoDbRunner _mongoRunner;
         private readonly IMongoDatabase _database;
@@ -15,36 +16,34 @@ namespace ReportHub.Tests.Infrastructure
 
         public InvoiceRepositoryTests()
         {
-            // Step 1: Start in-memory MongoDB
             _mongoRunner = MongoDbRunner.Start();
+            _database = new MongoClient(_mongoRunner.ConnectionString).GetDatabase("TestDb");
+            _repository = SetupRepository();
+        }
 
-            var mongoClient = new MongoClient(_mongoRunner.ConnectionString);
-            _database = mongoClient.GetDatabase("TestDb");
-
-            // Step 2: Configure MongoDB settings
+        private InvoiceRepository SetupRepository()
+        {
             var settings = Options.Create(new MongoDbSettings
             {
                 ConnectionString = _mongoRunner.ConnectionString,
                 DatabaseName = "TestDb"
             });
 
-            // Step 3: Initialize repository
-            _repository = new InvoiceRepository(settings);
+            var repository = new InvoiceRepository(settings);
 
-            // Step 4: Manually set the in-memory database
+            // Set in-memory database and collection using reflection
             typeof(MongoRepositoryBase<Invoice>)
-                .GetProperty("Database", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.SetValue(_repository, _database);
+                .GetProperty("Database", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.SetValue(repository, _database);
 
             typeof(MongoRepositoryBase<Invoice>)
-                .GetProperty("Collection", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.SetValue(_repository, _database.GetCollection<Invoice>("Invoices"));
+                .GetProperty("Collection", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?.SetValue(repository, _database.GetCollection<Invoice>("Invoices"));
+
+            return repository;
         }
-
-        [Fact]
-        public async Task GetAll_ShouldReturnAllInvoices()
+        private async Task SeedTestData()
         {
-            // Arrange: Insert test data into in-memory MongoDB
             var collection = _database.GetCollection<Invoice>("Invoices");
             await collection.InsertManyAsync(new List<Invoice>()
             {
@@ -52,11 +51,20 @@ namespace ReportHub.Tests.Infrastructure
                 new Invoice { InvoiceId = "INV2025002", IssueDate = DateTime.UtcNow.AddDays(-15), DueDate = DateTime.UtcNow.AddDays(15), Amount = 7500.50m, Currency = "EUR", PaymentStatus = "Pending" },
                 new Invoice { InvoiceId = "INV2025003", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "USD", PaymentStatus = "Overdue" }
             });
+        }
+        public async Task InitializeAsync() => await SeedTestData();
+        public Task DisposeAsync()
+        {
+            _mongoRunner.Dispose();
+            return Task.CompletedTask;
+        }
 
-            // Act
+
+        [Fact]
+        public async Task GetAll_ShouldReturnAllInvoices()
+        {
             var result = await _repository.GetAll();
 
-            // Assert
             Assert.NotNull(result);
             var invoiceList = Assert.IsAssignableFrom<IEnumerable<Invoice>>(result);
             Assert.Equal(3, invoiceList.Count());
@@ -64,9 +72,5 @@ namespace ReportHub.Tests.Infrastructure
 
 
 
-        public void Dispose()
-        {
-            _mongoRunner.Dispose();
-        }
     }
 }
