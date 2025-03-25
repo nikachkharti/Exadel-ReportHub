@@ -1,6 +1,6 @@
 ﻿using ReportHub.Domain.Entities;
 
-namespace ReportHub.Tests
+namespace ReportHub.Tests.Domain
 {
     public class InvoiceTests
     {
