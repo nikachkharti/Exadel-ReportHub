@@ -8,7 +8,7 @@ namespace ReportHub.Application.Contracts
         /// Get all documents
         /// </summary>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll();
+        Task<IEnumerable<T>> GetAll();
 
         /// <summary>
         /// Get all documents with sorting
@@ -16,7 +16,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is ascending</param>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll(Expression<Func<T, object>> sortBy, bool ascending = true);
+        Task<IEnumerable<T>> GetAll(Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="pageNumber">Page number</param>
         /// <param name="pageSize">Page size</param>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll(int pageNumber, int pageSize);
+        Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize);
 
         /// <summary>
         /// Get all documents with pagination and sorting
@@ -35,7 +35,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is ascending</param>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll(int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true);
+        Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
 
@@ -44,7 +44,7 @@ namespace ReportHub.Application.Contracts
         /// </summary>
         /// <param name="filter">Filter</param>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll(Expression<Func<T, bool>> filter);
+        Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter);
 
         /// <summary>
         /// Get filter documents with sorting
@@ -53,7 +53,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is asending</param>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll(Expression<Func<T, bool>> filter, Expression<Func<T, object>> sortBy, bool ascending = true);
+        Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
 
@@ -64,7 +64,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="pageNumber">Page number</param>
         /// <param name="pageSize">Page size</param>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize);
+        Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize);
 
         /// <summary>
         /// Get filtered documents with pagination and sorting
@@ -75,7 +75,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="sortBy">Sort by property</param>
         /// <param name="ascending">Is ascending</param>
         /// <returns>Task List T</returns>
-        Task<List<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true);
+        Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true);
 
 
 
@@ -139,7 +139,7 @@ namespace ReportHub.Application.Contracts
         /// <param name="updatedDocument">Updated documnet</param>
         /// <param name="isUpsert">Insert updated value if it not exists</param>
         /// <returns>Task</returns>
-        Task UpdateSingleDocumnet(Expression<Func<T, bool>> filterExpression, T updatedDocument, bool isUpsert = true);
+        Task UpdateSingleDocument(Expression<Func<T, bool>> filterExpression, T updatedDocument, bool isUpsert = true);
 
         /// <summary>
         /// Update whole multiple documents with filter

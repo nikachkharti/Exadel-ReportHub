@@ -21,11 +21,11 @@ namespace ReportHub.Infrastructure.Repository
 
         #region GET
 
-        public async Task<List<T>> GetAll() =>
+        public async Task<IEnumerable<T>> GetAll() =>
             await _collection
             .Find(_ => true)
             .ToListAsync();
-        public async Task<List<T>> GetAll(Expression<Func<T, object>> sortBy, bool ascending = true)
+        public async Task<IEnumerable<T>> GetAll(Expression<Func<T, object>> sortBy, bool ascending = true)
         {
             var sortDefinition = ascending
                 ? Builders<T>.Sort.Ascending(sortBy)
@@ -38,13 +38,13 @@ namespace ReportHub.Infrastructure.Repository
         }
 
 
-        public async Task<List<T>> GetAll(int pageNumber, int pageSize) =>
+        public async Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize) =>
             await _collection
             .Find(_ => true)
             .Skip((pageNumber - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
-        public async Task<List<T>> GetAll(int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true)
+        public async Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true)
         {
             var sortDefinition = ascending
                 ? Builders<T>.Sort.Ascending(sortBy)
@@ -59,11 +59,11 @@ namespace ReportHub.Infrastructure.Repository
         }
 
 
-        public async Task<List<T>> GetAll(Expression<Func<T, bool>> filter) =>
+        public async Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter) =>
             await _collection
             .Find(filter)
             .ToListAsync();
-        public async Task<List<T>> GetAll(Expression<Func<T, bool>> filter, Expression<Func<T, object>> sortBy, bool ascending = true)
+        public async Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, Expression<Func<T, object>> sortBy, bool ascending = true)
         {
             var sortDefinition = ascending
                 ? Builders<T>.Sort.Ascending(sortBy)
@@ -76,13 +76,13 @@ namespace ReportHub.Infrastructure.Repository
         }
 
 
-        public async Task<List<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize) =>
+        public async Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize) =>
             await _collection
             .Find(filter)
             .Skip((pageNumber - 1) * pageSize)
             .Limit(pageSize)
             .ToListAsync();
-        public async Task<List<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true)
+        public async Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true)
         {
             var sortDefinition = ascending
                 ? Builders<T>.Sort.Ascending(sortBy)
@@ -150,7 +150,7 @@ namespace ReportHub.Infrastructure.Repository
             await _collection.UpdateOneAsync(filterExpression, combinedUpdate);
         }
 
-        public async Task UpdateSingleDocumnet(
+        public async Task UpdateSingleDocument(
             Expression<Func<T, bool>> filterExpression,
             T updatedDocument,
             bool isUpsert = true) =>
