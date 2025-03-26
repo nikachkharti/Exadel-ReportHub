@@ -70,7 +70,60 @@ namespace ReportHub.Tests.Infrastructure
             Assert.Equal(3, invoiceList.Count());
         }
 
+        [Fact]
+        public async Task GetAll_ShouldReturnSortedByInvoiceId_Ascending()
+        {
+            var result = await _repository.GetAll(i => i.InvoiceId, ascending: true);
 
+            Assert.NotNull(result);
+            var sortedList = result.ToList();
 
+            Assert.Equal(3, sortedList.Count);
+            Assert.Equal("INV2025001", sortedList[0].InvoiceId);
+            Assert.Equal("INV2025002", sortedList[1].InvoiceId);
+            Assert.Equal("INV2025003", sortedList[2].InvoiceId);
+        }
+
+        [Fact]
+        public async Task GetAll_ShouldReturnSortedByInvoiceId_Descending()
+        {
+            var result = await _repository.GetAll(i => i.InvoiceId, ascending: false);
+
+            Assert.NotNull(result);
+            var sortedList = result.ToList();
+
+            Assert.Equal(3, sortedList.Count);
+            Assert.Equal("INV2025003", sortedList[0].InvoiceId);
+            Assert.Equal("INV2025002", sortedList[1].InvoiceId);
+            Assert.Equal("INV2025001", sortedList[2].InvoiceId);
+        }
+
+        [Fact]
+        public async Task GetAll_ShouldReturnSortedByAmount_Ascending()
+        {
+            var result = await _repository.GetAll(i => i.Amount, ascending: true);
+
+            Assert.NotNull(result);
+            var sortedList = result.ToList();
+
+            Assert.Equal(3, sortedList.Count);
+            Assert.Equal(5000.75m, sortedList[0].Amount);
+            Assert.Equal(7500.50m, sortedList[1].Amount);
+            Assert.Equal(10234.00m, sortedList[2].Amount);
+        }
+
+        [Fact]
+        public async Task GetAll_ShouldReturnSortedByAmount_Descending()
+        {
+            var result = await _repository.GetAll(i => i.Amount, ascending: false);
+
+            Assert.NotNull(result);
+            var sortedList = result.ToList();
+
+            Assert.Equal(3, sortedList.Count);
+            Assert.Equal(10234.00m, sortedList[0].Amount);
+            Assert.Equal(7500.50m, sortedList[1].Amount);
+            Assert.Equal(5000.75m, sortedList[2].Amount);
+        }
     }
 }
