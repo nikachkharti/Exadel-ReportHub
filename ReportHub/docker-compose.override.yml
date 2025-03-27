@@ -1,11 +1,25 @@
+version: '3.4'
 services:
   reportHubDbMongo:
     container_name: reportHubDb
+    image: mongo
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
     ports:
-        - "27018:27017"
+      - "27018:27017"
     volumes:
-      - reportHubMongo_vol:/data/db    
+      - reportHubMongo_vol:/data/db
+  
+  reporthub.seq:
+    image: datalust/seq:latest
+    container_name: reporthub-seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 5341:5341
+      - 8081:80
+
+volumes:
+  reportHubMongo_vol:
