@@ -70,7 +70,6 @@ namespace ReportHub.Tests.Infrastructure
         public async Task UpdateSingleField_ShouldUpdateOnlySpecifiedField()
         {
             // Arrange
-            var filter = Builders<Invoice>.Filter.Eq(i => i.InvoiceId, "INV2025001");
             var originalInvoice = (await _repository.GetAll(i => i.InvoiceId == "INV2025001")).First();
             var newAmount = 999.00m; // New amount to set
 
@@ -102,7 +101,6 @@ namespace ReportHub.Tests.Infrastructure
         public async Task UpdateMultipleFields_ShouldUpdateOnlySpecifiedFields()
         {
             // Arrange
-            var filter = Builders<Invoice>.Filter.Eq(i => i.InvoiceId, "INV2025001");
             var originalInvoice = (await _repository.GetAll(i => i.InvoiceId == "INV2025001")).First();
 
             var updates = new Dictionary<Expression<Func<Invoice, object>>, object>()
