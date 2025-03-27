@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35913.81 d17.13
+VisualStudioVersion = 17.13.35913.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.API", "ReportHub.API\ReportHub.API.csproj", "{93AC9AE8-58EA-4040-B18F-9179F936668A}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Infrastructure", "ReportHub.Infrastructure\ReportHub.Infrastructure.csproj", "{59303E3D-E759-42A0-9A1C-BF11068791C5}"
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Tests", "..\ReportHub.Tests\ReportHub.Tests.csproj", "{9F3A9C6E-420A-4F58-B9CD-F9E7CD3FEFC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F3A9C6E-420A-4F58-B9CD-F9E7CD3FEFC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F3A9C6E-420A-4F58-B9CD-F9E7CD3FEFC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F3A9C6E-420A-4F58-B9CD-F9E7CD3FEFC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F3A9C6E-420A-4F58-B9CD-F9E7CD3FEFC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
