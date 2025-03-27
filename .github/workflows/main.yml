@@ -26,4 +26,4 @@ jobs:
       run: dotnet build ReportHub/ReportHub.sln --configuration Release --no-restore
 
     - name: 🧪 Run tests
-      run: dotnet test ReportHub/ReportHub.sln --configuration Release --no-build --logger:"console;verbosity=normal"
+      run: dotnet test ReportHub/ReportHub.sln --configuration Release --no-build --logger:"console;verbosity=detailed"
