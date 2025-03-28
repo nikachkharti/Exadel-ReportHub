@@ -1,6 +1,10 @@
 services:
+
   reportHubDbMongo:
     image: mongo:latest
+
+  reportHubSeq:
+    image: datalust/seq:latest
 
 volumes:
   reportHubMongo_vol:
