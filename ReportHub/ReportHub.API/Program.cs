@@ -1,4 +1,5 @@
 using ReportHub.API.Extensions;
+using Serilog;
 
 namespace ReportHub.API
 {
@@ -6,24 +7,39 @@ namespace ReportHub.API
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            try
+            {
+                ContainerExtensions.ConfigureSerilog();
 
-            builder.AddControllers();
-            //builder.AddOpenApi();
-            builder.AddSwagger();
-            builder.AddInfrastructureLayer();
+                Log.Information("Starting the application");
 
+                var builder = WebApplication.CreateBuilder(args);
 
-            var app = builder.Build();
+                builder.AddSerilog();
+                builder.AddControllers();
+                builder.AddSwagger();
+                builder.AddInfrastructureLayer();
 
-            //app.MapOpenApi();
-            app.UseDataSeeder();
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            app.UseHttpsRedirection();
-            app.UseAuthorization();
-            app.MapControllers();
-            app.Run();
+                var app = builder.Build();
+
+                app.UseDataSeeder();
+                app.UseSwagger();
+                app.UseSwaggerUI();
+                app.UseHttpsRedirection();
+                app.UseAuthorization();
+                app.MapControllers();
+
+                Log.Information("Application is running");
+                app.Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application failed to start");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }

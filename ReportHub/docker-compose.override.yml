@@ -1,4 +1,5 @@
 services:
+
   reportHubDbMongo:
     container_name: reportHubDb
     restart: always
@@ -8,4 +9,13 @@ services:
     ports:
         - "27018:27017"
     volumes:
-      - reportHubMongo_vol:/data/db    
+      - reportHubMongo_vol:/data/db
+  
+  reportHubSeq:
+    image: datalust/seq:latest
+    container_name: reportHubSeq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 5341:5341
+      - 8081:80
