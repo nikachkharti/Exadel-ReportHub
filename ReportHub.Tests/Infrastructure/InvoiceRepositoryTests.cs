@@ -1,14 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-using Mongo2Go;
-using MongoDB.Driver;
-using ReportHub.Domain.Entities;
-using ReportHub.Infrastructure.Helper;
-using ReportHub.Infrastructure.Repository;
-using System.Linq.Expressions;
-using System.Reflection;
-
-namespace ReportHub.Tests.Infrastructure
+﻿namespace ReportHub.Tests.Infrastructure
 {
+    [Collection("MongoDbCollection")]
     public class InvoiceRepositoryTests : IAsyncLifetime
     {
         private readonly MongoDbRunner _mongoRunner;
@@ -61,7 +53,6 @@ namespace ReportHub.Tests.Infrastructure
             return Task.CompletedTask;
         }
         #endregion
-
 
 
         #region UPDATE
