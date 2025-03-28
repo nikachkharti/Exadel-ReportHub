@@ -6,3 +6,4 @@ global using ReportHub.Infrastructure.Helper;
 global using ReportHub.Infrastructure.Repository;
 global using System.Reflection;
 global using System.Linq.Expressions;
+global using ReportHub.Tests.Infrastructure.Fixtures;
