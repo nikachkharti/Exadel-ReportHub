@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 using ReportHub.Infrastructure;
 using Serilog;
-using System.Reflection;
 
 namespace ReportHub.API.Extensions
 {

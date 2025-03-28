@@ -1,5 +1,6 @@
 using ReportHub.API.Extensions;
 using Serilog;
+using ReportHub.Application.Extensions;
 
 namespace ReportHub.API
 {
@@ -19,6 +20,7 @@ namespace ReportHub.API
                 builder.AddControllers();
                 builder.AddSwagger();
                 builder.AddInfrastructureLayer();
+                builder.Services.AddApplication();
 
                 var app = builder.Build();
 

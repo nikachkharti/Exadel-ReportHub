@@ -7,7 +7,19 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="AutoMapper" Version="14.0.0" />
+	  <PackageReference Include="MediatR" Version="12.4.1" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\ReportHub.Domain\ReportHub.Domain.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Features\Commands\" />
+	  <Folder Include="Features\Handlers\CommandHandlers\" />
+	  <Folder Include="Features\Invoices\" />
 	</ItemGroup>
 
 </Project>
