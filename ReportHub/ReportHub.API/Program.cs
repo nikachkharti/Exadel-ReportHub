@@ -22,6 +22,7 @@ namespace ReportHub.API
                 builder.AddInfrastructureLayer();
                 builder.Services.AddApplication();
 
+
                 var app = builder.Build();
 
                 app.UseDataSeeder();
@@ -30,6 +31,8 @@ namespace ReportHub.API
                 app.UseHttpsRedirection();
                 app.UseAuthorization();
                 app.MapControllers();
+                //
+                app.UseSerilogRequestLogging();
 
                 Log.Information("Application is running");
                 app.Run();

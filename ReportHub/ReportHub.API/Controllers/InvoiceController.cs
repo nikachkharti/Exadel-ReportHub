@@ -9,35 +9,36 @@ namespace ReportHub.Presentation.Controllers
     public class InvoiceController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly ILogger<InvoiceController> _logger;
+        private readonly Serilog.ILogger _logger;
 
-        public InvoiceController(IMediator mediator, ILogger<InvoiceController> logger)
+        public InvoiceController(IMediator mediator, Serilog.ILogger logger)
         {
             _mediator = mediator;
             _logger = logger;
         }
 
         [HttpGet]
-        public IActionResult GetAllInvoices()
+        public async Task<IActionResult> GetAllInvoices()
         {
             try
             {
-                _logger.LogInformation("Fetching all invoices.");
+                _logger.Information("Fetching all invoices.");
 
-                var invoices = _mediator.Send(new GetAllInvoicesQuery()).GetAwaiter().GetResult();
+                var query = new GetAllInvoicesQuery();
+                var invoices = await _mediator.Send(query);
 
                 if (!invoices.Any())
                 {
-                    _logger.LogWarning("No invoices found.");
+                    _logger.Warning("No invoices found.");
                     return NoContent();
                 }
 
-                _logger.LogInformation("Successfully retrieved invoices.");
+                _logger.Information("Successfully retrieved invoices.");
                 return Ok(invoices);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while fetching invoices.");
+                _logger.Error(ex, "Error occurred while fetching invoices.");
                 return StatusCode(500, "An unexpected error occurred.");
             }
         }

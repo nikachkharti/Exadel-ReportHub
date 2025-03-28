@@ -80,6 +80,10 @@ namespace ReportHub.API.Extensions
             // Replace default logging with Serilog
             builder.Logging.ClearProviders();
             builder.Host.UseSerilog(); // This is crucial
+
+            // Added when implemented cqrs
+            builder.Host.UseSerilog();
+            builder.Services.AddSingleton(Log.Logger);
         }
     }
 }
