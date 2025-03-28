@@ -7,25 +7,15 @@ namespace ReportHub.API
     {
         public static void Main(string[] args)
         {
-            // Create logger configuration before builder
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                    .AddEnvironmentVariables()
-                    .Build())
-                .CreateLogger();
-
             try
             {
+                ContainerExtensions.ConfigureSerilog();
+
                 Log.Information("Starting the application");
 
                 var builder = WebApplication.CreateBuilder(args);
 
-                // Replace default logging with Serilog
-                builder.Logging.ClearProviders();
-                builder.Host.UseSerilog(); // This is crucial
-
+                builder.AddSerilog();
                 builder.AddControllers();
                 builder.AddSwagger();
                 builder.AddInfrastructureLayer();
