@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using ReportHub.Application.Extensions;
 using ReportHub.Infrastructure;
 using Serilog;
-using System.Reflection;
 
 namespace ReportHub.API.Extensions
 {
@@ -80,6 +81,11 @@ namespace ReportHub.API.Extensions
             // Replace default logging with Serilog
             builder.Logging.ClearProviders();
             builder.Host.UseSerilog(); // This is crucial
+        }
+
+        public static void AddApplicationLayer(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddApplication();
         }
     }
 }
