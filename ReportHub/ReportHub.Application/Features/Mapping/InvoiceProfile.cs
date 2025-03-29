@@ -8,6 +8,6 @@ public class InvoiceProfile : Profile
 {
     public InvoiceProfile()
     {
-        CreateMap<Invoice, InvoiceDto>().ReverseMap();
+        CreateMap<Invoice, InvoiceDto>();
     }
 }

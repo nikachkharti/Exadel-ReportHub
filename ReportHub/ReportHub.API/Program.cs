@@ -20,7 +20,7 @@ namespace ReportHub.API
                 builder.AddControllers();
                 builder.AddSwagger();
                 builder.AddInfrastructureLayer();
-                builder.Services.AddApplication();
+                builder.AddApplicationLayer();
 
 
                 var app = builder.Build();

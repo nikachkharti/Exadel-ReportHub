@@ -1,12 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-
 namespace ReportHub.Application.Extensions;
 
-public static class ServiceCollectionExtensions
+public static class DependencyInjection
 {
     public static void AddApplication(this IServiceCollection services)
     {
-        var applicationAssembly = typeof(ServiceCollectionExtensions).Assembly;
+        var applicationAssembly = typeof(DependencyInjection).Assembly;
 
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(applicationAssembly));
 
