@@ -16,6 +16,11 @@ namespace ReportHub.Presentation.Controllers
             _mediator = mediator;
         }
 
+
+        /// <summary>
+        /// Getting all invoices from database
+        /// </summary>
+        /// <returns>IActionResult</returns>
         [HttpGet]
         public async Task<IActionResult> GetAllInvoices()
         {
