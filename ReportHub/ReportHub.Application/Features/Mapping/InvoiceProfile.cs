@@ -2,7 +2,7 @@
 using ReportHub.Application.Features.DTOs;
 using ReportHub.Domain.Entities;
 
-namespace ReportHub.Application.Mappings;
+namespace ReportHub.Application.Features.Mapping;
 
 public class InvoiceProfile : Profile
 {
