@@ -1,4 +1,4 @@
-﻿namespace ReportHub.Application.Validation.Exceptions;
+﻿namespace ReportHub.Application.Validators.Exceptions;
 
 public class InputValidationException : Exception
 {
