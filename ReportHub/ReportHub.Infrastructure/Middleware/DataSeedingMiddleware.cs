@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using ReportHub.Application.Contracts;
 using ReportHub.Domain.Entities;
+using Serilog;
 
 namespace ReportHub.Infrastructure.Middleware
 {
@@ -25,7 +26,7 @@ namespace ReportHub.Infrastructure.Middleware
                 var existingInvoices = await invoiceRepository.GetAll(pageNumber: 1, pageSize: 1);
                 if (!existingInvoices.Any())
                 {
-                    Console.WriteLine("Seeding initial invoice data...");
+                    Log.Information("Seeding initial invoice data...");
 
                     var invoices = new List<Invoice>
                     {
@@ -39,16 +40,16 @@ namespace ReportHub.Infrastructure.Middleware
                         await invoiceRepository.Insert(invoice);
                     }
 
-                    Console.WriteLine("Database seeding completed.");
+                    Log.Information("Database seeding completed.");
                 }
                 else
                 {
-                    Console.WriteLine("Database already contains data. Skipping seeding.");
+                    Log.Information("Database already contains data. Skipping seeding.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Data seeding failed: {ex.Message}");
+                Log.Error($"Data seeding failed: {ex.Message}");
             }
 
             await _next(context);
