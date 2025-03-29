@@ -31,8 +31,6 @@ namespace ReportHub.API
                 app.UseHttpsRedirection();
                 app.UseAuthorization();
                 app.MapControllers();
-                //
-                app.UseSerilogRequestLogging();
 
                 Log.Information("Application is running");
                 app.Run();
