@@ -16,8 +16,6 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
         public GetAllInvoicesQueryHandlerTests()
         {
             _mockRepo = new Mock<IInvoiceRepository>();
-
-            // Use real AutoMapper with InvoiceProfile mapping
             var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<InvoiceProfile>());
             _mapper = new Mapper(mapperConfig);
 
