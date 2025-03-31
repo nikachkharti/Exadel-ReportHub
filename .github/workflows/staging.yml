@@ -1,11 +1,13 @@
-name: Production Deployment
+name: Staging CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ staging ]
+  pull_request:
+    branches: [ staging ]
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-20.04
 
     steps:
@@ -23,12 +25,5 @@ jobs:
     - name: 🔨 Build solution
       run: dotnet build ReportHub/ReportHub.sln --configuration Release --no-restore
 
-    - name: 🚀 Deploy to Heroku
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-      run: |
-        curl https://cli-assets.heroku.com/install.sh | sh
-        heroku container:login
-        heroku container:push web --app $HEROKU_APP_NAME
-        heroku container:release web --app $HEROKU_APP_NAME
+    - name: 🧪 Run tests
+      run: dotnet test ReportHub/ReportHub.sln --configuration Release --no-build --logger:"console;verbosity=detailed"
