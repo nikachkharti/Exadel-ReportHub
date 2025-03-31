@@ -1,11 +1,13 @@
-name: Production Deployment
+name: Staging CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ staging ]
+  pull_request:
+    branches: [ staging ]
 
 jobs:
-  build-and-deploy:
+  build-and-test:
     runs-on: ubuntu-20.04
 
     steps:
@@ -23,7 +25,5 @@ jobs:
     - name: 🔨 Build solution
       run: dotnet build ReportHub/ReportHub.sln --configuration Release --no-restore
 
-    - name: 🚀 Deploy to Production
-      run: |
-        echo "Deploying to Production..."
-        # Add your deployment script or tool (e.g., Azure, AWS, Docker)
+    - name: 🧪 Run tests
+      run: dotnet test ReportHub/ReportHub.sln --configuration Release --no-build --logger:"console;verbosity=detailed"
