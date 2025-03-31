@@ -14,11 +14,6 @@ namespace ReportHub.API.Extensions
             builder.Services.AddControllers();
         }
 
-        public static void AddOpenApi(this WebApplicationBuilder builder)
-        {
-            builder.Services.AddOpenApi();
-        }
-
         public static void AddSwagger(this WebApplicationBuilder builder)
         {
             builder.Services.AddSwaggerGen(options =>
