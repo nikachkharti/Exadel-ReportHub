@@ -23,7 +23,12 @@ jobs:
     - name: 🔨 Build solution
       run: dotnet build ReportHub/ReportHub.sln --configuration Release --no-restore
 
-    - name: 🚀 Deploy to Production
+    - name: 🚀 Deploy to Heroku
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
       run: |
-        echo "Deploying to Production..."
-        # Add your deployment script or tool (e.g., Azure, AWS, Docker)
+        curl https://cli-assets.heroku.com/install.sh | sh
+        heroku container:login
+        heroku container:push web --app $HEROKU_APP_NAME
+        heroku container:release web --app $HEROKU_APP_NAME

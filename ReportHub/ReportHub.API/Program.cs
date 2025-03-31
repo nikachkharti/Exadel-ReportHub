@@ -1,6 +1,5 @@
 using ReportHub.API.Extensions;
 using Serilog;
-using ReportHub.Application.Extensions;
 
 namespace ReportHub.API
 {
@@ -22,6 +21,12 @@ namespace ReportHub.API
                 builder.AddInfrastructureLayer();
                 builder.AddApplicationLayer();
 
+                if (builder.Environment.IsProduction())
+                {
+                    var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+                    var url = $"http://+:{port}";
+                    builder.WebHost.UseUrls(url);
+                }
 
                 var app = builder.Build();
 
