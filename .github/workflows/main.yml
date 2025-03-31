@@ -1,37 +1,34 @@
-name: Production Deployment
+name: 🚀 Deploy to Heroku
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-20.04
+  deploy:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v3
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
 
-    - name: 🛠️ Setup .NET SDK
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '9.0.x'
+      - name: 🔧 Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
 
-    - name: 📦 Restore dependencies
-      run: dotnet restore ReportHub/ReportHub.sln
+      - name: 🔑 Login to Heroku Container Registry
+        run: echo ${{ secrets.HEROKU_API_KEY }} | docker login --username=_ --password-stdin registry.heroku.com
 
-    - name: 🔨 Build solution
-      run: dotnet build ReportHub/ReportHub.sln --configuration Release --no-restore
+      - name: 🔄 Set Heroku Stack to Container
+        run: heroku stack:set container -a ${{ secrets.HEROKU_APP_NAME }}
 
-    - name: 🔧 Set Heroku Stack to Container
-      run: heroku stack:set container -a ${{ secrets.HEROKU_APP_NAME }}
+      - name: 📦 Build and push Docker image
+        run: |
+          heroku container:push web -a ${{ secrets.HEROKU_APP_NAME }}
 
-    - name: 🚀 Deploy to Heroku
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-      run: |
-        curl https://cli-assets.heroku.com/install.sh | sh
-        heroku container:login
-        heroku container:push web --app $HEROKU_APP_NAME
-        heroku container:release web --app $HEROKU_APP_NAME
+      - name: 🚀 Release the container
+        run: |
+          heroku container:release web -a ${{ secrets.HEROKU_APP_NAME }}
+
+      - name: ✅ Check deployment status
+        run: heroku ps -a ${{ secrets.HEROKU_APP_NAME }}
