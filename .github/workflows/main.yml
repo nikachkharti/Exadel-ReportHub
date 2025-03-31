@@ -23,6 +23,9 @@ jobs:
     - name: 🔨 Build solution
       run: dotnet build ReportHub/ReportHub.sln --configuration Release --no-restore
 
+    - name: 🔧 Set Heroku Stack to Container
+      run: heroku stack:set container -a ${{ secrets.HEROKU_APP_NAME }}
+
     - name: 🚀 Deploy to Heroku
       env:
         HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
