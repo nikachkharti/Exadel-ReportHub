@@ -2,5 +2,5 @@
 
 public interface IFileWriter
 {
-    Task WriteAllAsync<T>(IEnumerable<T> datas, CancellationToken token);
+    Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, CancellationToken token);
 }
