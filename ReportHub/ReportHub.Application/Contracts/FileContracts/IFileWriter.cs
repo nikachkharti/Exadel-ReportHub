@@ -1,6 +1,8 @@
-﻿namespace ReportHub.Application.Contracts.FileContracts;
+﻿using System.Collections.Generic;
+
+namespace ReportHub.Application.Contracts.FileContracts;
 
 public interface IFileWriter
 {
-    Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, CancellationToken token);
+    Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, IReadOnlyDictionary<string, object> statistics,CancellationToken token);
 }
