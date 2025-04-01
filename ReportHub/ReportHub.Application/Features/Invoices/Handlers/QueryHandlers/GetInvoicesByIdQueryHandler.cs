@@ -20,9 +20,9 @@ public class GetInvoicesByIdQueryHandler : IRequestHandler<GetInvoicesByIdQuery,
     {
         Log.Information($"Fetching Invoice by Id -> {request.Id}", request.Id);
 
-        var Invoce = await _invoiceRepository.Get(i => i.InvoiceId == request.Id);
+        var invoce = await _invoiceRepository.Get(i => i.InvoiceId == request.Id);
 
-        var invoiceDto = _mapper.Map<InvoiceDto>(Invoce);
+        var invoiceDto = _mapper.Map<InvoiceDto>(invoce);
 
         return invoiceDto;
     }
