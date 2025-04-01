@@ -1,9 +1,9 @@
 ﻿using Moq;
 using AutoMapper;
 using ReportHub.Application.Contracts;
-using ReportHub.Application.Features.Queries;
-using ReportHub.Application.Features.Mapping;
-using ReportHub.Application.Features.Handlers.QueryHandlers;
+using ReportHub.Application.Features.Invoices.Mapping;
+using ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
+using ReportHub.Application.Features.Invoices.Queries;
 
 namespace ReportHub.Tests.Application.Handlers.Invoices
 {
