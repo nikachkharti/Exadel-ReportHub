@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using ReportHub.Application.Features.DTOs;
+using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Domain.Entities;
 
-namespace ReportHub.Application.Features.Mapping;
+namespace ReportHub.Application.Features.Invoices.Mapping;
 
 public class InvoiceProfile : Profile
 {

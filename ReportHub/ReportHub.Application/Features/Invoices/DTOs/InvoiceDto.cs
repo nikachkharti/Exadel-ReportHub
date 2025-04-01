@@ -1,4 +1,4 @@
-﻿namespace ReportHub.Application.Features.DTOs;
+﻿namespace ReportHub.Application.Features.Invoices.DTOs;
 
 public class InvoiceDto
 {

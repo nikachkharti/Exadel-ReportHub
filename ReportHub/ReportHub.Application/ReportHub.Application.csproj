@@ -20,9 +20,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Features\Commands\" />
-		<Folder Include="Features\Handlers\CommandHandlers\" />
-		<Folder Include="Features\Invoices\" />
+		<Folder Include="Features\Invoices\Commands\" />
+		<Folder Include="Features\Invoices\Handlers\CommandHandlers\" />
 	</ItemGroup>
 
 </Project>
