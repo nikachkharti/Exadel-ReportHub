@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using ReportHub.Application.Contracts;
-using ReportHub.Infrastructure.Helper;
 using System.Linq.Expressions;
+using ReportHub.Infrastructure.Configurations;
 
 namespace ReportHub.Infrastructure.Repository
 {
@@ -96,7 +96,6 @@ namespace ReportHub.Infrastructure.Repository
             .ToListAsync();
         }
 
-
         public async Task<T> Get(Expression<Func<T, bool>> filter) =>
             await _collection
             .Find(filter)
@@ -108,8 +107,9 @@ namespace ReportHub.Infrastructure.Repository
         #region DELETE
 
         public async Task Delete(Expression<Func<T, bool>> filter) =>
-    await _collection
-    .DeleteOneAsync(filter);
+            await _collection
+            .DeleteOneAsync(filter);
+        
         public async Task DeleteMultiple(Expression<Func<T, bool>> filter) =>
             await _collection
             .DeleteManyAsync(filter);
@@ -120,8 +120,9 @@ namespace ReportHub.Infrastructure.Repository
         #region INSERT
 
         public async Task Insert(T document) =>
-    await _collection
-    .InsertOneAsync(document);
+            await _collection
+            .InsertOneAsync(document);
+        
         public async Task InsertMultiple(IEnumerable<T> documents) =>
             await _collection
             .InsertManyAsync(documents);

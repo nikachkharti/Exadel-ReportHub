@@ -2,10 +2,10 @@
 using Mongo2Go;
 using MongoDB.Driver;
 using ReportHub.Domain.Entities;
-using ReportHub.Infrastructure.Helper;
 using ReportHub.Infrastructure.Repository;
 using System.Linq.Expressions;
 using System.Reflection;
+using ReportHub.Infrastructure.Configurations;
 
 namespace ReportHub.Tests.Infrastructure
 {

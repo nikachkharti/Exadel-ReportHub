@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ReportHub.Application.Contracts;
-using ReportHub.Infrastructure.Helper;
+using ReportHub.Infrastructure.Configurations;
 using ReportHub.Infrastructure.Repository;
 
 namespace ReportHub.Infrastructure
