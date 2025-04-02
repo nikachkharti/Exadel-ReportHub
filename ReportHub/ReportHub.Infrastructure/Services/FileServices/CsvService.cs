@@ -1,16 +1,20 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using ReportHub.Application.Contracts.FileContracts;
 using System.Globalization;
 
-namespace ReportHub.Infrastructure.Services;
+namespace ReportHub.Infrastructure.Services.FileServices;
 
-public class CsvService : ICsvService
+public class CsvService : CsvBaseService, ICsvService
 {
     public IAsyncEnumerable<T> ReadAllAsync<T>(Stream stream, CancellationToken cancellationToken) where T : class
     {
         var streamReader = new StreamReader(stream);
-        var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture);
-
+        var csvReader = new CsvReader(streamReader, new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            MissingFieldFound = null
+        });
+        
         return GetRecordsOneByOne<T>(csvReader);
     }
 
@@ -43,17 +47,20 @@ public class CsvService : ICsvService
             csvWriter.NextRecord();
         }
     }
-
-    private static async IAsyncEnumerable<T> GetRecordsOneByOne<T>(CsvReader reader)
+    private async IAsyncEnumerable<T> GetRecordsOneByOne<T>(CsvReader reader)
     {
+        var properties = GetTypeProperties<T>();
+
+        await reader.ReadAsync();
+        reader.ReadHeader();
+
         while (await reader.ReadAsync())
         {
-            if (reader.TryGetField(0, out string field) 
-                && field.Equals("All Statistics")) break;
+            int count = GetAllExistPropertyInCsv(reader, properties);
+
+            if (count != properties.Length) continue;
 
             var record = reader.GetRecord<T>();
-
-            if (record is null) yield break;
 
             yield return record!;
         }

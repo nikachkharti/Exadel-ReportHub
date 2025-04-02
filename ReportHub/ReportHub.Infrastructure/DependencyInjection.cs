@@ -4,7 +4,7 @@ using ReportHub.Application.Contracts;
 using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Infrastructure.Helper;
 using ReportHub.Infrastructure.Repository;
-using ReportHub.Infrastructure.Services;
+using ReportHub.Infrastructure.Services.FileServices;
 
 namespace ReportHub.Infrastructure
 {

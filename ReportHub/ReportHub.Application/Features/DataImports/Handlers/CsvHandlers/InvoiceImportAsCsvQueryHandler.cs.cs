@@ -36,6 +36,8 @@ public class InvoiceImportAsCsvQueryHandler : IRequestHandler<InvoiceImportAsCsv
 
         await foreach (var invoice in invoices)
         {
+            if (invoice is null) continue;
+
             var exist = await _invoiceRepository.Get(i => i.InvoiceId.Equals(invoice.InvoiceId), cancellationToken);
 
             if (exist is not null) continue;
