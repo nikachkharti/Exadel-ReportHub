@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ReportHub.Application.Contracts;
+using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Infrastructure.Helper;
 using ReportHub.Infrastructure.Repository;
+using ReportHub.Infrastructure.Services;
 
 namespace ReportHub.Infrastructure
 {
@@ -12,6 +14,10 @@ namespace ReportHub.Infrastructure
         {
             // Configure MongoDB settings
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDB"));
+
+            // Register services
+
+            services.AddScoped<ICsvService, CsvService>();
 
             // Register repositories
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
