@@ -5,6 +5,12 @@ namespace ReportHub.Infrastructure.Services.FileServices;
 
 public abstract class CsvBaseService
 {
+    /// <summary>
+    /// Get count of all properties that exist in csv file
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <param name="properties"></param>
+    /// <returns></returns>
     private protected static int GetAllExistPropertyInCsv(CsvReader reader, PropertyInfo[] properties)
     {
         var count = 0;
@@ -20,5 +26,10 @@ public abstract class CsvBaseService
         return count;
     }
 
+    /// <summary>
+    /// Get properties of generic type
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     private protected PropertyInfo[] GetTypeProperties<T>() => typeof(T).GetProperties();
 }
