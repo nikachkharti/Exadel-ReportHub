@@ -26,9 +26,9 @@ public class InvoiceExportAsCsvQueryHandler : IRequestHandler<InvoiceExportAsCsv
         return new Dictionary<string, object>
         {
             { "TotalInvoices", invoices.Count() },
-            { "Paid" , invoices.Where(x => x.PaymentStatus.Equals("Paid")) },
-            { "Pending", invoices.Where(x => x.PaymentStatus.Equals("Pending")) },
-            { "Overdue", invoices.Where(x => x.PaymentStatus.Equals("Overdue")) }
+            { "Paid" , invoices.Where(x => x.PaymentStatus.Equals("Paid")).Count() },
+            { "Pending", invoices.Where(x => x.PaymentStatus.Equals("Pending")).Count() },
+            { "Overdue", invoices.Where(x => x.PaymentStatus.Equals("Overdue")).Count() }
         };
     }
 }

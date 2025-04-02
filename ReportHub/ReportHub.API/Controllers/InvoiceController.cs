@@ -1,5 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.API.Enums;
+using ReportHub.Application.Features.DataExports.Queries;
+using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using Serilog;
@@ -74,6 +77,23 @@ namespace ReportHub.Presentation.Controllers
                 Log.Error(ex, $"Error occurred while fetching invoice for Id -> {id}");
                 return StatusCode(500, "An unexpected error occurred.");
             }
+        }
+
+        [HttpGet("export")]
+        public async Task<IActionResult> Export([FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
+        {
+            var stream = await _mediator.Send(GetQuery(fileType), cancellationToken);
+
+            return File(stream, "application/octet-stream", $"Invoices.{fileType.ToString().ToLower()}");
+        }
+
+        private ExportBaseQuery GetQuery(FileExportingType fileType)
+        {
+            return fileType switch
+            {
+                FileExportingType.Csv => new InvoiceExportAsCsvQuery(),
+                _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
+            };
         }
 
     }
