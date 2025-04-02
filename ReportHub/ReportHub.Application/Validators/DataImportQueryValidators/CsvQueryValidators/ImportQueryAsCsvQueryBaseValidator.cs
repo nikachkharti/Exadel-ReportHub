@@ -14,6 +14,6 @@ public class ImportQueryAsCsvQueryBaseValidator<TQuery> : AbstractValidator<TQue
 
         RuleFor(x => x.FileExtension)
             .Equal(".csv")
-            .WithMessage("File extension is required");
+            .WithMessage("File format should be csv. Please select correct file format");
     }
 }
