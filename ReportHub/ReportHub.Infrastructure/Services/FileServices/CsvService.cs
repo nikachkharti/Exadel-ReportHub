@@ -2,10 +2,11 @@
 using CsvHelper.Configuration;
 using ReportHub.Application.Contracts.FileContracts;
 using System.Globalization;
+using System.Reflection;
 
 namespace ReportHub.Infrastructure.Services.FileServices;
 
-public class CsvService : CsvBaseService, ICsvService
+public class CsvService : ICsvService
 {
     public IAsyncEnumerable<T> ReadAllAsync<T>(Stream stream, CancellationToken cancellationToken) where T : class
     {
@@ -65,4 +66,32 @@ public class CsvService : CsvBaseService, ICsvService
             yield return record!;
         }
     }
+
+    /// <summary>
+    /// Get count of all properties that exist in csv file
+    /// </summary>
+    /// <param name="reader"></param>
+    /// <param name="properties"></param>
+    /// <returns></returns>
+    private static int GetAllExistPropertyInCsv(CsvReader reader, PropertyInfo[] properties)
+    {
+        var count = 0;
+        for (var i = 0; i < properties.Length; i++)
+        {
+            var prop = properties[i];
+            var isField = reader.TryGetField(prop.PropertyType, prop.Name, out object field);
+            if (!isField)
+                break;
+            count++;
+        }
+
+        return count;
+    }
+
+    /// <summary>
+    /// Get properties of generic type
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    private PropertyInfo[] GetTypeProperties<T>() => typeof(T).GetProperties();
 }
