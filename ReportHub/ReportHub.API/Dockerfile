@@ -34,4 +34,4 @@ COPY --from=publish /app/publish .
 # Ensure app listens to Heroku's assigned PORT
 ENV ASPNETCORE_URLS=http://+:8080
 
-ENTRYPOINT ["dotnet", "ReportHub.API.dll"]
+CMD ["dotnet", "ReportHub.API.dll"]

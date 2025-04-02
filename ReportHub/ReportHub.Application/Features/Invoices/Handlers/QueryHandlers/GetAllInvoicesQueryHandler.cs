@@ -2,10 +2,10 @@
 using MediatR;
 using Serilog;
 using ReportHub.Application.Contracts;
-using ReportHub.Application.Features.DTOs;
-using ReportHub.Application.Features.Queries;
+using ReportHub.Application.Features.Invoices.DTOs;
+using ReportHub.Application.Features.Invoices.Queries;
 
-namespace ReportHub.Application.Features.Handlers.QueryHandlers;
+namespace ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
 
 public class GetAllInvoicesQueryHandler : IRequestHandler<GetAllInvoicesQuery, IEnumerable<InvoiceDto>>
 {
