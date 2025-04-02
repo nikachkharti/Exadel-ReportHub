@@ -3,8 +3,8 @@ using ReportHub.Application.Features.DataImports.Queries;
 
 namespace ReportHub.Application.Validators.DataImportQueryValidators.CsvQueryValidators;
 
-public class ImportQueryAsCsvQueryBaseValidator<TQuery, TType> : AbstractValidator<TQuery> 
-    where TQuery : ImportBaseQuery<TType> where TType : class
+public class ImportQueryAsCsvQueryBaseValidator<TQuery> : AbstractValidator<TQuery> 
+    where TQuery : ImportBaseQuery
 {
     public ImportQueryAsCsvQueryBaseValidator()
     {

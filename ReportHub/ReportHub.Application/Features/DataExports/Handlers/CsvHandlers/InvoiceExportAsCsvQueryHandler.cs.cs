@@ -25,6 +25,7 @@ public class InvoiceExportAsCsvQueryHandler : IRequestHandler<InvoiceExportAsCsv
     {
         return new Dictionary<string, object>
         {
+            { "All Statistics", ""},
             { "TotalInvoices", invoices.Count() },
             { "Paid" , invoices.Where(x => x.PaymentStatus.Equals("Paid")).Count() },
             { "Pending", invoices.Where(x => x.PaymentStatus.Equals("Pending")).Count() },

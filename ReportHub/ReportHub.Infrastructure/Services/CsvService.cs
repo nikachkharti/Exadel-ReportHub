@@ -6,14 +6,12 @@ namespace ReportHub.Infrastructure.Services;
 
 public class CsvService : ICsvService
 {
-    public async Task<IEnumerable<T>> ReadAllAsync<T>(Stream stream, CancellationToken cancellationToken) where T : class
+    public IAsyncEnumerable<T> ReadAllAsync<T>(Stream stream, CancellationToken cancellationToken) where T : class
     {
         var streamReader = new StreamReader(stream);
         var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture);
 
-        var records = csvReader.GetRecordsAsync<T>(cancellationToken);
-
-        return await GetRecordsAsList(records);
+        return GetRecordsOneByOne<T>(csvReader);
     }
 
 
@@ -46,16 +44,18 @@ public class CsvService : ICsvService
         }
     }
 
-    private static async Task<IEnumerable<T>> GetRecordsAsList<T>(IAsyncEnumerable<T> records) where T : class
+    private static async IAsyncEnumerable<T> GetRecordsOneByOne<T>(CsvReader reader)
     {
-        var result = new List<T>();
-        await foreach (var record in records)
+        while (await reader.ReadAsync())
         {
-            if (record is null) break;
+            if (reader.TryGetField(0, out string field) 
+                && field.Equals("All Statistics")) break;
 
-            result.Add(record);
+            var record = reader.GetRecord<T>();
+
+            if (record is null) yield break;
+
+            yield return record!;
         }
-
-        return result;
     }
 }
