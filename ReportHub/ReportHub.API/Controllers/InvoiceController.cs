@@ -82,9 +82,11 @@ namespace ReportHub.Presentation.Controllers
         [HttpGet("export")]
         public async Task<IActionResult> Export([FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
-            var stream = await _mediator.Send(GetQuery(fileType), cancellationToken);
+            var query = GetQuery(fileType);
 
-            return File(stream, "application/octet-stream", $"Invoices.{fileType.ToString().ToLower()}");
+            var stream = await _mediator.Send(query, cancellationToken);
+
+            return File(stream, "application/octet-stream", $"Invoices.{query.Extension}");
         }
 
         private ExportBaseQuery GetQuery(FileExportingType fileType)

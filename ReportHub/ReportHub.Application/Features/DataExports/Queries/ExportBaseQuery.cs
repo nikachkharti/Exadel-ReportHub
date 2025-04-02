@@ -2,4 +2,4 @@
 
 namespace ReportHub.Application.Features.DataExports.Queries;
 
-public abstract record ExportBaseQuery : IRequest<Stream>;
+public abstract record ExportBaseQuery(string Extension) : IRequest<Stream>;

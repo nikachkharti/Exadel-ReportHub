@@ -1,3 +1,3 @@
 ﻿namespace ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 
-public record InvoiceExportAsCsvQuery : ExportBaseQuery;
+public record InvoiceExportAsCsvQuery() : ExportBaseQuery(".csv");
