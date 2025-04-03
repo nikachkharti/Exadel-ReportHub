@@ -7,7 +7,6 @@ using ReportHub.Application.Features.DataImports.Queries;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
-using ReportHub.Domain.Entities;
 using Serilog;
 
 namespace ReportHub.Presentation.Controllers
