@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using ReportHub.API.Enums;
 using ReportHub.Application.Features.DataExports.Queries;
 using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
+using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
 using ReportHub.Application.Features.DataImports.Queries;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
+using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using Serilog;
@@ -119,7 +121,7 @@ namespace ReportHub.Presentation.Controllers
             return fileType switch
             {
                 FileImportingType.CSV => new InvoiceImportAsCsvQuery(stream, extension),
-                FileImportingType.Excel => throw new NotImplementedException(),
+                FileImportingType.Excel => new InvoiceImportAsExcelQuery(stream, extension), 
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
         }
@@ -128,7 +130,7 @@ namespace ReportHub.Presentation.Controllers
             return fileType switch
             {
                 FileExportingType.Csv => new InvoiceExportAsCsvQuery(),
-                FileExportingType.Excel => throw new NotImplementedException(),
+                FileExportingType.Excel => new InvoiceExportAsExcelQuery(),
                 FileExportingType.Pdf => throw new NotImplementedException(),
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
