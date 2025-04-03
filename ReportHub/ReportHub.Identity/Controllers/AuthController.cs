@@ -1,69 +1,52 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
-using ReportHub.Identity.Models;
 using static OpenIddict.Abstractions.OpenIddictConstants;
-
+using Microsoft.IdentityModel.Tokens;
 namespace ReportHub.Identity.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : Controller
+public class AuthController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
+    private readonly IOpenIddictApplicationManager _applicationManager;
 
-    public AuthController(UserManager<User> userManager)
+    public AuthController(IOpenIddictApplicationManager applicationManager)
     {
-        _userManager = userManager;
+        _applicationManager = applicationManager;
     }
-    
-    [HttpPost("/connect/token"), Produces("application/json")]
-    public async Task<IActionResult> Exchange(SignInRequest request)
+
+    [HttpPost("~/connect/token"), Produces("application/json")]
+    public async Task<IActionResult> Exchange()
     {
-        var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+        var request = HttpContext.GetOpenIddictServerRequest();
+        if (request.IsPasswordGrantType())
         {
-            return Unauthorized(new { error = "Invalid credentials." });
+            var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
+                              throw new InvalidOperationException("The application cannot be found.");
+
+            var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType, Claims.Name,
+                Claims.Role);
+            
+            identity.SetClaim(Claims.Subject, await _applicationManager.GetClientIdAsync(application));
+            identity.SetClaim(Claims.Name, await _applicationManager.GetDisplayNameAsync(application));
+            
+            identity.SetDestinations(static claim => claim.Type switch
+            {
+                Claims.Name when claim.Subject.HasScope(Scopes.Profile)
+                    => [Destinations.AccessToken, Destinations.IdentityToken],
+                _ => [Destinations.AccessToken]
+            });
+            
+            return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
         
-        var claims = new List<Claim>
+        return BadRequest(new OpenIddictResponse
         {
-            new(Claims.Subject, user.Id),
-            new(Claims.Email, user.Email)
-        };
-
-        var identity = new ClaimsIdentity(claims, TokenValidationParameters.DefaultAuthenticationType);
-        
-        var principal = new ClaimsPrincipal(identity);
-        principal.SetScopes(Scopes.OfflineAccess, Scopes.Profile, Scopes.Email);
-        
-        return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
-    }
-    
-    [HttpPost("sign-up")]
-    public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
-    {
-        if (await _userManager.FindByEmailAsync(request.Email) != null)
-        {
-            return BadRequest("Username already exists.");
-        }
-
-        var user = new User
-        {
-            Id = Guid.NewGuid().ToString(),
-            UserName = request.Username,
-            Email = request.Email
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            return BadRequest(result.Errors);
-        }
-
-        return Ok("User registered successfully.");
+            Error = Errors.InvalidGrant,
+            ErrorDescription = "The specified grant type is not supported."
+        });
     }
 }

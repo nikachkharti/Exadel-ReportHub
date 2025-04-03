@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Models;
+using ReportHub.Identity.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,9 +65,11 @@ builder.Services.AddOpenIddict()
         options.AddEncryptionKey(new SymmetricSecurityKey(
             Convert.FromBase64String(key)));
         
-        options.AllowPasswordFlow();
-        options.SetTokenEndpointUris("connect/token");
-        
+        options.SetTokenEndpointUris("connect/token")
+            .AllowPasswordFlow()
+            .AllowRefreshTokenFlow()
+            .AllowClientCredentialsFlow();
+
         options.AddDevelopmentEncryptionCertificate()
             .AddDevelopmentSigningCertificate();
 
@@ -80,6 +83,8 @@ builder.Services.AddOpenIddict()
         options.UseLocalServer();
         options.UseAspNetCore();
     });
+
+builder.Services.AddHostedService<ConfigureClientWorker>();
 
 var app = builder.Build();
 
