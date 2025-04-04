@@ -12,21 +12,24 @@ public class ExcelService : IExcelService
         return GetRecordsOneByOne<T>(stream, cancellationToken);
     }
 
-    public async Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, IReadOnlyDictionary<string, object> statistics, CancellationToken token)
+    public Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, IReadOnlyDictionary<string, object> statistics, CancellationToken token)
     {
         var memoryStream = new MemoryStream();
-        using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Data");
-        var properties = typeof(T).GetProperties();
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Data");
+            var properties = typeof(T).GetProperties();
 
-        WriteHeaders(worksheet, properties);
-        WriteData(worksheet, datas, properties);
-        WriteStatistics(statistics, workbook);
+            WriteHeaders(worksheet, properties);
+            WriteData(worksheet, datas, properties);
+            WriteStatistics(statistics, workbook);
 
-        worksheet.Columns().AdjustToContents();
-        workbook.SaveAs(memoryStream);
+            worksheet.Columns().AdjustToContents();
+            workbook.SaveAs(memoryStream);
+        }
+
         memoryStream.Position = 0;
-        return memoryStream;
+        return Task.FromResult<Stream>(memoryStream);
     }
 
     private static void WriteHeaders(IXLWorksheet worksheet, PropertyInfo[] properties)
