@@ -44,8 +44,18 @@ namespace ReportHub.API
                 builder.Services.AddAuthentication(options =>
                 {
                     options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.Authority = "https://localhost:7171/";
+                    options.Audience = "report-hub-resource-server";
+                    options.RequireHttpsMetadata = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateAudience = true
+                    };
                 });
-
+                
                 builder.Services.AddAuthorization();
                 
                 var app = builder.Build();

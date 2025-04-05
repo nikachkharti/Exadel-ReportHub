@@ -70,6 +70,8 @@ builder.Services.AddOpenIddict()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
 
+        options.RegisterScopes("report-hub-api");
+        
         options.AddDevelopmentEncryptionCertificate()
             .AddDevelopmentSigningCertificate();
 
