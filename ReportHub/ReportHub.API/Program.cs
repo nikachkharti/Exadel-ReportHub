@@ -34,9 +34,6 @@ namespace ReportHub.API
                     .AddValidation(options =>
                     {
                         options.SetIssuer(authSettings.Issuer);
-                        options.AddEncryptionKey(new SymmetricSecurityKey(
-                            Convert.FromBase64String(key)));
-
                         options.AddAudiences("report-hub-api-audience");
         
                         options.UseIntrospection()
@@ -45,7 +42,6 @@ namespace ReportHub.API
                         
                         options.UseSystemNetHttp();
                         options.UseAspNetCore();
-                        options.UseLocalServer();
                     });
                 
                 builder.Services.AddAuthentication(options =>

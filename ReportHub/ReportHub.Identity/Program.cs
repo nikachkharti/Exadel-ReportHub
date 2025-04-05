@@ -68,8 +68,7 @@ builder.Services.AddOpenIddict()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
 
-        options.AddEncryptionKey(new SymmetricSecurityKey(
-            Convert.FromBase64String(key)));
+        options.DisableAccessTokenEncryption();
         
         options.SetIntrospectionEndpointUris("/connect/introspect");
 

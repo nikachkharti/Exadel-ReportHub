@@ -51,7 +51,7 @@ public class AuthController : ControllerBase
             });
         }
         
-        if (request.IsPasswordGrantType())
+        if (request.IsClientCredentialsGrantType() || request.IsPasswordGrantType())
         {
             var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
                               throw new InvalidOperationException("The application cannot be found.");
