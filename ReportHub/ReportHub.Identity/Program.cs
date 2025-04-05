@@ -61,29 +61,27 @@ builder.Services.AddOpenIddict()
             .UseDatabase(context.Database);
     })
     .AddServer(options =>
-    {
-        options.AddEncryptionKey(new SymmetricSecurityKey(
-            Convert.FromBase64String(key)));
-        
+    { 
+        options.SetIssuer(new Uri(authSettings.Issuer));
         options.SetTokenEndpointUris("connect/token")
             .AllowPasswordFlow()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
 
-        options.RegisterScopes("report-hub-api");
+        options.AddEncryptionKey(new SymmetricSecurityKey(
+            Convert.FromBase64String(key)));
         
+        options.SetIntrospectionEndpointUris("/connect/introspect");
+
+        options.RegisterScopes("report-hub-api-scope");
+
         options.AddDevelopmentEncryptionCertificate()
             .AddDevelopmentSigningCertificate();
 
         options.SetAccessTokenLifetime(TimeSpan.FromMinutes(authSettings.AccessTokenLifeTimeMinutes));
-        
+
         options.UseAspNetCore()
             .EnableTokenEndpointPassthrough();
-    })
-    .AddValidation(options =>
-    {
-        options.UseLocalServer();
-        options.UseAspNetCore();
     });
 
 builder.Services.AddHostedService<ClientSeeder>();

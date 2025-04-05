@@ -61,7 +61,8 @@ public class AuthController : ControllerBase
             
             identity.SetClaim(Claims.Subject, request.ClientId);
             identity.SetClaim(Claims.Name, await _applicationManager.GetDisplayNameAsync(application));
-            
+            identity.AddClaim(Claims.Audience, "report-hub-api-audience");
+
             identity.SetScopes(request.GetScopes());
             
             identity.SetDestinations(static claim => claim.Type switch
@@ -86,12 +87,13 @@ public class AuthController : ControllerBase
                 });
             }
 
-            var newIdentity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
-            newIdentity.SetClaim(Claims.Subject, principal.GetClaim(Claims.Subject));
+            var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
+            identity.SetClaim(Claims.Subject, principal.GetClaim(Claims.Subject));
+            identity.AddClaim(Claims.Audience, "report-hub-api-audience");
 
-            newIdentity.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
+            identity.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
 
-            return SignIn(new ClaimsPrincipal(newIdentity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
         
         return BadRequest(new OpenIddictResponse

@@ -44,8 +44,8 @@ public class ClientSeeder: IHostedService
                 OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
                 OpenIddictConstants.Permissions.GrantTypes.Password,
                 
-                OpenIddictConstants.Permissions.Prefixes.Scope + "report-hub-api",
-            } 
+                OpenIddictConstants.Permissions.Prefixes.Scope + "report-hub-api-scope",
+            }  
         };
         
         var client  = await appManager.FindByClientIdAsync(appDescriptor.ClientId, cancellationToken);
@@ -65,10 +65,10 @@ public class ClientSeeder: IHostedService
 
         var scopeDescriptor = new OpenIddictScopeDescriptor
         {
-            Name = "report-hub-api",
+            Name = "report-hub-api-scope",
             Resources =
             {
-                "report-hub-resource_server"
+                "report-hub-api-resource"
             }
         };
 

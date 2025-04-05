@@ -37,8 +37,15 @@ namespace ReportHub.API
                         options.AddEncryptionKey(new SymmetricSecurityKey(
                             Convert.FromBase64String(key)));
 
+                        options.AddAudiences("report-hub-api-audience");
+        
+                        options.UseIntrospection()
+                            .SetClientId("report-hub")
+                            .SetClientSecret("client_secret_key");
+                        
                         options.UseSystemNetHttp();
                         options.UseAspNetCore();
+                        options.UseLocalServer();
                     });
                 
                 builder.Services.AddAuthentication(options =>
@@ -47,8 +54,8 @@ namespace ReportHub.API
                 })
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = "https://localhost:7171/";
-                    options.Audience = "report-hub-resource-server";
+                    options.Authority = "https://localhost:7171/"; 
+                    options.Audience = "report-hub-api-audience";
                     options.RequireHttpsMetadata = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
