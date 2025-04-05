@@ -84,7 +84,7 @@ builder.Services.AddOpenIddict()
         options.UseAspNetCore();
     });
 
-builder.Services.AddHostedService<ConfigureClientWorker>();
+builder.Services.AddHostedService<ClientSeeder>();
 
 var app = builder.Build();
 

@@ -2,11 +2,11 @@ using OpenIddict.Abstractions;
 
 namespace ReportHub.Identity.Workers;
 
-public class ConfigureClientWorker: IHostedService
+public class ClientSeeder: IHostedService
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public ConfigureClientWorker(IServiceProvider serviceProvider)
+    public ClientSeeder(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -15,6 +15,17 @@ public class ConfigureClientWorker: IHostedService
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
         
+        await SeedScopes(scope, cancellationToken);
+        await SeedInternalApps(scope, cancellationToken);
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+    
+    private async Task SeedInternalApps(AsyncServiceScope scope, CancellationToken cancellationToken)
+    {
         var appManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
 
         var appDescriptor = new OpenIddictApplicationDescriptor
@@ -23,33 +34,33 @@ public class ConfigureClientWorker: IHostedService
             ClientSecret = "client_secret_key",
             ClientType = OpenIddictConstants.ClientTypes.Confidential,
             DisplayName = "Report Hub API",
-            RedirectUris =
-            {
-                new Uri("https://localhost:7153/callback")
-            },
             Permissions =
             {
                 OpenIddictConstants.Permissions.Endpoints.Token,
-                OpenIddictConstants.Permissions.Endpoints.Authorization,
+                OpenIddictConstants.Permissions.Endpoints.Introspection,
+                OpenIddictConstants.Permissions.Endpoints.Revocation,
+
                 OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
-                OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
-                OpenIddictConstants.Permissions.ResponseTypes.Code,
                 OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
                 OpenIddictConstants.Permissions.GrantTypes.Password,
+                
                 OpenIddictConstants.Permissions.Prefixes.Scope + "report-hub-api",
             } 
         };
         
-        var clientApp = await appManager.FindByClientIdAsync(appDescriptor.ClientId, cancellationToken);
-        if (clientApp is null)
+        var client  = await appManager.FindByClientIdAsync(appDescriptor.ClientId, cancellationToken);
+        if (client  is null)
         {
             await appManager.CreateAsync(appDescriptor, cancellationToken);
         }
         else
         {
-            await appManager.UpdateAsync(clientApp, appDescriptor, cancellationToken);
+            await appManager.UpdateAsync(client , appDescriptor, cancellationToken);
         }
-        
+    }
+
+    private async Task SeedScopes(AsyncServiceScope scope, CancellationToken cancellationToken)
+    {
         var scopeManager = scope.ServiceProvider.GetRequiredService<IOpenIddictScopeManager>();
 
         var scopeDescriptor = new OpenIddictScopeDescriptor
@@ -61,16 +72,14 @@ public class ConfigureClientWorker: IHostedService
             }
         };
 
-        var identityScope = await scopeManager.FindByNameAsync(scopeDescriptor.Name, cancellationToken);
-        if (identityScope is null)
+        var scopeInstance = await scopeManager.FindByNameAsync(scopeDescriptor.Name, cancellationToken);
+        if (scopeInstance is null)
         {
             await scopeManager.CreateAsync(scopeDescriptor, cancellationToken);
         }
         else
         {
-            await scopeManager.UpdateAsync(identityScope, scopeDescriptor, cancellationToken);
-        }
+            await scopeManager.UpdateAsync(scopeInstance, scopeDescriptor, cancellationToken);
+        }    
     }
-
-    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }
