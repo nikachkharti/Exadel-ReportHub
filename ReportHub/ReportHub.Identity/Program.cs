@@ -1,6 +1,7 @@
 using AspNetCore.Identity.Mongo;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
+using OpenIddict.Abstractions;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Models;
@@ -68,18 +69,24 @@ builder.Services.AddOpenIddict()
         
         options.SetIntrospectionEndpointUris("/connect/introspect");
 
-        options.RegisterScopes("report-hub-api-scope");
+        options.RegisterScopes(
+            OpenIddictConstants.Scopes.Email, 
+            OpenIddictConstants.Scopes.Profile,
+            OpenIddictConstants.Scopes.Roles, 
+            OpenIddictConstants.Scopes.OfflineAccess, 
+            "report-hub-api-scope");
 
         options.AddDevelopmentEncryptionCertificate()
             .AddDevelopmentSigningCertificate();
-
+        
         options.SetAccessTokenLifetime(TimeSpan.FromMinutes(authSettings.AccessTokenLifeTimeMinutes));
 
         options.UseAspNetCore()
             .EnableTokenEndpointPassthrough();
     });
 
-builder.Services.AddHostedService<ClientSeeder>();
+builder.Services.AddHostedService<OpenIddictClientSeeder>();
+builder.Services.AddHostedService<DatabaseSeeder>();
 
 var app = builder.Build();
 

@@ -29,8 +29,8 @@ public class AuthController : ControllerBase
     [HttpPost("~/connect/token"), Produces("application/json")]
     public async Task<IActionResult> Exchange()
     {
-        var request = HttpContext.GetOpenIddictServerRequest() ?? 
-                      throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
+        var request = HttpContext.GetOpenIddictServerRequest() 
+                      ?? throw new InvalidOperationException("The OpenID Connect request cannot be retrieved.");
         
         if (request.ClientId is null)
         {
@@ -42,7 +42,17 @@ public class AuthController : ControllerBase
         }
         
         var user = await _userManager.FindByNameAsync(request.Username);
-        if (user == null)
+        if (user is null)
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidGrant,
+                ErrorDescription = "The user name or password is invalid."
+            });
+        }
+        
+        var isValidPassword = await _userManager.CheckPasswordAsync(user, request.Password);
+        if (!isValidPassword)
         {
             return BadRequest(new OpenIddictResponse
             {
@@ -53,32 +63,39 @@ public class AuthController : ControllerBase
         
         if (request.IsClientCredentialsGrantType() || request.IsPasswordGrantType())
         {
-            var application = await _applicationManager.FindByClientIdAsync(request.ClientId) ??
-                              throw new InvalidOperationException("The application cannot be found.");
-
-            var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType, Claims.Name,
-                Claims.Role);
+            if (await _applicationManager.FindByClientIdAsync(request.ClientId) is null)
+                throw new InvalidOperationException("The application cannot be found.");
             
-            identity.SetClaim(Claims.Subject, request.ClientId);
-            identity.SetClaim(Claims.Name, await _applicationManager.GetDisplayNameAsync(application));
-            identity.AddClaim(Claims.Audience, "report-hub-api-audience");
+            var identity = new ClaimsIdentity(
+                authenticationType: TokenValidationParameters.DefaultAuthenticationType,
+                nameType: Claims.Name,
+                roleType: Claims.Role);
 
+            var userRoles = await _userManager.GetRolesAsync(user);
+            
+            identity
+                .SetClaim(Claims.Subject, request.ClientId)
+                .SetClaim(Claims.Audience, "report-hub-api-audience")
+                .SetClaim(Claims.Email, await _userManager.GetEmailAsync(user))
+                .SetClaim(Claims.Name, await _userManager.GetUserNameAsync(user))
+                .SetClaims(Claims.Role, [..userRoles]);
+            
             identity.SetScopes(request.GetScopes());
             
-            identity.SetDestinations(static claim => claim.Type switch
-            {
-                Claims.Name when claim.Subject.HasScope(Scopes.Profile)
-                    => [Destinations.AccessToken, Destinations.IdentityToken],
-                _ => [Destinations.AccessToken]
-            });
+            var principal = new ClaimsPrincipal(identity);
             
-            return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+            foreach (var claim in principal.Claims)
+            {
+                claim.SetDestinations(Destinations.AccessToken, Destinations.IdentityToken);
+            }
+
+            return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
         }
         
         if (request.IsRefreshTokenGrantType())
         {
             var principal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
-            if (principal == null)
+            if (principal is null)
             {
                 return BadRequest(new OpenIddictResponse
                 {
@@ -89,8 +106,8 @@ public class AuthController : ControllerBase
 
             var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
             identity.SetClaim(Claims.Subject, principal.GetClaim(Claims.Subject));
-            identity.AddClaim(Claims.Audience, "report-hub-api-audience");
-
+            identity.SetClaim(Claims.Audience, "report-hub-api-audience");
+            
             identity.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
 
             return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
@@ -101,5 +118,29 @@ public class AuthController : ControllerBase
             Error = Errors.InvalidGrant,
             ErrorDescription = "The specified grant type is not supported."
         });
+    }
+    
+    [HttpPost("sign-up")]
+    public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
+    {
+        if (await _userManager.FindByEmailAsync(request.Email) is not null)
+        {
+            return BadRequest("Username already exists.");
+        }
+ 
+        var user = new User
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserName = request.Username,
+            Email = request.Email
+        };
+ 
+        var result = await _userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+ 
+        return Ok("User registered successfully.");
     }
 }

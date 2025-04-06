@@ -1,4 +1,4 @@
-using Microsoft.IdentityModel.Tokens;
+using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using ReportHub.API.Extensions;
 using ReportHub.Infrastructure.Configurations;
@@ -39,24 +39,22 @@ namespace ReportHub.API
                         
                         options.UseSystemNetHttp();
                         options.UseAspNetCore();
+                        
+                        options.Configure(opts =>
+                        {
+                            opts.TokenValidationParameters.RoleClaimType = OpenIddictConstants.Claims.Role;
+                        });
                     });
+
+                builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
                 
-                builder.Services.AddAuthentication(options =>
+                builder.Services.AddAuthorization(options =>
                 {
-                    options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.Authority = "https://localhost:7171/"; 
-                    options.Audience = "report-hub-api-audience";
-                    options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateAudience = true
-                    };
+                    options.AddPolicy("admin", policy =>
+                        policy.RequireRole("admin"));
+                    options.AddPolicy("user", policy =>
+                        policy.RequireRole("user"));
                 });
-                
-                builder.Services.AddAuthorization();
                 
                 var app = builder.Build();
 

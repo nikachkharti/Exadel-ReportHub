@@ -4,6 +4,10 @@ using MongoDbGenericRepository.Attributes;
 namespace ReportHub.Identity.Models;
 
 [CollectionName("Roles")]
-public class Role : MongoRole<string>
+public sealed class Role : MongoRole<string>
 {
+    public Role(string roleName) :base(roleName)
+    {
+        Id = Guid.NewGuid().ToString();   
+    }
 }

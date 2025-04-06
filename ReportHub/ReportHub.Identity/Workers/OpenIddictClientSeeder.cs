@@ -2,11 +2,11 @@ using OpenIddict.Abstractions;
 
 namespace ReportHub.Identity.Workers;
 
-public class ClientSeeder: IHostedService
+public class OpenIddictClientSeeder: IHostedService
 {
     private readonly IServiceProvider _serviceProvider;
 
-    public ClientSeeder(IServiceProvider serviceProvider)
+    public OpenIddictClientSeeder(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
     }
@@ -45,7 +45,10 @@ public class ClientSeeder: IHostedService
                 OpenIddictConstants.Permissions.GrantTypes.Password,
                 
                 OpenIddictConstants.Permissions.Prefixes.Scope + "report-hub-api-scope",
-            }  
+                OpenIddictConstants.Permissions.Scopes.Roles,
+                OpenIddictConstants.Permissions.Scopes.Email,
+                OpenIddictConstants.Permissions.Scopes.Profile,
+            }
         };
         
         var client  = await appManager.FindByClientIdAsync(appDescriptor.ClientId, cancellationToken);
