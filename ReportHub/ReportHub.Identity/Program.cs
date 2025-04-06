@@ -48,9 +48,6 @@ builder.Services.AddIdentityMongoDbProvider<User, Role, string>(identity =>
         })
     .AddDefaultTokenProviders();
 
-var key = builder.Configuration["OPEN_IDDICT_KEY"]
-          ?? throw new InvalidOperationException("OPEN_IDDICT_KEY is not set");
-
 var provider = builder.Services.BuildServiceProvider();
 var context = provider.GetRequiredService<IdentityDbContext>();
 

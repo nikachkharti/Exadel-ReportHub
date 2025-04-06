@@ -27,9 +27,6 @@ namespace ReportHub.API
                 if (authSettings == null)
                     throw new InvalidOperationException("Missing Authentication configuration");
                 
-                var key = builder.Configuration["OPEN_IDDICT_KEY"]
-                                      ?? throw new InvalidOperationException("OPEN_IDDICT_KEY is not set");
-                
                 builder.Services.AddOpenIddict()
                     .AddValidation(options =>
                     {
