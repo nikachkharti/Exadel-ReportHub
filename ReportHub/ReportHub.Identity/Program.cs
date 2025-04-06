@@ -1,6 +1,5 @@
 using AspNetCore.Identity.Mongo;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
