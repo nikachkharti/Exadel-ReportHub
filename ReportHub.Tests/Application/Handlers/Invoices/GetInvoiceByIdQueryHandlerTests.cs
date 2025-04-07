@@ -3,6 +3,7 @@ using AutoMapper;
 using ReportHub.Application.Contracts;
 using ReportHub.Application.Features.Invoices.Mapping;
 using ReportHub.Application.Features.Invoices.Queries;
+using ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
 
 namespace ReportHub.Tests.Application.Handlers.Invoices
 {

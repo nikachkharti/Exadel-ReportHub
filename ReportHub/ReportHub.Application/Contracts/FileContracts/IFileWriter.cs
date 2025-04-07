@@ -2,5 +2,13 @@
 
 public interface IFileWriter
 {
-    Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, CancellationToken token);
+    /// <summary>
+    /// Takes collection of data and statistics and writes it to a stream
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="datas"></param>
+    /// <param name="statistics"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, IReadOnlyDictionary<string, object> statistics,CancellationToken token);
 }
