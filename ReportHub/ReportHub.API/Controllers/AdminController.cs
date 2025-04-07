@@ -8,7 +8,7 @@ namespace ReportHub.API.Controllers;
     AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 [ApiController]
 [Route("api/[controller]")]
-public class AdminController
+public class AdminController : Controller
 {
     [HttpPost("change-user-role")]
     public string ChangeUserRole()
