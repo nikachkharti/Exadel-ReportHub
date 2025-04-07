@@ -22,6 +22,7 @@ namespace ReportHub.Infrastructure.Middleware
                 using var scope = serviceProvider.CreateScope();
                 var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
 
+                // Check if data already exists
                 var existingInvoices = await invoiceRepository.GetAll(pageNumber: 1, pageSize: 1);
                 if (!existingInvoices.Any())
                 {
