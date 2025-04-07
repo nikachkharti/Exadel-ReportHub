@@ -1,13 +1,13 @@
-name: CI Pipeline
+name: Staging CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ staging ]
   pull_request:
-    branches: [ main ]
+    branches: [ staging ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-20.04
 
     steps:

@@ -22,6 +22,7 @@ namespace ReportHub.API
                 builder.AddControllers();
                 builder.AddSwagger();
                 builder.AddInfrastructureLayer();
+                builder.AddApplicationLayer();
                 
                 var authSettings = builder.Configuration.GetSection("Authentication").Get<AuthSettings>();
                 if (authSettings == null)
