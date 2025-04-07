@@ -1,4 +1,4 @@
-﻿namespace ReportHub.Tests.Infrastructure
+namespace ReportHub.Tests.Infrastructure
 {
     [Collection("MongoDbCollection")]
     public class InvoiceRepositoryTests : IAsyncLifetime

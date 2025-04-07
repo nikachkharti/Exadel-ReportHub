@@ -1,7 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.API.Enums;
+using ReportHub.Application.Features.DataExports.Queries;
+using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
+using ReportHub.Application.Features.DataImports.Queries;
+using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
+using ReportHub.Domain.Entities;
 using Serilog;
 
 namespace ReportHub.Presentation.Controllers
@@ -74,6 +80,59 @@ namespace ReportHub.Presentation.Controllers
                 Log.Error(ex, $"Error occurred while fetching invoice for Id -> {id}");
                 return StatusCode(500, "An unexpected error occurred.");
             }
+        }
+
+        /// <summary>
+        /// Reads file and imports invoices to database if not exist
+        /// </summary>
+        /// <param name="fileType"></param>
+        /// <param name="file"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpPost("import")]
+        public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file,CancellationToken cancellationToken)
+        {
+            var query = GetImportingQuery(fileType, file.OpenReadStream(), Path.GetExtension(file.FileName));
+
+            var result = await _mediator.Send(query, cancellationToken);
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Exports invoices to file type user chose
+        /// </summary>
+        /// <param name="fileType"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpGet("export")]
+        public async Task<IActionResult> Export([FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
+        {
+            var query = GetExportingQuery(fileType);
+
+            var stream = await _mediator.Send(query, cancellationToken);
+
+            return File(stream, "application/octet-stream", $"Invoices{query.Extension}");
+        }
+
+        private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
+        {
+            return fileType switch
+            {
+                FileImportingType.CSV => new InvoiceImportAsCsvQuery(stream, extension),
+                FileImportingType.Excel => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
+            };
+        }
+        private ExportBaseQuery GetExportingQuery(FileExportingType fileType)
+        {
+            return fileType switch
+            {
+                FileExportingType.Csv => new InvoiceExportAsCsvQuery(),
+                FileExportingType.Excel => throw new NotImplementedException(),
+                FileExportingType.Pdf => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
+            };
         }
 
     }
