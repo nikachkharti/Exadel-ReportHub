@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using AspNetCore.Identity.Mongo;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
+using OpenIddict.Server;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Models;
@@ -76,6 +78,17 @@ builder.Services.AddOpenIddict()
             OpenIddictConstants.Scopes.OfflineAccess, 
             "report-hub-api-scope");
 
+        options.AddEventHandler<OpenIddictServerEvents.HandleIntrospectionRequestContext>(b =>
+            b.UseInlineHandler(c =>
+            {
+                if (c.Principal.Identity is ClaimsIdentity identity)
+                {
+                    c.Claims["role"] = identity.FindFirst("role")?.Value;
+                }
+                
+                return default;
+            }));
+        
         options.AddDevelopmentEncryptionCertificate()
             .AddDevelopmentSigningCertificate();
         
