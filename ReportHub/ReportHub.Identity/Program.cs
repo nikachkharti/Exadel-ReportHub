@@ -53,6 +53,7 @@ builder.Services.AddIdentityMongoDbProvider<User, Role, string>(identity =>
 var provider = builder.Services.BuildServiceProvider();
 var context = provider.GetRequiredService<IdentityDbContext>();
 
+
 builder.Services.AddOpenIddict()
     .AddCore(options =>
     {
@@ -60,7 +61,7 @@ builder.Services.AddOpenIddict()
             .UseDatabase(context.Database);
     })
     .AddServer(options =>
-    { 
+    {
         options.SetIssuer(new Uri(authSettings.Issuer));
         options.SetTokenEndpointUris("connect/token")
             .AllowPasswordFlow()
@@ -68,14 +69,14 @@ builder.Services.AddOpenIddict()
             .AllowClientCredentialsFlow();
 
         options.DisableAccessTokenEncryption();
-        
+
         options.SetIntrospectionEndpointUris("/connect/introspect");
 
         options.RegisterScopes(
-            OpenIddictConstants.Scopes.Email, 
+            OpenIddictConstants.Scopes.Email,
             OpenIddictConstants.Scopes.Profile,
-            OpenIddictConstants.Scopes.Roles, 
-            OpenIddictConstants.Scopes.OfflineAccess, 
+            OpenIddictConstants.Scopes.Roles,
+            OpenIddictConstants.Scopes.OfflineAccess,
             "report-hub-api-scope");
 
         options.AddEventHandler<OpenIddictServerEvents.HandleIntrospectionRequestContext>(b =>
@@ -85,13 +86,13 @@ builder.Services.AddOpenIddict()
                 {
                     c.Claims["role"] = identity.FindFirst("role")?.Value;
                 }
-                
+
                 return default;
             }));
-        
+
         options.AddDevelopmentEncryptionCertificate()
             .AddDevelopmentSigningCertificate();
-        
+
         options.SetAccessTokenLifetime(TimeSpan.FromMinutes(authSettings.AccessTokenLifeTimeMinutes));
 
         options.UseAspNetCore()
@@ -110,7 +111,8 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "ReportHub.Identity V1");
         c.RoutePrefix = "";
-    });}
+    });
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

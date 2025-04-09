@@ -23,40 +23,11 @@ namespace ReportHub.API
                 builder.AddSwagger();
                 builder.AddInfrastructureLayer();
                 builder.AddApplicationLayer();
-                
-                var authSettings = builder.Configuration.GetSection("Authentication").Get<AuthSettings>();
-                if (authSettings == null)
-                    throw new InvalidOperationException("Missing Authentication configuration");
-                
-                builder.Services.AddOpenIddict()
-                    .AddValidation(options =>
-                    {
-                        options.SetIssuer(authSettings.Issuer);
-                        options.AddAudiences("report-hub-api-audience");
-        
-                        options.UseIntrospection()
-                            .SetClientId("report-hub")
-                            .SetClientSecret("client_secret_key");
-                        
-                        options.UseSystemNetHttp();
-                        options.UseAspNetCore();
-                        
-                        options.Configure(opts =>
-                        {
-                            opts.TokenValidationParameters.RoleClaimType = OpenIddictConstants.Claims.Role;
-                        });
-                    });
+                builder.AddOpenIddict();
+                builder.AddAuthentication();
+                builder.AddAuthorization();
 
-                builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
-                
-                builder.Services.AddAuthorization(options =>
-                {
-                    options.AddPolicy("admin", policy =>
-                        policy.RequireRole("admin"));
-                    options.AddPolicy("user", policy =>
-                        policy.RequireRole("user"));
-                });
-                
+
                 var app = builder.Build();
 
                 app.UseDataSeeder();

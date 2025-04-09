@@ -1,8 +1,11 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using OpenIddict.Abstractions;
+using OpenIddict.Validation.AspNetCore;
 using ReportHub.Application.Extensions;
 using ReportHub.Infrastructure;
+using ReportHub.Infrastructure.Configurations;
 using Serilog;
 
 namespace ReportHub.API.Extensions
@@ -81,6 +84,48 @@ namespace ReportHub.API.Extensions
         public static void AddApplicationLayer(this WebApplicationBuilder builder)
         {
             builder.Services.AddApplication();
+        }
+
+        public static void AddOpenIddict(this WebApplicationBuilder builder)
+        {
+            var authSettings = builder.Configuration.GetSection("Authentication").Get<AuthSettings>();
+            if (authSettings == null)
+                throw new InvalidOperationException("Missing Authentication configuration");
+
+            builder.Services.AddOpenIddict()
+                .AddValidation(options =>
+                {
+                    options.SetIssuer(authSettings.Issuer);
+                    options.AddAudiences("report-hub-api-audience");
+
+                    options.UseIntrospection()
+                        .SetClientId("report-hub")
+                        .SetClientSecret("client_secret_key");
+
+                    options.UseSystemNetHttp();
+                    options.UseAspNetCore();
+
+                    options.Configure(opts =>
+                    {
+                        opts.TokenValidationParameters.RoleClaimType = OpenIddictConstants.Claims.Role;
+                    });
+                });
+        }
+
+        public static void AddAuthentication(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddAuthentication(OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme);
+        }
+
+        public static void AddAuthorization(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("admin", policy =>
+                    policy.RequireRole("admin"));
+                options.AddPolicy("user", policy =>
+                    policy.RequireRole("user"));
+            });
         }
     }
 }
