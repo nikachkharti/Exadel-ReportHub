@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Identity.Models;
 
 namespace ReportHub.Identity.Controllers;
-
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 [ApiController]
 public class AdminController : ControllerBase

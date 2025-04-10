@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using AspNetCore.Identity.Mongo;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
@@ -22,6 +24,33 @@ builder.Services.AddSwaggerGen(c =>
         Title = "ReportHub.Identity",
         Version = "v1"
     });
+
+    c.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Description = "Enter the Bearer Authorization string as following: `Bearer` Generated-JWT-Token",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = JwtBearerDefaults.AuthenticationScheme
+    });
+
+    c
+    .AddSecurityRequirement(
+            new OpenApiSecurityRequirement()
+            {
+            {
+                new OpenApiSecurityScheme()
+                {
+                    Reference = new OpenApiReference()
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = JwtBearerDefaults.AuthenticationScheme
+                    }
+                },
+                new string[]{}
+            }
+            }
+    );
 });
 
 var authSettings = builder.Configuration.GetSection("Authentication").Get<AuthSettings>();
@@ -70,7 +99,7 @@ builder.Services.AddOpenIddict()
 
         options.DisableAccessTokenEncryption();
 
-        options.SetIntrospectionEndpointUris("/connect/introspect");
+        options.SetIntrospectionEndpointUris("connect/introspect");
 
         options.RegisterScopes(
             OpenIddictConstants.Scopes.Email,
