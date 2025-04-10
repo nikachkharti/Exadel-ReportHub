@@ -138,15 +138,6 @@ public class AuthController : ControllerBase
         return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
-    private async Task<(User? user, bool isSuccess)> ValidateUserCreadentials(string userName, string password)
-    {
-        var user = await _userManager.FindByNameAsync(userName);
-
-        var isSuccess = user is not null && await _userManager.CheckPasswordAsync(user, password);
-
-        return (user, isSuccess);
-    }
-
     [HttpPost("/auth/refresh-token")]
     public async Task<IActionResult> RefreshToken()
     {
@@ -188,11 +179,20 @@ public class AuthController : ControllerBase
             .SetClaim(Claims.Audience, principal.GetClaim(Claims.Audience))
             .SetClaim(Claims.Email, principal.GetClaim(Claims.Email))
             .SetClaim(Claims.Name, principal.GetClaim(Claims.Name))
-            .SetClaims(Claims.Role, [principal.GetClaim(Claims.Role)]);
+            .SetClaims(Claims.Role, [principal.GetClaim(Claims.Role) ?? "User"]);
 
         identity.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
 
         return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    private async Task<(User? user, bool isSuccess)> ValidateUserCreadentials(string userName, string password)
+    {
+        var user = await _userManager.FindByNameAsync(userName);
+
+        var isSuccess = user is not null && await _userManager.CheckPasswordAsync(user, password);
+
+        return (user, isSuccess);
     }
 
     private static void SetDestinations(ClaimsPrincipal principal)
@@ -203,7 +203,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    private void SetClaims(OpenIddictRequest request, string role, User user, ClaimsIdentity identity)
+    private void SetClaims(OpenIddictRequest request, string role = "User", User user, ClaimsIdentity identity)
     {
         identity
                     .SetClaim(Claims.Subject, request.ClientId)
