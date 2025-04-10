@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Identity.Models;
-using System.Threading.Tasks;
 
 namespace ReportHub.Identity.Controllers;
 

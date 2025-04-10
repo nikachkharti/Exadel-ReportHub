@@ -26,7 +26,7 @@ public class AuthController : ControllerBase
         _userManager = userManager;
     }
 
-    [HttpPost("~/connect/token"), Produces("application/json")]
+    [HttpPost("/auth/login-as-admin"), Produces("application/json")]
     public async Task<IActionResult> Exchange()
     {
         var request = HttpContext.GetOpenIddictServerRequest()
