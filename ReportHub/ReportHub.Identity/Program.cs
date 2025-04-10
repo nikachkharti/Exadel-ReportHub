@@ -63,7 +63,7 @@ builder.Services.AddOpenIddict()
     .AddServer(options =>
     {
         options.SetIssuer(new Uri(authSettings.Issuer));
-        options.SetTokenEndpointUris("auth/login-as-admin", "auth/login-as-client")
+        options.SetTokenEndpointUris("auth/login-as-admin", "auth/login-as-client", "auth/refresh-token")
             .AllowPasswordFlow()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();

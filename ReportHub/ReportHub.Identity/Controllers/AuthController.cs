@@ -1,14 +1,13 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using Microsoft.IdentityModel.Tokens;
 using ReportHub.Identity.Models;
-using System.Threading.Tasks;
+using System.Security.Claims;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace ReportHub.Identity.Controllers;
 
@@ -146,6 +145,54 @@ public class AuthController : ControllerBase
         var isSuccess = user is not null && await _userManager.CheckPasswordAsync(user, password);
 
         return (user, isSuccess);
+    }
+
+    [HttpPost("/auth/refresh-token")]
+    public async Task<IActionResult> RefreshToken()
+    {
+        OpenIddictRequest request = GetOpenIddictRequest();
+
+        if (!request.IsRefreshTokenGrantType())
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidGrant,
+                ErrorDescription = "The specified grant type is not supported."
+            });
+        }
+
+        if (request.ClientId is null)
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidClient,
+                ErrorDescription = "The client_id parameter is missing."
+            });
+        }
+
+        var principal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
+        if (principal is null)
+        {
+            return BadRequest(new OpenIddictResponse
+            {
+                Error = Errors.InvalidGrant,
+                ErrorDescription = "Invalid refresh token."
+            });
+        }
+
+        var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
+
+
+        identity
+            .SetClaim(Claims.Subject, principal.GetClaim(Claims.Subject))
+            .SetClaim(Claims.Audience, principal.GetClaim(Claims.Audience))
+            .SetClaim(Claims.Email, principal.GetClaim(Claims.Email))
+            .SetClaim(Claims.Name, principal.GetClaim(Claims.Name))
+            .SetClaims(Claims.Role, [principal.GetClaim(Claims.Role)]);
+
+        identity.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
+
+        return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
     private static void SetDestinations(ClaimsPrincipal principal)
