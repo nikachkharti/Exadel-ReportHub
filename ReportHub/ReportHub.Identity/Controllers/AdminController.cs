@@ -40,4 +40,17 @@ public class AdminController : ControllerBase
 
         return BadRequest(result.Errors);
     }
+
+    [HttpGet("{userId}/roles")]
+    public async Task<IActionResult> GetUserRoles(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null)
+            return NotFound("User not found");
+
+        var roles = await _userManager.GetRolesAsync(user);
+
+        return Ok(roles);
+    }
 }
