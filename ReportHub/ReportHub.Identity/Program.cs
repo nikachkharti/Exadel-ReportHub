@@ -1,8 +1,6 @@
-using System.Security.Claims;
 using AspNetCore.Identity.Mongo;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
@@ -11,6 +9,7 @@ using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Models;
 using ReportHub.Identity.Workers;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
