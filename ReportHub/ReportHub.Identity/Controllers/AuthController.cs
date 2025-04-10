@@ -127,7 +127,7 @@ public class AuthController : ControllerBase
 
         ClaimsIdentity identity = GetIdentityClaims();
 
-        SetClaims(request, role, result.user!, identity);
+        SetClaims(request, result.user!, identity, role);
 
         identity.SetScopes(request.GetScopes());
 
@@ -203,7 +203,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    private void SetClaims(OpenIddictRequest request, string role = "User", User user, ClaimsIdentity identity)
+    private void SetClaims(OpenIddictRequest request, User user, ClaimsIdentity identity, string role = "User")
     {
         identity
                     .SetClaim(Claims.Subject, request.ClientId)
