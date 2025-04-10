@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
+using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Models;
@@ -83,7 +84,12 @@ var provider = builder.Services.BuildServiceProvider();
 var context = provider.GetRequiredService<IdentityDbContext>();
 
 
-builder.Services.AddOpenIddict()
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+});
+builder.Services
+    .AddOpenIddict()
     .AddCore(options =>
     {
         options.UseMongoDb()
@@ -126,6 +132,23 @@ builder.Services.AddOpenIddict()
 
         options.UseAspNetCore()
             .EnableTokenEndpointPassthrough();
+    })
+    .AddValidation(options =>
+    {
+        options.SetIssuer(authSettings.Issuer);
+        options.AddAudiences("report-hub-api-audience");
+
+        options.UseIntrospection()
+            .SetClientId("report-hub")
+            .SetClientSecret("client_secret_key");
+
+        options.UseSystemNetHttp();
+        options.UseAspNetCore();
+
+        options.Configure(opts =>
+        {
+            opts.TokenValidationParameters.RoleClaimType = OpenIddictConstants.Claims.Role;
+        });
     });
 
 builder.Services.AddHostedService<OpenIddictClientSeeder>();

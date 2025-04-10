@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Models;
 
 namespace ReportHub.Identity.Controllers;
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 [Route("api/[controller]")]
 [ApiController]
 public class AdminController : ControllerBase
