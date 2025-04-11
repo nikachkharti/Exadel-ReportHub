@@ -26,7 +26,7 @@ jobs:
       - name: Deploy ReportHub.API
         if: github.ref == 'refs/heads/main'
         env:
-          deploy_url_api: https://api.render.com/deploy/srv-cvsammq4d50c738c22i0?key=IFxHillN7Qs
+          deploy_url_api: https://api.render.com/deploy/srv-cvsbotuuk2gs739res6g?key=VdGYrFre-6Q
         run: |
           echo "🚀 Triggering deployment for ReportHub.API..."
           curl "$deploy_url_api"
@@ -34,7 +34,7 @@ jobs:
       - name: Deploy ReportHub.Identity
         if: github.ref == 'refs/heads/main'
         env:
-          deploy_url_identity: https://api.render.com/deploy/srv-cvsammq4d50c738c22i0?key=IFxHillN7Qs
+          deploy_url_identity: https://api.render.com/deploy/srv-cvsbt2k9c44c739uki4g?key=6XS-Hwi0Big
         run: |
           echo "🚀 Triggering deployment for ReportHub.Identity..."
           curl "$deploy_url_identity"
