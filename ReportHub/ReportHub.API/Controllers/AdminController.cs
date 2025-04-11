@@ -4,7 +4,7 @@ using OpenIddict.Validation.AspNetCore;
 
 namespace ReportHub.API.Controllers;
 
-[Authorize(Roles = "admin",
+[Authorize(Roles = "Admin",
     AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 [ApiController]
 [Route("api/[controller]")]
