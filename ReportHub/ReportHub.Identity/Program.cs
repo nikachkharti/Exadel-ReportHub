@@ -1,13 +1,15 @@
-using System.Security.Claims;
 using AspNetCore.Identity.Mongo;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
+using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Models;
 using ReportHub.Identity.Workers;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,33 @@ builder.Services.AddSwaggerGen(c =>
         Title = "ReportHub.Identity",
         Version = "v1"
     });
+
+    c.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        Description = "Enter the Bearer Authorization string as following: `Bearer` Generated-JWT-Token",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = JwtBearerDefaults.AuthenticationScheme
+    });
+
+    c
+    .AddSecurityRequirement(
+            new OpenApiSecurityRequirement()
+            {
+            {
+                new OpenApiSecurityScheme()
+                {
+                    Reference = new OpenApiReference()
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = JwtBearerDefaults.AuthenticationScheme
+                    }
+                },
+                new string[]{}
+            }
+            }
+    );
 });
 
 var authSettings = builder.Configuration.GetSection("Authentication").Get<AuthSettings>();
@@ -54,7 +83,12 @@ var provider = builder.Services.BuildServiceProvider();
 var context = provider.GetRequiredService<IdentityDbContext>();
 
 
-builder.Services.AddOpenIddict()
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+});
+builder.Services
+    .AddOpenIddict()
     .AddCore(options =>
     {
         options.UseMongoDb()
@@ -63,14 +97,14 @@ builder.Services.AddOpenIddict()
     .AddServer(options =>
     {
         options.SetIssuer(new Uri(authSettings.Issuer));
-        options.SetTokenEndpointUris("connect/token")
+        options.SetTokenEndpointUris("auth/login-as-admin", "auth/login-as-client", "auth/refresh-token")
             .AllowPasswordFlow()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
 
         options.DisableAccessTokenEncryption();
 
-        options.SetIntrospectionEndpointUris("/connect/introspect");
+        options.SetIntrospectionEndpointUris("connect/introspect");
 
         options.RegisterScopes(
             OpenIddictConstants.Scopes.Email,
@@ -97,6 +131,23 @@ builder.Services.AddOpenIddict()
 
         options.UseAspNetCore()
             .EnableTokenEndpointPassthrough();
+    })
+    .AddValidation(options =>
+    {
+        options.SetIssuer(authSettings.Issuer);
+        options.AddAudiences("report-hub-api-audience");
+
+        options.UseIntrospection()
+            .SetClientId("report-hub")
+            .SetClientSecret("client_secret_key");
+
+        options.UseSystemNetHttp();
+        options.UseAspNetCore();
+
+        options.Configure(opts =>
+        {
+            opts.TokenValidationParameters.RoleClaimType = OpenIddictConstants.Claims.Role;
+        });
     });
 
 builder.Services.AddHostedService<OpenIddictClientSeeder>();

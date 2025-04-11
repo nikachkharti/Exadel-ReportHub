@@ -4,11 +4,11 @@
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": ".well-known/openid-configuration",
+      "applicationUrl": "https://localhost:7153;https://localhost:7171",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7153;"
+      "dotnetRunMessages": true
     },
     "http": {
       "commandName": "Project",
