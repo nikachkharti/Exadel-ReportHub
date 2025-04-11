@@ -4,11 +4,14 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>f4b5e48b-8cdd-40a6-a6d4-34646030e92b</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="AspNetCore.Identity.Mongo" Version="10.1.0" />
       <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="6.0.0" />
+      <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
       <PackageReference Include="MongoDB.Driver" Version="3.2.1" />
       <PackageReference Include="OpenIddict" Version="6.2.0" />
       <PackageReference Include="OpenIddict.Client.AspNetCore" Version="6.2.0" />

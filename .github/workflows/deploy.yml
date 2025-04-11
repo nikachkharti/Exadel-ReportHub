@@ -1,0 +1,40 @@
+name: Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Find Dockerfiles
+        run: find . -name "Dockerfile"
+
+      - name: Verify both Dockerfiles exist
+        run: |
+          if [ ! -f ReportHub/ReportHub.API/Dockerfile ]; then echo "❌ Dockerfile for API not found!"; exit 1; fi
+          echo "✅ Dockerfile found at ReportHub/ReportHub.API/"
+
+          if [ ! -f ReportHub/ReportHub.Identity/Dockerfile ]; then echo "❌ Dockerfile for Identity not found!"; exit 1; fi
+          echo "✅ Dockerfile found at ReportHub/ReportHub.Identity/"
+
+      - name: Deploy ReportHub.API
+        if: github.ref == 'refs/heads/main'
+        env:
+          deploy_url_api: ${{ secrets.RENDER_DEPLOY_HOOK_URL_API }}
+        run: |
+          echo "🚀 Triggering deployment for ReportHub.API..."
+          curl "$deploy_url_api"
+
+      - name: Deploy ReportHub.Identity
+        if: github.ref == 'refs/heads/main'
+        env:
+          deploy_url_identity: ${{ secrets.RENDER_DEPLOY_HOOK_URL_IDENTITY }}
+        run: |
+          echo "🚀 Triggering deployment for ReportHub.Identity..."
+          curl "$deploy_url_identity"
