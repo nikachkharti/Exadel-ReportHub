@@ -33,7 +33,32 @@ namespace ReportHub.API.Controllers
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
-                return StatusCode(500, "An unexpected error occurred.");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+        /// <summary>
+        /// Get client by id
+        /// </summary>
+        /// <param name="id">Client Id</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSingleClient([FromRoute][Required] string id)
+        {
+            try
+            {
+                Log.Information("Getting a single client.");
+
+                var query = new GetClientByIdQuery(id);
+                var client = await mediator.Send(query);
+
+                return Ok(client);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
     }
