@@ -7,8 +7,7 @@ namespace ReportHub.Domain.Entities
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
-        public List<string> ItemIds { get; set; }
     }
 }
