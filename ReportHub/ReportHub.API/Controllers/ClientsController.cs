@@ -116,6 +116,29 @@ namespace ReportHub.API.Controllers
         }
 
 
+        /// <summary>
+        /// Update client
+        /// </summary>
+        /// <param name="model">Update document</param>
+        /// <returns>IActionResult</returns>
+        [HttpPut]
+        public async Task<IActionResult> UpdateClient([FromForm][Required] ClientForUpdatingDto model)
+        {
+            try
+            {
+                Log.Information("Updating a single client.");
+
+                var command = new UpdateClientCommand(model);
+                var client = await mediator.Send(command);
+
+                return Ok(client);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
 
     }
 }
