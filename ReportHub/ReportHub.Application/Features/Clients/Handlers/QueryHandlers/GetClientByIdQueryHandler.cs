@@ -16,7 +16,7 @@ namespace ReportHub.Application.Features.Clients.Handlers.QueryHandlers
 
             if (client is null)
             {
-                throw new NotFoundException($"Client with id {request.Id} not found", request.Id);
+                throw new NotFoundException($"Client with id {request.Id} not found");
             }
 
             return mapper.Map<ClientForGettingDto>(client);

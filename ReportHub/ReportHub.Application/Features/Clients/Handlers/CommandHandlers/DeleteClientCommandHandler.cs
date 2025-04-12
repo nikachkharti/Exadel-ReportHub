@@ -17,7 +17,7 @@ namespace ReportHub.Application.Features.Clients.Handlers.CommandHandlers
 
             if (client is null)
             {
-                throw new NotFoundException($"Client with id {request.Id} not found", request.Id);
+                throw new NotFoundException($"Client with id {request.Id} not found");
             }
 
             //TODO: [Optimization] we have to avoid double calling of database.

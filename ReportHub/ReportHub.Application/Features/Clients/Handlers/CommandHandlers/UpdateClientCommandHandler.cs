@@ -18,7 +18,7 @@ namespace ReportHub.Application.Features.Clients.Handlers.CommandHandlers
 
             if (existingClient is null)
             {
-                throw new NotFoundException($"Client with id {request.Command.Id} not found", request.Command.Id);
+                throw new NotFoundException($"Client with id {request.Command.Id} not found");
             }
 
             var updatedDocumentOfClient = mapper.Map<Client>(request.Command);
