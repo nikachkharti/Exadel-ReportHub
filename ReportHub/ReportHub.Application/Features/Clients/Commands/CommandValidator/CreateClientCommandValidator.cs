@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace ReportHub.Application.Features.Clients.Commands;
+namespace ReportHub.Application.Features.Clients.Commands.CommandValidator;
 
 public class CreateClientCommandValidator : AbstractValidator<CreateClientCommand>
 {

@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
 using ReportHub.Application.Contracts;
+using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Domain.Entities;
 
-namespace ReportHub.Application.Features.Clients.Commands;
+namespace ReportHub.Application.Features.Clients.Handlers.CommandHandlers;
 
 public class CreateClientCommandHandler : IRequestHandler<CreateClientCommand, Guid>
 {
