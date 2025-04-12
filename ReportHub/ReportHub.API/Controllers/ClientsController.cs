@@ -91,5 +91,31 @@ namespace ReportHub.API.Controllers
         }
 
 
+        /// <summary>
+        /// Delete client
+        /// </summary>
+        /// <param name="id">Client Id</param>
+        /// <returns>IActionResult</returns>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteClient([FromRoute][Required] string id)
+        {
+            try
+            {
+                Log.Information("Deleting a single client.");
+
+                var command = new DeleteClientCommand(id);
+                var client = await mediator.Send(command);
+
+                return Ok(client);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+
     }
 }
