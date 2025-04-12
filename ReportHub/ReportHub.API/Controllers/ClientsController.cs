@@ -32,7 +32,7 @@ namespace ReportHub.API.Controllers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Error occurred while fetching invoices.");
+                Log.Error(ex, ex.Message);
                 return StatusCode(500, "An unexpected error occurred.");
             }
         }
