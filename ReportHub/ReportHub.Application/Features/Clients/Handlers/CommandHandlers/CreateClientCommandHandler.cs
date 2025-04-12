@@ -3,6 +3,7 @@ using MediatR;
 using ReportHub.Application.Contracts;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Domain.Entities;
+using Serilog;
 
 namespace ReportHub.Application.Features.Clients.Handlers.CommandHandlers;
 
@@ -19,6 +20,7 @@ public class CreateClientCommandHandler : IRequestHandler<CreateClientCommand, G
 
     public async Task<Guid> Handle(CreateClientCommand request, CancellationToken cancellationToken)
     {
+        Log.Information("Creating client with id ");
         var client = _mapper.Map<Client>(request);
         client.Id = Guid.NewGuid();
         await _clientRepository.Insert(client, cancellationToken);

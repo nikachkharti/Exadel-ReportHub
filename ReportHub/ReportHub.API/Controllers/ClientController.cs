@@ -4,7 +4,6 @@ using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Contracts;
 
-
 namespace ReportHub.API.Controllers
 {
     [ApiController]
@@ -21,69 +20,59 @@ namespace ReportHub.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ClientDto>>> GetAllClients()
         {
-            try
-            {
-                var query = new GetAllClientsQuery();
-                var clients = await _mediator.Send(query);
+            var query = new GetAllClientsQuery();
+            var clients = await _mediator.Send(query);
 
-                if (clients == null || !clients.Any())
-                {
-                    return NoContent(); 
-                }
-
-                return Ok(clients);
-            }
-            catch (Exception ex)
+            if (clients == null || !clients.Any())
             {
-                // Log the exception details
-                // Log.Error(ex, "Error fetching all clients");
-                return StatusCode(500, "An error occurred while fetching clients.");
+                return NoContent();
             }
+
+            return Ok(clients);
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<ClientDto>> GetClientById(Guid id)
         {
-            try
-            {
-                var query = new GetByIdClientQuery { Id = id };
-                var client = await _mediator.Send(query);
+            var query = new GetByIdClientQuery { Id = id };
+            var client = await _mediator.Send(query);
 
-                if (client == null)
-                {
-                    return NotFound(); // 404 Not Found
-                }
-
-                return Ok(client);
-            }
-            catch (Exception ex)
+            if (client == null)
             {
-                // Log the exception details
-                // Log.Error(ex, $"Error fetching client by ID: {id}");
-                return StatusCode(500, $"An error occurred while fetching client with ID: {id}");
+                return NotFound();
             }
+
+            return Ok(client);
         }
 
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateClient([FromBody] CreateClientCommand command)
         {
-            try
+            if (command == null)
             {
-                if (command == null)
-                {
-                    return BadRequest("Invalid client data."); // 400 Bad Request
-                }
-
-                var clientId = await _mediator.Send(command);
-
-                return CreatedAtAction(nameof(GetClientById), new { id = clientId }, clientId);
+                return BadRequest("Invalid client data."); 
             }
-            catch (Exception ex)
+
+            var clientId = await _mediator.Send(command);
+
+            return CreatedAtAction(nameof(GetClientById), new { id = clientId }, clientId);
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<ActionResult> UpdateClient(Guid id, [FromBody] UpdateClientCommand command)
+        {
+            if (command == null)
             {
-                // Log the exception details
-                // Log.Error(ex, "Error creating client");
-                return StatusCode(500, "An error occurred while creating the client.");
+                return BadRequest("Invalid client data.");
             }
+            command.ClientId = id;
+
+            var result = await _mediator.Send(command);
+            if (result == Guid.Empty)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }
