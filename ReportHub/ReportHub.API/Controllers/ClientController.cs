@@ -74,5 +74,19 @@ namespace ReportHub.API.Controllers
             }
             return NoContent();
         }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult> DeleteClient(Guid id)
+        {
+            var command = new DeleteClientCommand { ClientId = id };
+            var result = await _mediator.Send(command);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
     }
 }
