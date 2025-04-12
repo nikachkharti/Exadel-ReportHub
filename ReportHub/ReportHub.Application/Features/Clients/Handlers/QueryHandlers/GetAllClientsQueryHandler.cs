@@ -2,7 +2,6 @@
 using MediatR;
 using ReportHub.Application.Contracts;
 using ReportHub.Application.Features.Clients.Queries;
-using ReportHub.Application.Features.Invoices.DTOs;
 using Serilog;
 
 namespace ReportHub.Application.Features.Clients.Handlers.QueryHandlers;
@@ -21,7 +20,7 @@ public class GetAllClientsQueryHandler : IRequestHandler<GetAllClientsQuery, IEn
     {
         Log.Information("Fetching all Clients");
 
-        var clients = await _clientRepository.GetAll();
+        var clients = await _clientRepository.GetAll(cancellationToken);
         var clientDtos = _mapper.Map<IEnumerable<ClientDto>>(clients);
 
         Log.Information("Successfully fetched {Count} clients", clientDtos.Count());

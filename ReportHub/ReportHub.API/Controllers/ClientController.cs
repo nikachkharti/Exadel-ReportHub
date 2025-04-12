@@ -28,7 +28,7 @@ namespace ReportHub.API.Controllers
 
                 if (clients == null || !clients.Any())
                 {
-                    return NoContent(); // 204 No Content
+                    return NoContent(); 
                 }
 
                 return Ok(clients);

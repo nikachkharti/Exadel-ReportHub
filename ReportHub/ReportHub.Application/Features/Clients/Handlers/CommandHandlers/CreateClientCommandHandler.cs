@@ -20,6 +20,7 @@ public class CreateClientCommandHandler : IRequestHandler<CreateClientCommand, G
     public async Task<Guid> Handle(CreateClientCommand request, CancellationToken cancellationToken)
     {
         var client = _mapper.Map<Client>(request);
+        client.Id = Guid.NewGuid();
         await _clientRepository.Insert(client, cancellationToken);
 
         return client.Id;

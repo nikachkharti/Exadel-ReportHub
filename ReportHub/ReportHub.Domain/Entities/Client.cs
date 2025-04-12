@@ -6,7 +6,8 @@ namespace ReportHub.Domain.Entities
     public class Client
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
+        [BsonRepresentation(BsonType.String)]
+        [BsonGuidRepresentation(GuidRepresentation.Standard)]
         public Guid Id { get; set; }
         public string Name { get; set; }
     }
