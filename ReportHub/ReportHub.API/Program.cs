@@ -1,7 +1,4 @@
-using OpenIddict.Abstractions;
-using OpenIddict.Validation.AspNetCore;
 using ReportHub.API.Extensions;
-using ReportHub.Infrastructure.Configurations;
 using Serilog;
 
 namespace ReportHub.API
