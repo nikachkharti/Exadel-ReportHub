@@ -1,9 +1,9 @@
 ﻿using Moq;
 using AutoMapper;
-using ReportHub.Application.Features.Invoices.Mapping;
 using ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
 using ReportHub.Application.Features.Invoices.Queries;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Features.Mapping;
 
 namespace ReportHub.Tests.Application.Handlers.Invoices
 {
@@ -16,7 +16,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
         public GetAllInvoicesQueryHandlerTests()
         {
             _mockRepo = new Mock<IInvoiceRepository>();
-            var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<InvoiceProfile>());
+            var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<ReportHubMappingProfile>());
             _mapper = new Mapper(mapperConfig);
 
             _handler = new GetAllInvoicesQueryHandler(_mockRepo.Object, _mapper);
