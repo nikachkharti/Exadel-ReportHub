@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using MediatR;
 using Serilog;
-using ReportHub.Application.Contracts;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
+using ReportHub.Application.Contracts.RepositoryContracts;
 
 namespace ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
 

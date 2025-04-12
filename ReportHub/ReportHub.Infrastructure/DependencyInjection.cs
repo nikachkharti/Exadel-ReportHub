@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ReportHub.Application.Contracts;
 using ReportHub.Infrastructure.Configurations;
 using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Infrastructure.Repository;
 using ReportHub.Infrastructure.Services.FileServices;
+using ReportHub.Application.Contracts.RepositoryContracts;
 
 namespace ReportHub.Infrastructure
 {
@@ -21,7 +21,10 @@ namespace ReportHub.Infrastructure
             services.AddScoped<IExcelService, ExcelService>();
 
             // Register repositories
+            services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            services.AddScoped<IItemRepository, ItemRepository>();
 
             return services;
         }

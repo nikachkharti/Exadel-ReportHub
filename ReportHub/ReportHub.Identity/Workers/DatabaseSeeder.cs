@@ -15,7 +15,7 @@ public class DatabaseSeeder : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await using var scope = _serviceProvider.CreateAsyncScope();
-        
+
         await SeedRoles(scope);
         await SeedUsers(scope);
     }
@@ -25,7 +25,7 @@ public class DatabaseSeeder : IHostedService
         // No cleanup required
         return Task.CompletedTask;
     }
-    
+
     private async Task SeedRoles(AsyncServiceScope scope)
     {
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
@@ -48,9 +48,9 @@ public class DatabaseSeeder : IHostedService
     private async Task SeedUsers(AsyncServiceScope scope)
     {
         const string adminEmail = "admin@example.com";
-        const string  adminPassword = "Admin123$";
-        const string  adminRole = "Admin";
-        
+        const string adminPassword = "Admin123$";
+        const string adminRole = "Admin";
+
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         var user = await userManager.FindByEmailAsync(adminEmail);
         if (user is null)
@@ -61,12 +61,12 @@ public class DatabaseSeeder : IHostedService
                 Email = adminEmail,
                 EmailConfirmed = true
             };
-            
+
             var result = await userManager.CreateAsync(user, adminPassword);
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user, adminRole);
             }
         }
-    }    
+    }
 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using ReportHub.Application.Contracts;
+using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Serilog;
 
@@ -22,30 +22,32 @@ namespace ReportHub.Infrastructure.Middleware
                 using var scope = serviceProvider.CreateScope();
                 var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
 
-                // Check if data already exists
-                var existingInvoices = await invoiceRepository.GetAll(pageNumber: 1, pageSize: 1);
-                if (!existingInvoices.Any())
-                {
-                    Log.Information("Seeding initial invoice data...");
 
-                    var invoices = new List<Invoice>
-                    {
-                        new Invoice { Id = "INV2025001", IssueDate = DateTime.UtcNow.AddDays(-10), DueDate = DateTime.UtcNow.AddDays(20), Amount = 5000.75m, Currency = "USD", PaymentStatus = "Paid" },
-                        new Invoice { Id = "INV2025002", IssueDate = DateTime.UtcNow.AddDays(-15), DueDate = DateTime.UtcNow.AddDays(15), Amount = 7500.50m, Currency = "EUR", PaymentStatus = "Pending" },
-                        new Invoice { Id = "INV2025003", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "USD", PaymentStatus = "Overdue" }
-                    };
 
-                    foreach (var invoice in invoices)
-                    {
-                        await invoiceRepository.Insert(invoice);
-                    }
 
-                    Log.Information("Database seeding completed.");
-                }
-                else
-                {
-                    Log.Information("Database already contains data. Skipping seeding.");
-                }
+                //var existingInvoices = await invoiceRepository.GetAll(pageNumber: 1, pageSize: 1);
+                //if (!existingInvoices.Any())
+                //{
+                //    Log.Information("Seeding initial invoice data...");
+
+                //    var invoices = new List<Invoice>
+                //    {
+                //        new Invoice { Id = "INV2025001", IssueDate = DateTime.UtcNow.AddDays(-10), DueDate = DateTime.UtcNow.AddDays(20), Amount = 5000.75m, Currency = "USD", PaymentStatus = "Paid" },
+                //        new Invoice { Id = "INV2025002", IssueDate = DateTime.UtcNow.AddDays(-15), DueDate = DateTime.UtcNow.AddDays(15), Amount = 7500.50m, Currency = "EUR", PaymentStatus = "Pending" },
+                //        new Invoice { Id = "INV2025003", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "USD", PaymentStatus = "Overdue" }
+                //    };
+
+                //    foreach (var invoice in invoices)
+                //    {
+                //        await invoiceRepository.Insert(invoice);
+                //    }
+
+                //    Log.Information("Database seeding completed.");
+                //}
+                //else
+                //{
+                //    Log.Information("Database already contains data. Skipping seeding.");
+                //}
             }
             catch (Exception ex)
             {

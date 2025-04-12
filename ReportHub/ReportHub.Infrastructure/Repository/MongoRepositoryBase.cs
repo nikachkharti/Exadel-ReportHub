@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using ReportHub.Application.Contracts;
 using System.Linq.Expressions;
 using ReportHub.Infrastructure.Configurations;
+using ReportHub.Application.Contracts.RepositoryContracts;
 
 namespace ReportHub.Infrastructure.Repository
 {

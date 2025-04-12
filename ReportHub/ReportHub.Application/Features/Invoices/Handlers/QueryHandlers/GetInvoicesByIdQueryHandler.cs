@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
-using ReportHub.Application.Contracts;
+using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using Serilog;

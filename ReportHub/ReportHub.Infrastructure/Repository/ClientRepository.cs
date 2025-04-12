@@ -5,9 +5,10 @@ using ReportHub.Infrastructure.Configurations;
 
 namespace ReportHub.Infrastructure.Repository
 {
-    public class InvoiceRepository : MongoRepositoryBase<Invoice>, IInvoiceRepository
+    public class ClientRepository : MongoRepositoryBase<Client>, IClientRepository
     {
-        public InvoiceRepository(IOptions<MongoDbSettings> options)
-            : base(options, "Invoices") { }
+        public ClientRepository(IOptions<MongoDbSettings> options) : base(options, "clients")
+        {
+        }
     }
 }

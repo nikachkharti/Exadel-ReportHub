@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using ReportHub.Application.Contracts;
 using ReportHub.Application.Contracts.FileContracts;
+using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Domain.Entities;
 
