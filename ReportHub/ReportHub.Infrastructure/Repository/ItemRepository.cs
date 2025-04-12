@@ -7,7 +7,7 @@ namespace ReportHub.Infrastructure.Repository
 {
     public class ItemRepository : MongoRepositoryBase<Item>, IItemRepository
     {
-        public ItemRepository(IOptions<MongoDbSettings> options, string collectionName) : base(options, collectionName)
+        public ItemRepository(IOptions<MongoDbSettings> options) : base(options, "items")
         {
         }
     }
