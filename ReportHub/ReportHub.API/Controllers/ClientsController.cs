@@ -1,5 +1,8 @@
-﻿using MediatR;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.Application.Features.Clients.Commands;
+using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Clients.Queries;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
@@ -61,5 +64,32 @@ namespace ReportHub.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+        /// <summary>
+        /// Add new client
+        /// </summary>
+        /// <param name="model">Client model</param>
+        /// <returns>IActionResult</returns>
+        [HttpPost]
+        public async Task<IActionResult> AddNewClient([FromForm] ClientForCreatingDto model)
+        {
+            try
+            {
+                Log.Information("Adding a new client.");
+
+                var command = new CreateClientCommand(model);
+                var client = await mediator.Send(command);
+
+                return Ok(client);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
     }
 }
