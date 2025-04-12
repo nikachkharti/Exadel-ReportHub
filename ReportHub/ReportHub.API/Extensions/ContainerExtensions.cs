@@ -1,6 +1,9 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using ReportHub.Application.Extensions;
@@ -126,6 +129,13 @@ namespace ReportHub.API.Extensions
                 options.AddPolicy("user", policy =>
                     policy.RequireRole("user"));
             });
+        }
+
+        public static void AddMongoSerizliers(this WebApplicationBuilder builder)
+        {
+            BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
+            BsonSerializer.RegisterSerializer(new DateTimeSerializer(BsonType.String));
+            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
         }
     }
 }

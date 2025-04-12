@@ -18,6 +18,7 @@ namespace ReportHub.API
                 builder.AddSerilog();
                 builder.AddControllers();
                 builder.AddSwagger();
+                builder.AddMongoSerizliers();
                 builder.AddInfrastructureLayer();
                 builder.AddApplicationLayer();
                 builder.AddOpenIddict();
