@@ -44,7 +44,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
             var result = await _handler.Handle(query, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.Equal(invoice.Id, result.InvoiceId);
+            Assert.Equal(invoice.Id, result.Id);
             Assert.Equal(invoice.Amount, result.Amount);
             Assert.Equal(invoice.Currency, result.Currency);
             Assert.Equal(invoice.PaymentStatus, result.PaymentStatus);

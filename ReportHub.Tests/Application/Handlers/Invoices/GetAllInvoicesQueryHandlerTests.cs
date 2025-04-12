@@ -42,7 +42,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
 
             var resultList = result.ToList();
 
-            Assert.Equal(invoices[0].Id, resultList[0].InvoiceId);
+            Assert.Equal(invoices[0].Id, resultList[0].Id);
             Assert.Equal(invoices[0].Amount, resultList[0].Amount);
             Assert.Equal(invoices[1].Currency, resultList[1].Currency);
             Assert.Equal(invoices[1].PaymentStatus, resultList[1].PaymentStatus);
