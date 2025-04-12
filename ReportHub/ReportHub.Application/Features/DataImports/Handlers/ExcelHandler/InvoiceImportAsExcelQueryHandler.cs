@@ -38,7 +38,7 @@ public class InvoiceImportAsExcelQueryHandler : IRequestHandler<InvoiceImportAsE
         {
             if (invoice is null) continue;
 
-            var exist = await _invoiceRepository.Get(i => i.InvoiceId.Equals(invoice.InvoiceId), cancellationToken);
+            var exist = await _invoiceRepository.Get(i => i.Id.Equals(invoice.Id), cancellationToken);
 
             if (exist is not null) continue;
 

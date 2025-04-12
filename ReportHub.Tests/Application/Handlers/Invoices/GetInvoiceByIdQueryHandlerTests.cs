@@ -27,7 +27,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
         {
             var invoice = new Invoice
             {
-                InvoiceId = "INV-001",
+                Id = "INV-001",
                 IssueDate = DateTime.UtcNow,
                 DueDate = DateTime.UtcNow.AddDays(30),
                 Amount = 100,
@@ -44,7 +44,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
             var result = await _handler.Handle(query, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.Equal(invoice.InvoiceId, result.InvoiceId);
+            Assert.Equal(invoice.Id, result.InvoiceId);
             Assert.Equal(invoice.Amount, result.Amount);
             Assert.Equal(invoice.Currency, result.Currency);
             Assert.Equal(invoice.PaymentStatus, result.PaymentStatus);
