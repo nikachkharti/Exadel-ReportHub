@@ -20,8 +20,10 @@ namespace ReportHub.Infrastructure
             services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IExcelService, ExcelService>();
 
+
             // Register repositories
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            services.AddScoped<IClientRepository, ClientRepository>();
 
             return services;
         }

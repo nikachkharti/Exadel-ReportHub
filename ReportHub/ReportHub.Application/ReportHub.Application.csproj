@@ -20,6 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Features\Clients\" />
 		<Folder Include="Features\Invoices\Commands\" />
 		<Folder Include="Features\Invoices\Handlers\CommandHandlers\" />
 	</ItemGroup>
