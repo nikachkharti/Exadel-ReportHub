@@ -91,7 +91,7 @@ namespace ReportHub.Presentation.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("import")]
-        public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file,CancellationToken cancellationToken)
+        public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file, CancellationToken cancellationToken)
         {
             var query = GetImportingQuery(fileType, file.OpenReadStream(), Path.GetExtension(file.FileName));
 
@@ -121,7 +121,7 @@ namespace ReportHub.Presentation.Controllers
             return fileType switch
             {
                 FileImportingType.CSV => new InvoiceImportAsCsvQuery(stream, extension),
-                FileImportingType.Excel => new InvoiceImportAsExcelQuery(stream, extension), 
+                FileImportingType.Excel => new InvoiceImportAsExcelQuery(stream, extension),
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
         }

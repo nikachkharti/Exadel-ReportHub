@@ -130,11 +130,5 @@ namespace ReportHub.API.Extensions
                     policy.RequireRole("user"));
             });
         }
-
-        public static void AddMongoSerizliers(this WebApplicationBuilder builder)
-        {
-            BsonSerializer.RegisterSerializer(new DateTimeSerializer(BsonType.String));
-            BsonSerializer.RegisterSerializer(new DateTimeOffsetSerializer(BsonType.String));
-        }
     }
 }
