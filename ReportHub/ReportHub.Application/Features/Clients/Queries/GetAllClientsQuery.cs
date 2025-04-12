@@ -7,8 +7,8 @@ namespace ReportHub.Application.Features.Clients.Queries
     (
         int? PageNumber,
         int? PageSize,
-        CancellationToken CancellationToken,
-        string SortingParameter = "",
-        bool Ascending = false
+        string SortingParameter,
+        bool Ascending = false,
+        CancellationToken CancellationToken = default
     ) : IRequest<IEnumerable<ClientForGettingDto>>;
 }
