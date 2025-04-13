@@ -1,7 +1,5 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ReportHub.Application.Features.Customers.Queries;
 using ReportHub.Application.Features.Item.Queries;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
