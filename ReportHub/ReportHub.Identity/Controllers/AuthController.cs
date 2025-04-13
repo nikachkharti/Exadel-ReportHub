@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -26,7 +27,7 @@ public class AuthController : ControllerBase
         _userManager = userManager;
     }
 
-
+    [Authorize(Roles = "SuperAdmin, Admin")]
     [HttpPost("sign-up")]
     public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
     {
@@ -51,7 +52,7 @@ public class AuthController : ControllerBase
         return Ok("User registered successfully.");
     }
 
-    [HttpPost("/auth/login-as-admin"), Produces("application/json")]
+    [HttpPost("/auth/login"), Produces("application/json")]
     public async Task<IActionResult> LoginAsAdmin()
     {
         OpenIddictRequest request = GetOpenIddictRequest();
@@ -74,36 +75,10 @@ public class AuthController : ControllerBase
             });
         }
 
-        return await LoginAs(request, "Admin");
+        return await Login(request);
     }
 
-    [HttpPost("/auth/login-as-client"), Produces("application/json")]
-    public async Task<IActionResult> LoginAsClient()
-    {
-        OpenIddictRequest request = GetOpenIddictRequest();
-
-        if (!request.IsClientCredentialsGrantType() && !request.IsPasswordGrantType())
-        {
-            return BadRequest(new OpenIddictResponse
-            {
-                Error = Errors.InvalidGrant,
-                ErrorDescription = "The specified grant type is not supported."
-            });
-        }
-
-        if (request.ClientId is null)
-        {
-            return BadRequest(new OpenIddictResponse
-            {
-                Error = Errors.InvalidClient,
-                ErrorDescription = "The client_id parameter is missing."
-            });
-        }
-
-        return await LoginAs(request, "Client");
-    }
-
-    private async Task<IActionResult> LoginAs(OpenIddictRequest request, string role)
+    private async Task<IActionResult> Login(OpenIddictRequest request)
     {
         var result = await ValidateUserCreadentials(request.Username!, request.Password!);
 
@@ -120,14 +95,11 @@ public class AuthController : ControllerBase
         if (await _applicationManager.FindByClientIdAsync(request.ClientId) is null)
             throw new InvalidOperationException("The application cannot be found.");
 
-        if (!await _userManager.IsInRoleAsync(result.user!, role))
-        {
-            return Forbid();
-        }
+        var roles = await _userManager.GetRolesAsync(result.user!);
 
         ClaimsIdentity identity = GetIdentityClaims();
 
-        SetClaims(request, result.user!, identity, role);
+        SetClaims(request, result.user!, identity, (roles is null || roles.Count == 0 ? ["User"] : roles));
 
         identity.SetScopes(request.GetScopes());
 
@@ -203,7 +175,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    private void SetClaims(OpenIddictRequest request, User user, ClaimsIdentity identity, string role = "User")
+    private void SetClaims(OpenIddictRequest request, User user, ClaimsIdentity identity, IList<string> roles)
     {
         identity
                     .SetClaim(Claims.Subject, request.ClientId)
@@ -211,7 +183,7 @@ public class AuthController : ControllerBase
                     .SetClaim(Claims.Audience, "report-hub-api-audience")
                     .SetClaim(Claims.Email, user.Email)
                     .SetClaim(Claims.Name, user.UserName)
-                    .SetClaims(Claims.Role, [role]);
+                    .SetClaims(Claims.Role, [.. roles]);
     }
 
     private static ClaimsIdentity GetIdentityClaims()

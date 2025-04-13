@@ -1,5 +1,6 @@
 using AspNetCore.Identity.Mongo;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
@@ -97,7 +98,7 @@ builder.Services
     .AddServer(options =>
     {
         options.SetIssuer(new Uri(authSettings.Issuer));
-        options.SetTokenEndpointUris("auth/login-as-admin", "auth/login-as-client", "auth/refresh-token")
+        options.SetTokenEndpointUris("auth/login", "auth/refresh-token")
             .AllowPasswordFlow()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
@@ -155,7 +156,13 @@ builder.Services.AddHostedService<DatabaseSeeder>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto
+});
+
+
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
