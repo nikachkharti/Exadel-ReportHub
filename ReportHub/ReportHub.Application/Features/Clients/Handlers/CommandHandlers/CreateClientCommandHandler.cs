@@ -12,7 +12,7 @@ namespace ReportHub.Application.Features.Clients.Handlers.CommandHandlers
         public async Task<string> Handle(CreateClientCommand request, CancellationToken cancellationToken)
         {
             //TODO: [Add] validators.
-            var client = mapper.Map<Client>(request.Command);
+            var client = mapper.Map<Client>(request);
 
             await clientRepository.Insert(client);
             return client.Id;

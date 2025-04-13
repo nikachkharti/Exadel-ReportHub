@@ -14,17 +14,17 @@ namespace ReportHub.Application.Features.Clients.Handlers.CommandHandlers
         {
             //TODO: [Add] validators.
 
-            var existingClient = await clientRepository.Get(c => c.Id == request.Command.Id, cancellationToken);
+            var existingClient = await clientRepository.Get(c => c.Id == request.Id, cancellationToken);
 
             if (existingClient is null)
             {
-                throw new NotFoundException($"Client with id {request.Command.Id} not found");
+                throw new NotFoundException($"Client with id {request.Id} not found");
             }
 
-            var updatedDocumentOfClient = mapper.Map<Client>(request.Command);
+            var updatedDocumentOfClient = mapper.Map<Client>(request);
 
             //TODO: [Optimization] we have to avoid double calling of database.
-            await clientRepository.UpdateSingleDocument(c => c.Id == request.Command.Id, updatedDocumentOfClient);
+            await clientRepository.UpdateSingleDocument(c => c.Id == request.Id, updatedDocumentOfClient);
             return updatedDocumentOfClient.Id;
         }
     }

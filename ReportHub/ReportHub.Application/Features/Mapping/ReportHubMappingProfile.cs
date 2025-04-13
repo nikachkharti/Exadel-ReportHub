@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Domain.Entities;
@@ -25,11 +26,11 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Specialization, options => options.MapFrom(src => src.Specialization));
 
-        CreateMap<ClientForCreatingDto, Client>()
+        CreateMap<CreateClientCommand, Client>()
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Specialization, options => options.MapFrom(src => src.Specialization));
 
-        CreateMap<ClientForUpdatingDto, Client>()
+        CreateMap<UpdateClientCommand, Client>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Specialization, options => options.MapFrom(src => src.Specialization));
