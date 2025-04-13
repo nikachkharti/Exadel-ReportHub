@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
@@ -72,14 +71,13 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Client model</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> AddNewClient([FromForm] ClientForCreatingDto model)
+        public async Task<IActionResult> AddNewClient([FromForm] CreateClientCommand model)
         {
             try
             {
                 Log.Information("Adding a new client.");
 
-                var command = new CreateClientCommand(model);
-                var client = await mediator.Send(command);
+                var client = await mediator.Send(model);
 
                 return Ok(client);
             }
@@ -122,14 +120,13 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Update document</param>
         /// <returns>IActionResult</returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateClient([FromForm][Required] ClientForUpdatingDto model)
+        public async Task<IActionResult> UpdateClient([FromForm][Required] UpdateClientCommand model)
         {
             try
             {
                 Log.Information("Updating a single client.");
 
-                var command = new UpdateClientCommand(model);
-                var client = await mediator.Send(command);
+                var client = await mediator.Send(model);
 
                 return Ok(client);
             }
