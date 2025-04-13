@@ -21,6 +21,19 @@ public class AdminController : ControllerBase
     [HttpGet("users")]
     public IActionResult GetAllUsers() => Ok(_userManager.Users.ToList());
 
+    [HttpGet("users/{userId}")]
+    public async Task<IActionResult> GetAllUsers(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if(user is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(user);
+    }
+
     [HttpPost("assign-role")]
     public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
     {
