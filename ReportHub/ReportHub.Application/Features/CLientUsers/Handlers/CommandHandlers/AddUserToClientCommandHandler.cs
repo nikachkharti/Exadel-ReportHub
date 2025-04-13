@@ -28,7 +28,7 @@ namespace ReportHub.Application.Features.CLientUsers.Handlers.CommandHandlers
                 Role = request.Role
             };
 
-            var roleAssigned = await _identityService.AssignUserRole(request.UserId, request.Role);
+            var roleAssigned = await _identityService.AssignUserRole(request.UserId, request.Role, cancellationToken);
 
             if (!roleAssigned)
             {

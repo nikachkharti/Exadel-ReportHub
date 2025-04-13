@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
@@ -6,6 +7,7 @@ using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Application.Features.CLientUsers.DTOs;
 using ReportHub.Application.Features.CLientUsers.Queries;
+using ReportHub.Application.Validators.Exceptions;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
 
@@ -97,7 +99,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-
+        [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
         [HttpPost("{clientId}/users")]
         public async Task<IActionResult> AddUserToClient(string clientId, [FromBody] AddUserToClientDto model)
         {
@@ -108,6 +110,10 @@ namespace ReportHub.API.Controllers
                 var client = await mediator.Send(new AddUserToClientCommand(clientId, model.UserId, model.Role));
 
                 return Ok(client);
+            }
+            catch(InputValidationException ex)
+            {
+                return BadRequest(new { errors = ex.Errors });
             }
             catch (Exception ex)
             {
