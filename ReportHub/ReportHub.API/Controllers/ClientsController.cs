@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Clients.Queries;
+using ReportHub.Application.Features.CLientUsers.Commands;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
 
@@ -88,6 +89,22 @@ namespace ReportHub.API.Controllers
             }
         }
 
+        [HttpPost("add-user-to-client")]
+        public async Task<IActionResult> AddUserToClient([FromBody] AddUserToClientCommand model)
+        {
+            try
+            {
+                Log.Information("Adding a user to a client.");
+                var client = await mediator.Send(model);
+
+                return Ok(client);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
 
         /// <summary>
         /// Delete client

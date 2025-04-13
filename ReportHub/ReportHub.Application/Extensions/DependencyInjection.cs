@@ -18,5 +18,7 @@ public static class DependencyInjection
         });
 
         services.AddAutoMapper(applicationAssembly);
+
+        services.AddHttpContextAccessor();
     }
 }
