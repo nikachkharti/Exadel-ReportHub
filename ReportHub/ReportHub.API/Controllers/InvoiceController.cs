@@ -23,6 +23,7 @@ namespace ReportHub.Presentation.Controllers
         {
             _mediator = mediator;
         }
+
         /// <summary>
         /// Getting all invoices from database
         /// </summary>
@@ -59,7 +60,7 @@ namespace ReportHub.Presentation.Controllers
         /// <returns>IActionResult</returns>
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<InvoiceDto>> GetById([FromRoute] string id)
+        public async Task<ActionResult<InvoiceForGettingDto>> GetById([FromRoute] string id)
         {
             try
             {
@@ -83,6 +84,7 @@ namespace ReportHub.Presentation.Controllers
             }
         }
 
+
         /// <summary>
         /// Reads file and imports invoices to database if not exist
         /// </summary>
@@ -91,7 +93,7 @@ namespace ReportHub.Presentation.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost("import")]
-        public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file,CancellationToken cancellationToken)
+        public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file, CancellationToken cancellationToken)
         {
             var query = GetImportingQuery(fileType, file.OpenReadStream(), Path.GetExtension(file.FileName));
 
@@ -116,12 +118,13 @@ namespace ReportHub.Presentation.Controllers
             return File(stream, "application/octet-stream", $"Invoices{query.Extension}");
         }
 
+
         private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
         {
             return fileType switch
             {
                 FileImportingType.CSV => new InvoiceImportAsCsvQuery(stream, extension),
-                FileImportingType.Excel => new InvoiceImportAsExcelQuery(stream, extension), 
+                FileImportingType.Excel => new InvoiceImportAsExcelQuery(stream, extension),
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
         }

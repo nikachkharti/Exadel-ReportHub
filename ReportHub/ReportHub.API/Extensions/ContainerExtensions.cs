@@ -1,6 +1,9 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson;
 using OpenIddict.Abstractions;
 using OpenIddict.Validation.AspNetCore;
 using ReportHub.Application.Extensions;

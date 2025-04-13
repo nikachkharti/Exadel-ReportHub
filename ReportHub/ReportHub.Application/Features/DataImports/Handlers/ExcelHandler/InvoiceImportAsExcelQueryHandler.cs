@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using ReportHub.Application.Contracts;
 using ReportHub.Application.Contracts.FileContracts;
+using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
 using ReportHub.Domain.Entities;
 
@@ -38,7 +38,7 @@ public class InvoiceImportAsExcelQueryHandler : IRequestHandler<InvoiceImportAsE
         {
             if (invoice is null) continue;
 
-            var exist = await _invoiceRepository.Get(i => i.InvoiceId.Equals(invoice.InvoiceId), cancellationToken);
+            var exist = await _invoiceRepository.Get(i => i.Id.Equals(invoice.Id), cancellationToken);
 
             if (exist is not null) continue;
 

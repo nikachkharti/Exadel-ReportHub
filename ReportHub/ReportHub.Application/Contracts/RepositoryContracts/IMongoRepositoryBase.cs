@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace ReportHub.Application.Contracts
+namespace ReportHub.Application.Contracts.RepositoryContracts
 {
     public interface IMongoRepositoryBase<T> where T : class
     {

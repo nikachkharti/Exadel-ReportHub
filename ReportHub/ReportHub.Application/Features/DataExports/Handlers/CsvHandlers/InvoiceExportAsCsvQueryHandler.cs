@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using ReportHub.Application.Contracts;
 using ReportHub.Application.Contracts.FileContracts;
+using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 
 namespace ReportHub.Application.Features.DataExports.Handlers.CsvHandlers;
