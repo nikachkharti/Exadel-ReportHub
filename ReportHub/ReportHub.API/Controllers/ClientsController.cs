@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
@@ -63,6 +64,31 @@ namespace ReportHub.API.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+
+        /// <summary>
+        /// Get all items of client
+        /// </summary>
+        /// <param name="id">Client Id</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("{id}/items")]
+        public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string id)
+        {
+            try
+            {
+                Log.Information("Fetching all items of client.");
+                var query = new GetAllItemsOfClientQuery(id);
+                var items = await mediator.Send(query);
+
+                return Ok(items);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
 
         /// <summary>
