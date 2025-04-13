@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
+using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.DTOs;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Domain.Entities;
@@ -49,6 +50,17 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
             .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
 
+        CreateMap<CreateCustomerCommand, Customer>()
+            .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
+            .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
+            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
+
+
+        CreateMap<UpdateCustomerCommand, Customer>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
+            .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
+            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
 
         #endregion
 
