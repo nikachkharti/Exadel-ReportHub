@@ -20,9 +20,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Features\Customers\Commands\" />
+		<Folder Include="Features\Customers\Handlers\CommandHandlers\" />
 		<Folder Include="Features\Invoices\Commands\" />
 		<Folder Include="Features\Invoices\Handlers\CommandHandlers\" />
-		<Folder Include="Features\Customers\" />
 	</ItemGroup>
 
 </Project>
