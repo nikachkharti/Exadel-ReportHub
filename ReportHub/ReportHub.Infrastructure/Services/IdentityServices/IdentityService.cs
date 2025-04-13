@@ -64,7 +64,9 @@ public class IdentityService : IIdentityService
 
         if (string.IsNullOrEmpty(authorizationHeader) ||
             !authorizationHeader.StartsWith("Bearer "))
+        {
             return null;
+        }
 
         return authorizationHeader.Substring("Bearer ".Length).Trim();
     }
