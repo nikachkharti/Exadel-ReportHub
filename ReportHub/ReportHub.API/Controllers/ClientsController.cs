@@ -154,7 +154,7 @@ namespace ReportHub.API.Controllers
             {
                 Log.Information("Deleting a single item.");
 
-                var query = new DeleteItemCommand(itemId);
+                var query = new DeleteItemOfClientCommand(clientId, itemId);
                 var item = await mediator.Send(query);
 
                 return Ok(item);

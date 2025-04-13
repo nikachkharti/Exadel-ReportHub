@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Validators.Exceptions;
