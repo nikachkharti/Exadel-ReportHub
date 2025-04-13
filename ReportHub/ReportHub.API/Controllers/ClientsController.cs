@@ -4,6 +4,7 @@ using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
+using ReportHub.Application.Features.CLientUsers.Queries;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
 
@@ -89,6 +90,12 @@ namespace ReportHub.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Add user to client
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+
         [HttpPost("add-user-to-client")]
         public async Task<IActionResult> AddUserToClient([FromBody] AddUserToClientCommand model)
         {
@@ -98,6 +105,23 @@ namespace ReportHub.API.Controllers
                 var client = await mediator.Send(model);
 
                 return Ok(client);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("{clientId}/users")]
+        public async Task<IActionResult> GetClientUsersByClientId(string clientId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Log.Information("Getting all users for a client.");
+
+                var clientUsers = await mediator.Send(new GetAllClientUserByClientIdQuery(clientId), cancellationToken);
+                return Ok(clientUsers);
             }
             catch (Exception ex)
             {

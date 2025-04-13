@@ -17,5 +17,3 @@ public class GetAllClientUserQueryHandler : IRequestHandler<GetAllClientUserQuer
         return await _clientUserRepository.GetAll(cancellationToken);
     }
 }
-{
-}
