@@ -70,21 +70,16 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Customer model</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> AddNewCustomer([FromForm] CreateCustomerCommand model)
+        public async Task<IActionResult> AddNewCustomer([FromBody] CreateCustomerCommand model)
         {
-            try
-            {
-                Log.Information("Adding a new customer.");
+            
+            Log.Information("Adding a new customer.");
 
-                var customer = await mediator.Send(model);
+            var customer = await mediator.Send(model);
 
-                return Ok(customer);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            return Ok(customer);
+          
+            
         }
 
 

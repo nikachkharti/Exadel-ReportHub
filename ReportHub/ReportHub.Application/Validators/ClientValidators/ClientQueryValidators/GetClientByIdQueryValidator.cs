@@ -10,5 +10,9 @@ public class GetClientByIdQueryValidator : AbstractValidator<GetClientByIdQuery>
         RuleFor(x => x.Id)
             .NotEmpty()
             .WithMessage("Id is required.");
+        
+        RuleFor(x => x.Id)
+            .Length(24)
+            .WithMessage("Id is not a valid 24 digit hex string.");
     }
 }
