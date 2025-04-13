@@ -38,7 +38,7 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
     {
 
-        var user = await _userManager.FindByNameAsync(request.Username);
+        var user = await _userManager.FindByIdAsync(request.UserId);
 
         if (user is null)
             return NotFound("User not found");

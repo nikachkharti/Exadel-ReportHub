@@ -12,7 +12,7 @@ public class ClientUser
     [BsonRepresentation(BsonType.ObjectId)]
     public string ClientId { get; set; }
 
-    [BsonRepresentation(BsonType.ObjectId)]
+    [BsonRepresentation(BsonType.String)]
     public string UserId { get; set; }
 
     public string Role { get; set; }
