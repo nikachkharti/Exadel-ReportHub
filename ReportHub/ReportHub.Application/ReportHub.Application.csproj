@@ -22,6 +22,8 @@
 	<ItemGroup>
 		<Folder Include="Features\Invoices\Commands\" />
 		<Folder Include="Features\Invoices\Handlers\CommandHandlers\" />
+		<Folder Include="Features\Item\Commands\" />
+		<Folder Include="Features\Item\Handlers\CommandHandlers\" />
 	</ItemGroup>
 
 </Project>
