@@ -1,8 +1,10 @@
-﻿using MediatR;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Clients.Queries;
+using ReportHub.Application.Features.Item.Commands;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
 
@@ -66,6 +68,31 @@ namespace ReportHub.API.Controllers
 
 
         /// <summary>
+        /// Get all items of client
+        /// </summary>
+        /// <param name="id">Client Id</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("{id}/items")]
+        public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string id)
+        {
+            try
+            {
+                Log.Information("Fetching all items of client.");
+                var query = new GetAllItemsOfClientQuery(id);
+                var items = await mediator.Send(query);
+
+                return Ok(items);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+
+
+        /// <summary>
         /// Add new client
         /// </summary>
         /// <param name="model">Client model</param>
@@ -113,6 +140,31 @@ namespace ReportHub.API.Controllers
             }
         }
 
+
+        /// <summary>
+        /// Delete single item of client
+        /// </summary>
+        /// <param name="clientId">Client Id</param>
+        /// <param name="itemId">Item Id</param>
+        /// <returns>IActionResult</returns>
+        [HttpDelete("clients/{clientId}/items/{itemId}")]
+        public async Task<IActionResult> DeleteItem([FromRoute][Required] string clientId, [FromRoute][Required] string itemId)
+        {
+            try
+            {
+                Log.Information("Deleting a single item.");
+
+                var query = new DeleteItemOfClientCommand(clientId, itemId);
+                var item = await mediator.Send(query);
+
+                return Ok(item);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
 
         /// <summary>
         /// Update client
