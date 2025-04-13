@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.CLientUsers.Commands;
 using System.Net.Http.Headers;
 
@@ -8,30 +9,36 @@ namespace ReportHub.Application.Validators.ClientUserValidators;
 public class AddUserToClientCommandValidator : AbstractValidator<AddUserToClientCommand>
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IClientRepository _clientRepository;
 
-    public AddUserToClientCommandValidator(IHttpContextAccessor httpContextAccessor)
+    public AddUserToClientCommandValidator(IHttpContextAccessor httpContextAccessor, IClientRepository clientRepository)
     {
         _httpContextAccessor = httpContextAccessor;
+        _clientRepository = clientRepository;
 
         RuleFor(x => x.ClientId)
             .NotEmpty()
-            .WithMessage("Client ID is required.");
+            .WithMessage("Client ID is required.")
+            .MustAsync(ValidateClientExist)
+            .WithMessage("Client does not exist"); ;
+
 
         RuleFor(x => x.UserId)
             .NotEmpty()
-            .WithMessage("User ID is required.");
-
-        RuleFor(x => x.Role)
-            .NotEmpty()
-            .WithMessage("Role is required.");
-
-        RuleFor(x => x.UserId)
+            .WithMessage("User ID is required.")
             .MustAsync(ValidateUserIdExists)
             .WithMessage("User does not exist or you have no access to assign role");
 
         RuleFor(x => x.Role)
+            .NotEmpty()
+            .WithMessage("Role is required.")
             .MustAsync(ValidateRoleExists)
             .WithMessage("Role does not exist or you do not have access to give role");
+    }
+
+    private async Task<bool> ValidateClientExist(string clientId, CancellationToken cancellationToken)
+    {
+        return await _clientRepository.Get(c => c.Id == clientId, cancellationToken) is not null;
     }
 
     private async Task<bool> ValidateUserIdExists(string userId, CancellationToken cancellationToken)
