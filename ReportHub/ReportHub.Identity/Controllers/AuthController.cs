@@ -207,6 +207,7 @@ public class AuthController : ControllerBase
     {
         identity
                     .SetClaim(Claims.Subject, request.ClientId)
+                    .SetClaim("UserId", user.Id)
                     .SetClaim(Claims.Audience, "report-hub-api-audience")
                     .SetClaim(Claims.Email, user.Email)
                     .SetClaim(Claims.Name, user.UserName)

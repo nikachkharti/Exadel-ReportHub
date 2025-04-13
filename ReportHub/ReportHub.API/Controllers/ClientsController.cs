@@ -4,6 +4,7 @@ using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
+using ReportHub.Application.Features.CLientUsers.DTOs;
 using ReportHub.Application.Features.CLientUsers.Queries;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
@@ -93,16 +94,18 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Add user to client
         /// </summary>
+        /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
 
-        [HttpPost("add-user-to-client")]
-        public async Task<IActionResult> AddUserToClient([FromBody] AddUserToClientCommand model)
+        [HttpPost("{clientId}/users")]
+        public async Task<IActionResult> AddUserToClient(string clientId, [FromBody] AddUserToClientDto model)
         {
             try
             {
                 Log.Information("Adding a user to a client.");
-                var client = await mediator.Send(model);
+
+                var client = await mediator.Send(new AddUserToClientCommand(clientId, model.UserId, model.Role));
 
                 return Ok(client);
             }
