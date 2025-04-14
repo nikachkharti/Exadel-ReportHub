@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Identity.Models;
+using System.Threading.Tasks;
 
 namespace ReportHub.Identity.Controllers;
 
@@ -17,6 +18,17 @@ public class RolesController : ControllerBase
 
     [HttpGet]
     public IActionResult Get() => Ok(_roleManager.Roles.Select(r => r.Name).ToList());
+
+    [HttpGet("{roleName}")]
+    public async Task<IActionResult> Get(string roleName)
+    {
+        var role = await _roleManager.FindByNameAsync(roleName);
+
+        if(role is null)
+            return NotFound("Role not found");
+
+        return Ok(role);
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] RoleCreation newRole)

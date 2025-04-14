@@ -1,9 +1,14 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Clients.Queries;
+using ReportHub.Application.Features.CLientUsers.Commands;
+using ReportHub.Application.Features.CLientUsers.DTOs;
+using ReportHub.Application.Features.CLientUsers.Queries;
+using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Application.Features.Item.Commands;
 using ReportHub.Application.Validators.Exceptions;
 using Serilog;
@@ -126,6 +131,51 @@ namespace ReportHub.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Add user to client
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
+        [HttpPost("{clientId}/users")]
+        public async Task<IActionResult> AddUserToClient(string clientId, [FromBody] AddUserToClientDto model)
+        {
+            try
+            {
+                Log.Information("Adding a user to a client.");
+
+                var client = await mediator.Send(new AddUserToClientCommand(clientId, model.UserId, model.Role));
+
+                return Ok(client);
+            }
+            catch(InputValidationException ex)
+            {
+                return BadRequest(new { errors = ex.Errors });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("{clientId}/users")]
+        public async Task<IActionResult> GetClientUsersByClientId(string clientId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Log.Information("Getting all users for a client.");
+
+                var clientUsers = await mediator.Send(new GetAllClientUserByClientIdQuery(clientId), cancellationToken);
+                return Ok(clientUsers);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
 
         /// <summary>
         /// Delete client
