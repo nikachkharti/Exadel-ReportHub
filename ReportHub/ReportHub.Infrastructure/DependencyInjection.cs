@@ -5,6 +5,8 @@ using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Infrastructure.Repository;
 using ReportHub.Infrastructure.Services.FileServices;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Contracts.IdentityContracts;
+using ReportHub.Infrastructure.Services.IdentityServices;
 
 namespace ReportHub.Infrastructure
 {
@@ -19,12 +21,14 @@ namespace ReportHub.Infrastructure
 
             services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IExcelService, ExcelService>();
+            services.AddScoped<IIdentityService, IdentityService>();
 
             // Register repositories
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
+            services.AddScoped<IClientUserRepository, ClientUserRepository>();
 
             return services;
         }
