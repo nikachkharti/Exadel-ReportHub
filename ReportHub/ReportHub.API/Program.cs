@@ -28,6 +28,7 @@ namespace ReportHub.API
                 var app = builder.Build();
 
                 app.UseDataSeeder();
+                app.UseExceptions();
                 app.UseSwagger();
                 app.UseSwaggerUI();
                 app.UseHttpsRedirection();

@@ -10,6 +10,8 @@ using ReportHub.Application.Extensions;
 using ReportHub.Infrastructure;
 using ReportHub.Infrastructure.Configurations;
 using Serilog;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+using ReportHub.API.Middlewares;
 
 namespace ReportHub.API.Extensions
 {
@@ -86,6 +88,8 @@ namespace ReportHub.API.Extensions
 
         public static void AddApplicationLayer(this WebApplicationBuilder builder)
         {
+            // Register middleware
+            builder.Services.AddScoped<ErrorHandlingMiddleware>();
             builder.Services.AddApplication();
         }
 

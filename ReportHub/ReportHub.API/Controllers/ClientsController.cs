@@ -10,6 +10,7 @@ using ReportHub.Application.Features.CLientUsers.DTOs;
 using ReportHub.Application.Features.CLientUsers.Queries;
 using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Application.Features.Item.Commands;
+using ReportHub.Application.Validators.Exceptions;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
 
@@ -64,6 +65,11 @@ namespace ReportHub.API.Controllers
 
                 return Ok(client);
             }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Errors);
+            }
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
@@ -87,6 +93,11 @@ namespace ReportHub.API.Controllers
                 var items = await mediator.Send(query);
 
                 return Ok(items);
+            }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Message);
             }
             catch (Exception ex)
             {
