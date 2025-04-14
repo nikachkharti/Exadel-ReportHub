@@ -1,7 +1,9 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.Queries;
+using ReportHub.Application.Validators.Exceptions;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,6 +11,7 @@ namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class CustomersController(IMediator mediator) : ControllerBase
     {
         /// <summary>
@@ -30,6 +33,11 @@ namespace ReportHub.API.Controllers
                 var customers = await mediator.Send(query);
 
                 return Ok(customers);
+            }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Errors);
             }
             catch (Exception ex)
             {
@@ -56,6 +64,11 @@ namespace ReportHub.API.Controllers
 
                 return Ok(customer);
             }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Errors);
+            }
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
@@ -72,14 +85,23 @@ namespace ReportHub.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddNewCustomer([FromBody] CreateCustomerCommand model)
         {
-            
-            Log.Information("Adding a new customer.");
+            try
+            {
+                Log.Information("Adding a new customer.");
+                var customer = await mediator.Send(model);
+                return Ok(customer);
+            }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Errors);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
 
-            var customer = await mediator.Send(model);
-
-            return Ok(customer);
-          
-            
         }
 
 
@@ -99,6 +121,11 @@ namespace ReportHub.API.Controllers
                 var client = await mediator.Send(command);
 
                 return Ok(client);
+            }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Errors);
             }
             catch (Exception ex)
             {
@@ -123,6 +150,11 @@ namespace ReportHub.API.Controllers
                 var client = await mediator.Send(model);
 
                 return Ok(client);
+            }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Errors);
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.API.Enums;
 using ReportHub.Application.Features.DataExports.Queries;
@@ -15,6 +16,7 @@ namespace ReportHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class InvoiceController : ControllerBase
     {
         private readonly IMediator _mediator;

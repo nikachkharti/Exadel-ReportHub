@@ -121,7 +121,7 @@ builder.Services
                 {
 
                     c.Claims["UserId"] = identity.FindFirst("UserId")?.Value;
-                    c.Claims["role"] = identity.FindFirst("role")?.Value;
+                    c.Claims["role"] = identity.FindAll("role").Select(r => r.Value).ToArray();
                 }
 
                 return default;

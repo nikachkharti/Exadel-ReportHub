@@ -31,6 +31,11 @@ namespace ReportHub.API.Controllers
 
                 return Ok(item);
             }
+            catch (InputValidationException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return StatusCode(400, ex.Errors);
+            }
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
