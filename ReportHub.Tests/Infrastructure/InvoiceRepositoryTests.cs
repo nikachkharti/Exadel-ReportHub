@@ -41,9 +41,9 @@ namespace ReportHub.Tests.Infrastructure
             var collection = _database.GetCollection<Invoice>("Invoices");
             await collection.InsertManyAsync(new List<Invoice>()
             {
-                new Invoice { InvoiceId = "INV2025001", IssueDate = DateTime.UtcNow.AddDays(-10), DueDate = DateTime.UtcNow.AddDays(20), Amount = 5000.75m, Currency = "USD", PaymentStatus = "Paid" },
-                new Invoice { InvoiceId = "INV2025002", IssueDate = DateTime.UtcNow.AddDays(-15), DueDate = DateTime.UtcNow.AddDays(15), Amount = 7500.50m, Currency = "EUR", PaymentStatus = "Pending" },
-                new Invoice { InvoiceId = "INV2025003", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "USD", PaymentStatus = "Overdue" }
+                new Invoice { Id = "INV2025001", IssueDate = DateTime.UtcNow.AddDays(-10), DueDate = DateTime.UtcNow.AddDays(20), Amount = 5000.75m, Currency = "USD", PaymentStatus = "Paid" },
+                new Invoice { Id = "INV2025002", IssueDate = DateTime.UtcNow.AddDays(-15), DueDate = DateTime.UtcNow.AddDays(15), Amount = 7500.50m, Currency = "EUR", PaymentStatus = "Pending" },
+                new Invoice { Id = "INV2025003", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "USD", PaymentStatus = "Overdue" }
             });
         }
         public async Task InitializeAsync() => await SeedTestData();
@@ -61,16 +61,16 @@ namespace ReportHub.Tests.Infrastructure
         public async Task UpdateSingleField_ShouldUpdateOnlySpecifiedField()
         {
             // Arrange
-            var originalInvoice = (await _repository.GetAll(i => i.InvoiceId == "INV2025001")).First();
+            var originalInvoice = (await _repository.GetAll(i => i.Id == "INV2025001")).First();
             var newAmount = 999.00m; // New amount to set
 
             // Act
-            await _repository.UpdateSingleField(i => i.InvoiceId == "INV2025001", i => i.Amount, newAmount);
-            var updatedInvoice = (await _repository.GetAll(i => i.InvoiceId == "INV2025001")).First();
+            await _repository.UpdateSingleField(i => i.Id == "INV2025001", i => i.Amount, newAmount);
+            var updatedInvoice = (await _repository.GetAll(i => i.Id == "INV2025001")).First();
 
             // Assert
             Assert.Equal(newAmount, updatedInvoice.Amount); // Ensure Amount is updated
-            Assert.Equal(originalInvoice.InvoiceId, updatedInvoice.InvoiceId); // Other fields remain unchanged
+            Assert.Equal(originalInvoice.Id, updatedInvoice.Id); // Other fields remain unchanged
             Assert.Equal(originalInvoice.Currency, updatedInvoice.Currency);
         }
 
@@ -81,7 +81,7 @@ namespace ReportHub.Tests.Infrastructure
             var beforeCount = (await _repository.GetAll()).Count();
 
             // Act
-            await _repository.UpdateSingleField(i => i.InvoiceId == "INV9999", i => i.Amount, 500);
+            await _repository.UpdateSingleField(i => i.Id == "INV9999", i => i.Amount, 500);
 
             // Assert
             var afterCount = (await _repository.GetAll()).Count();
@@ -92,7 +92,7 @@ namespace ReportHub.Tests.Infrastructure
         public async Task UpdateMultipleFields_ShouldUpdateOnlySpecifiedFields()
         {
             // Arrange
-            var originalInvoice = (await _repository.GetAll(i => i.InvoiceId == "INV2025001")).First();
+            var originalInvoice = (await _repository.GetAll(i => i.Id == "INV2025001")).First();
 
             var updates = new Dictionary<Expression<Func<Invoice, object>>, object>()
             {
@@ -101,8 +101,8 @@ namespace ReportHub.Tests.Infrastructure
             };
 
             // Act
-            await _repository.UpdateMultipleFields(i => i.InvoiceId == "INV2025001", updates);
-            var updatedInvoice = (await _repository.GetAll(i => i.InvoiceId == "INV2025001")).First();
+            await _repository.UpdateMultipleFields(i => i.Id == "INV2025001", updates);
+            var updatedInvoice = (await _repository.GetAll(i => i.Id == "INV2025001")).First();
 
             // Assert
             Assert.Equal(999.00m, updatedInvoice.Amount); // Amount is updated
@@ -124,7 +124,7 @@ namespace ReportHub.Tests.Infrastructure
             };
 
             // Act
-            await _repository.UpdateMultipleFields(i => i.InvoiceId == "INV9999", updates);
+            await _repository.UpdateMultipleFields(i => i.Id == "INV9999", updates);
 
             // Assert
             var afterInvoices = await _repository.GetAll();
@@ -141,7 +141,7 @@ namespace ReportHub.Tests.Infrastructure
             var beforeCount = (await _repository.GetAll()).Count();
             var newInvoice = new Invoice()
             {
-                InvoiceId = "INV2025004",
+                Id = "INV2025004",
                 IssueDate = DateTime.UtcNow.AddDays(-2),
                 DueDate = DateTime.UtcNow.AddDays(30),
                 Amount = 87.00m,
@@ -162,8 +162,8 @@ namespace ReportHub.Tests.Infrastructure
             var beforeCount = (await _repository.GetAll()).Count();
             var newInvoices = new List<Invoice>()
             {
-                new Invoice { InvoiceId = "INV2025004", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "GBP", PaymentStatus = "Overdue" },
-                new Invoice { InvoiceId = "INV2025005", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "GEL", PaymentStatus = "Paid" }
+                new Invoice { Id = "INV2025004", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "GBP", PaymentStatus = "Overdue" },
+                new Invoice { Id = "INV2025005", IssueDate = DateTime.UtcNow.AddDays(-5), DueDate = DateTime.UtcNow.AddDays(30), Amount = 10234.00m, Currency = "GEL", PaymentStatus = "Paid" }
             };
 
             await _repository.InsertMultiple(newInvoices);
@@ -180,7 +180,7 @@ namespace ReportHub.Tests.Infrastructure
         public async Task Delete_ShouldDecreaseCount_WhenInvoiceExists()
         {
             var beforeCount = (await _repository.GetAll()).Count();
-            Expression<Func<Invoice, bool>> filter = invoice => invoice.InvoiceId == "INV2025001";
+            Expression<Func<Invoice, bool>> filter = invoice => invoice.Id == "INV2025001";
 
             await _repository.Delete(filter);
 
@@ -192,7 +192,7 @@ namespace ReportHub.Tests.Infrastructure
         public async Task Delete_ShouldNotChangeCount_WhenInvoiceDoesNotExist()
         {
             var beforeCount = (await _repository.GetAll()).Count();
-            Expression<Func<Invoice, bool>> filter = invoice => invoice.InvoiceId == "NON_EXISTENT";
+            Expression<Func<Invoice, bool>> filter = invoice => invoice.Id == "NON_EXISTENT";
 
             await _repository.Delete(filter);
 
@@ -231,29 +231,29 @@ namespace ReportHub.Tests.Infrastructure
         [Fact]
         public async Task GetAll_ShouldReturnSortedByInvoiceId_Ascending()
         {
-            var result = await _repository.GetAll(i => i.InvoiceId, ascending: true);
+            var result = await _repository.GetAll(i => i.Id, ascending: true);
 
             Assert.NotNull(result);
             var sortedList = result.ToList();
 
             Assert.Equal(3, sortedList.Count);
-            Assert.Equal("INV2025001", sortedList[0].InvoiceId);
-            Assert.Equal("INV2025002", sortedList[1].InvoiceId);
-            Assert.Equal("INV2025003", sortedList[2].InvoiceId);
+            Assert.Equal("INV2025001", sortedList[0].Id);
+            Assert.Equal("INV2025002", sortedList[1].Id);
+            Assert.Equal("INV2025003", sortedList[2].Id);
         }
 
         [Fact]
         public async Task GetAll_ShouldReturnSortedByInvoiceId_Descending()
         {
-            var result = await _repository.GetAll(i => i.InvoiceId, ascending: false);
+            var result = await _repository.GetAll(i => i.Id, ascending: false);
 
             Assert.NotNull(result);
             var sortedList = result.ToList();
 
             Assert.Equal(3, sortedList.Count);
-            Assert.Equal("INV2025003", sortedList[0].InvoiceId);
-            Assert.Equal("INV2025002", sortedList[1].InvoiceId);
-            Assert.Equal("INV2025001", sortedList[2].InvoiceId);
+            Assert.Equal("INV2025003", sortedList[0].Id);
+            Assert.Equal("INV2025002", sortedList[1].Id);
+            Assert.Equal("INV2025001", sortedList[2].Id);
         }
 
         [Fact]
@@ -294,8 +294,8 @@ namespace ReportHub.Tests.Infrastructure
             var pagedList = result.ToList();
 
             Assert.Equal(2, pagedList.Count);
-            Assert.Equal("INV2025001", pagedList[0].InvoiceId);
-            Assert.Equal("INV2025002", pagedList[1].InvoiceId);
+            Assert.Equal("INV2025001", pagedList[0].Id);
+            Assert.Equal("INV2025002", pagedList[1].Id);
         }
 
 
@@ -308,7 +308,7 @@ namespace ReportHub.Tests.Infrastructure
             var pagedList = result.ToList();
 
             Assert.Single(pagedList);
-            Assert.Equal("INV2025002", pagedList[0].InvoiceId);
+            Assert.Equal("INV2025002", pagedList[0].Id);
         }
 
 
@@ -365,25 +365,25 @@ namespace ReportHub.Tests.Infrastructure
         [Fact]
         public async Task GetAll_ShouldSortByInvoiceIdAscending()
         {
-            var result = await _repository.GetAll(1, 2, invoice => invoice.InvoiceId);
+            var result = await _repository.GetAll(1, 2, invoice => invoice.Id);
 
             Assert.NotNull(result);
             var pagedList = result.ToList();
 
             Assert.Equal(2, pagedList.Count);
-            Assert.Equal("INV2025001", pagedList[0].InvoiceId);
-            Assert.Equal("INV2025002", pagedList[1].InvoiceId);
+            Assert.Equal("INV2025001", pagedList[0].Id);
+            Assert.Equal("INV2025002", pagedList[1].Id);
         }
 
 
         [Fact]
         public async Task Get_ShouldReturnInvoiceByInvoiceId()
         {
-            Expression<Func<Invoice, bool>> filter = invoice => invoice.InvoiceId == "INV2025003";
+            Expression<Func<Invoice, bool>> filter = invoice => invoice.Id == "INV2025003";
             var result = await _repository.Get(filter);
 
             Assert.NotNull(result);
-            Assert.Equal("INV2025003", result.InvoiceId);
+            Assert.Equal("INV2025003", result.Id);
             Assert.Equal(10234.00m, result.Amount);
         }
 
@@ -397,7 +397,7 @@ namespace ReportHub.Tests.Infrastructure
             Assert.NotNull(result);
             Assert.Equal("USD", result.Currency);
             // The first inserted invoice with USD currency is InvoiceId "2025001"
-            Assert.Equal("INV2025001", result.InvoiceId);
+            Assert.Equal("INV2025001", result.Id);
         }
 
 
@@ -424,7 +424,7 @@ namespace ReportHub.Tests.Infrastructure
         [Fact]
         public async Task Get_ShouldReturnNullForInvalidFieldFilter()
         {
-            Expression<Func<Invoice, bool>> filter = invoice => invoice.InvoiceId == "A999";
+            Expression<Func<Invoice, bool>> filter = invoice => invoice.Id == "A999";
             var result = await _repository.Get(filter);
 
             Assert.Null(result);

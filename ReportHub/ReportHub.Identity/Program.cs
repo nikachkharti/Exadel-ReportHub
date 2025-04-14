@@ -1,5 +1,6 @@
 using AspNetCore.Identity.Mongo;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
@@ -97,7 +98,7 @@ builder.Services
     .AddServer(options =>
     {
         options.SetIssuer(new Uri(authSettings.Issuer));
-        options.SetTokenEndpointUris("auth/login-as-admin", "auth/login-as-client", "auth/refresh-token")
+        options.SetTokenEndpointUris("auth/login", "auth/refresh-token")
             .AllowPasswordFlow()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
@@ -118,7 +119,9 @@ builder.Services
             {
                 if (c.Principal.Identity is ClaimsIdentity identity)
                 {
-                    c.Claims["role"] = identity.FindFirst("role")?.Value;
+
+                    c.Claims["UserId"] = identity.FindFirst("UserId")?.Value;
+                    c.Claims["role"] = identity.FindAll("role").Select(r => r.Value).ToArray();
                 }
 
                 return default;
@@ -154,6 +157,11 @@ builder.Services.AddHostedService<OpenIddictClientSeeder>();
 builder.Services.AddHostedService<DatabaseSeeder>();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+});
 
 if (app.Environment.IsDevelopment())
 {

@@ -1,9 +1,9 @@
 ﻿using Moq;
 using AutoMapper;
-using ReportHub.Application.Contracts;
-using ReportHub.Application.Features.Invoices.Mapping;
 using ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
 using ReportHub.Application.Features.Invoices.Queries;
+using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Features.Mapping;
 
 namespace ReportHub.Tests.Application.Handlers.Invoices
 {
@@ -16,7 +16,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
         public GetAllInvoicesQueryHandlerTests()
         {
             _mockRepo = new Mock<IInvoiceRepository>();
-            var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<InvoiceProfile>());
+            var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<ReportHubMappingProfile>());
             _mapper = new Mapper(mapperConfig);
 
             _handler = new GetAllInvoicesQueryHandler(_mockRepo.Object, _mapper);
@@ -27,8 +27,8 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
         {
             var invoices = new List<Invoice>
             {
-                new Invoice { InvoiceId = "INV-001", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(30), Amount = 100, Currency = "USD", PaymentStatus = "Paid" },
-                new Invoice { InvoiceId = "INV-002", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(15), Amount = 200, Currency = "EUR", PaymentStatus = "Pending" }
+                new Invoice { Id = "INV-001", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(30), Amount = 100, Currency = "USD", PaymentStatus = "Paid" },
+                new Invoice { Id = "INV-002", IssueDate = DateTime.UtcNow, DueDate = DateTime.UtcNow.AddDays(15), Amount = 200, Currency = "EUR", PaymentStatus = "Pending" }
             };
 
             _mockRepo.Setup(repo => repo.GetAll(It.IsAny<CancellationToken>())).ReturnsAsync(invoices);
@@ -42,7 +42,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
 
             var resultList = result.ToList();
 
-            Assert.Equal(invoices[0].InvoiceId, resultList[0].InvoiceId);
+            Assert.Equal(invoices[0].Id, resultList[0].Id);
             Assert.Equal(invoices[0].Amount, resultList[0].Amount);
             Assert.Equal(invoices[1].Currency, resultList[1].Currency);
             Assert.Equal(invoices[1].PaymentStatus, resultList[1].PaymentStatus);

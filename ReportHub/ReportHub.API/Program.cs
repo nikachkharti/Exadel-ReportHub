@@ -1,7 +1,4 @@
-using OpenIddict.Abstractions;
-using OpenIddict.Validation.AspNetCore;
 using ReportHub.API.Extensions;
-using ReportHub.Infrastructure.Configurations;
 using Serilog;
 
 namespace ReportHub.API
@@ -31,6 +28,7 @@ namespace ReportHub.API
                 var app = builder.Build();
 
                 app.UseDataSeeder();
+                app.UseExceptions();
                 app.UseSwagger();
                 app.UseSwaggerUI();
                 app.UseHttpsRedirection();

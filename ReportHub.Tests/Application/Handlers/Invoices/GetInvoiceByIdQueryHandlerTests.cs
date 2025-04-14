@@ -1,9 +1,9 @@
 ﻿using Moq;
 using AutoMapper;
-using ReportHub.Application.Contracts;
-using ReportHub.Application.Features.Invoices.Mapping;
 using ReportHub.Application.Features.Invoices.Queries;
 using ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
+using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Features.Mapping;
 
 namespace ReportHub.Tests.Application.Handlers.Invoices
 {
@@ -16,7 +16,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
         public GetInvoicesByIdQueryHandlerTests()
         {
             _mockRepo = new Mock<IInvoiceRepository>();
-            var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<InvoiceProfile>());
+            var mapperConfig = new MapperConfiguration(cfg => cfg.AddProfile<ReportHubMappingProfile>());
             _mapper = new Mapper(mapperConfig);
 
             _handler = new GetInvoicesByIdQueryHandler(_mockRepo.Object, _mapper);
@@ -27,7 +27,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
         {
             var invoice = new Invoice
             {
-                InvoiceId = "INV-001",
+                Id = "INV-001",
                 IssueDate = DateTime.UtcNow,
                 DueDate = DateTime.UtcNow.AddDays(30),
                 Amount = 100,
@@ -44,7 +44,7 @@ namespace ReportHub.Tests.Application.Handlers.Invoices
             var result = await _handler.Handle(query, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.Equal(invoice.InvoiceId, result.InvoiceId);
+            Assert.Equal(invoice.Id, result.Id);
             Assert.Equal(invoice.Amount, result.Amount);
             Assert.Equal(invoice.Currency, result.Currency);
             Assert.Equal(invoice.PaymentStatus, result.PaymentStatus);
