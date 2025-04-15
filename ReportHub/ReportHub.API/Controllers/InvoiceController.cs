@@ -39,11 +39,6 @@ namespace ReportHub.Presentation.Controllers
             var query = new GetAllInvoicesQuery();
             var result = await _mediator.Send(query);
 
-            //if (!result.Any())
-            //{
-            //    return NoContent();
-            //}
-
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
@@ -57,12 +52,6 @@ namespace ReportHub.Presentation.Controllers
         public async Task<ActionResult<InvoiceForGettingDto>> GetById([FromRoute] string id)
         {
             var result = await _mediator.Send(new GetInvoicesByIdQuery(id));
-
-            //if (invoice == null)
-            //{
-            //    return NoContent();
-            //}
-
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
