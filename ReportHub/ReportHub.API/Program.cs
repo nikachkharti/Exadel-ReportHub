@@ -7,46 +7,32 @@ namespace ReportHub.API
     {
         public static void Main(string[] args)
         {
-            try
-            {
-                ContainerExtensions.ConfigureSerilog();
+            ContainerExtensions.ConfigureSerilog();
 
-                Log.Information("Starting the application");
+            var builder = WebApplication.CreateBuilder(args);
 
-                var builder = WebApplication.CreateBuilder(args);
-
-                builder.AddSerilog();
-                builder.AddControllers();
-                builder.AddSwagger();
-                builder.AddInfrastructureLayer();
-                builder.AddApplicationLayer();
-                builder.AddOpenIddict();
-                builder.AddAuthentication();
-                builder.AddAuthorization();
+            builder.AddSerilog();
+            builder.AddControllers();
+            builder.AddSwagger();
+            builder.AddInfrastructureLayer();
+            builder.AddApplicationLayer();
+            builder.AddOpenIddict();
+            builder.AddAuthentication();
+            builder.AddAuthorization();
 
 
-                var app = builder.Build();
+            var app = builder.Build();
 
-                app.UseDataSeeder();
-                app.UseExceptions();
-                app.UseSwagger();
-                app.UseSwaggerUI();
-                app.UseHttpsRedirection();
-                app.UseAuthentication();
-                app.UseAuthorization();
-                app.MapControllers();
-
-                Log.Information("Application is running");
-                app.Run();
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Application failed to start");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            app.UseDataSeeder();
+            app.UseSerilogRequestLogging();
+            app.UseExceptions();
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            app.UseHttpsRedirection();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.MapControllers();
+            app.Run();
         }
     }
 }

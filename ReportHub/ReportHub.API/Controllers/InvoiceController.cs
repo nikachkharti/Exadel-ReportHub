@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.API.Enums;
+using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.DataExports.Queries;
 using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
@@ -11,6 +12,7 @@ using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using Serilog;
+using System.Net;
 
 namespace ReportHub.Presentation.Controllers
 {
@@ -26,6 +28,7 @@ namespace ReportHub.Presentation.Controllers
             _mediator = mediator;
         }
 
+
         /// <summary>
         /// Getting all invoices from database
         /// </summary>
@@ -33,57 +36,35 @@ namespace ReportHub.Presentation.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllInvoices()
         {
-            try
-            {
-                Log.Information("Fetching all invoices.");
+            var query = new GetAllInvoicesQuery();
+            var result = await _mediator.Send(query);
 
-                var query = new GetAllInvoicesQuery();
-                var invoices = await _mediator.Send(query);
+            //if (!result.Any())
+            //{
+            //    return NoContent();
+            //}
 
-                if (!invoices.Any())
-                {
-                    Log.Warning("No invoices found.");
-                    return NoContent();
-                }
-
-                Log.Information("Successfully retrieved invoices.");
-                return Ok(invoices);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error occurred while fetching invoices.");
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
+
 
         /// <summary>
         /// Getting invoice from database by Id
         /// </summary>
         /// <returns>IActionResult</returns>
-
         [HttpGet("{id}")]
         public async Task<ActionResult<InvoiceForGettingDto>> GetById([FromRoute] string id)
         {
-            try
-            {
-                Log.Information($"Fetching Invoice by Id -> {id}");
+            var result = await _mediator.Send(new GetInvoicesByIdQuery(id));
 
-                var invoice = await _mediator.Send(new GetInvoicesByIdQuery(id));
+            //if (invoice == null)
+            //{
+            //    return NoContent();
+            //}
 
-                if (invoice == null)
-                {
-                    Log.Warning($"No invoice found for Id -> {id}");
-                    return NoContent();
-                }
-
-                Log.Information($"Successfully retrieved invoice for Id -> {id}");
-                return Ok(invoice);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, $"Error occurred while fetching invoice for Id -> {id}");
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -98,11 +79,12 @@ namespace ReportHub.Presentation.Controllers
         public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file, CancellationToken cancellationToken)
         {
             var query = GetImportingQuery(fileType, file.OpenReadStream(), Path.GetExtension(file.FileName));
-
             var result = await _mediator.Send(query, cancellationToken);
 
-            return Ok(result);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
+
 
         /// <summary>
         /// Exports invoices to file type user chose
@@ -114,10 +96,8 @@ namespace ReportHub.Presentation.Controllers
         public async Task<IActionResult> Export([FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
             var query = GetExportingQuery(fileType);
-
-            var stream = await _mediator.Send(query, cancellationToken);
-
-            return File(stream, "application/octet-stream", $"Invoices{query.Extension}");
+            var result = await _mediator.Send(query, cancellationToken);
+            return File(result, "application/octet-stream", $"Invoices{query.Extension}");
         }
 
 

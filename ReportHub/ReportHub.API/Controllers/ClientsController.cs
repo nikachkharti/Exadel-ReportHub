@@ -6,16 +6,16 @@ using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Application.Features.CLientUsers.DTOs;
 using ReportHub.Application.Features.CLientUsers.Queries;
-using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Application.Features.Item.Commands;
-using Serilog;
 using System.ComponentModel.DataAnnotations;
+using ReportHub.Application.Common.Models;
+using System.Net;
 
 namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
+    [Authorize(Roles = "Superadmin, Admin, ClientAdmin")]
     public class ClientsController(IMediator mediator) : ControllerBase
     {
         /// <summary>
@@ -29,20 +29,11 @@ namespace ReportHub.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllClients([FromQuery][Required] int? pageNumber = 1, [FromQuery][Required] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery][Required] bool ascending = true)
         {
-            try
-            {
-                Log.Information("Fetching all clients.");
+            var query = new GetAllClientsQuery(pageNumber, pageSize, sortingParameter, ascending);
+            var result = await mediator.Send(query);
 
-                var query = new GetAllClientsQuery(pageNumber, pageSize, sortingParameter, ascending);
-                var clients = await mediator.Send(query);
-
-                return Ok(clients);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -54,25 +45,11 @@ namespace ReportHub.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSingleClient([FromRoute][Required] string id)
         {
-            try
-            {
-                Log.Information("Getting a single client.");
+            var query = new GetClientByIdQuery(id);
+            var result = await mediator.Send(query);
 
-                var query = new GetClientByIdQuery(id);
-                var client = await mediator.Send(query);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -84,26 +61,12 @@ namespace ReportHub.API.Controllers
         [HttpGet("{id}/items")]
         public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string id)
         {
-            try
-            {
-                Log.Information("Fetching all items of client.");
-                var query = new GetAllItemsOfClientQuery(id);
-                var items = await mediator.Send(query);
+            var query = new GetAllItemsOfClientQuery(id);
+            var result = await mediator.Send(query);
 
-                return Ok(items);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
-
 
 
         /// <summary>
@@ -114,25 +77,12 @@ namespace ReportHub.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddNewClient([FromForm] CreateClientCommand model)
         {
-            try
-            {
-                Log.Information("Adding a new client.");
+            var result = await mediator.Send(model);
 
-                var client = await mediator.Send(model);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
+            return StatusCode(response.HttpStatusCode, response);
         }
+
 
         /// <summary>
         /// Add user to client
@@ -144,45 +94,19 @@ namespace ReportHub.API.Controllers
         [HttpPost("{clientId}/users")]
         public async Task<IActionResult> AddUserToClient(string clientId, [FromBody] AddUserToClientDto model)
         {
-            try
-            {
-                Log.Information("Adding a user to a client.");
+            var result = await mediator.Send(new AddUserToClientCommand(clientId, model.UserId, model.Role));
 
-                var client = await mediator.Send(new AddUserToClientCommand(clientId, model.UserId, model.Role));
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                return BadRequest(new { errors = ex.Errors });
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
+            return StatusCode(response.HttpStatusCode, response);
         }
+
 
         [HttpGet("{clientId}/users")]
         public async Task<IActionResult> GetClientUsersByClientId(string clientId, CancellationToken cancellationToken)
         {
-            try
-            {
-                Log.Information("Getting all users for a client.");
-
-                var clientUsers = await mediator.Send(new GetAllClientUserByClientIdQuery(clientId), cancellationToken);
-                return Ok(clientUsers);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await mediator.Send(new GetAllClientUserByClientIdQuery(clientId), cancellationToken);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
         /// <summary>
@@ -193,25 +117,11 @@ namespace ReportHub.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteClient([FromRoute][Required] string id)
         {
-            try
-            {
-                Log.Information("Deleting a single client.");
+            var command = new DeleteClientCommand(id);
+            var result = await mediator.Send(command);
 
-                var command = new DeleteClientCommand(id);
-                var client = await mediator.Send(command);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -224,25 +134,11 @@ namespace ReportHub.API.Controllers
         [HttpDelete("clients/{clientId}/items/{itemId}")]
         public async Task<IActionResult> DeleteItem([FromRoute][Required] string clientId, [FromRoute][Required] string itemId)
         {
-            try
-            {
-                Log.Information("Deleting a single item.");
+            var query = new DeleteItemOfClientCommand(clientId, itemId);
+            var result = await mediator.Send(query);
 
-                var query = new DeleteItemOfClientCommand(clientId, itemId);
-                var item = await mediator.Send(query);
-
-                return Ok(item);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
         /// <summary>
@@ -253,24 +149,9 @@ namespace ReportHub.API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateClient([FromForm][Required] UpdateClientCommand model)
         {
-            try
-            {
-                Log.Information("Updating a single client.");
-
-                var client = await mediator.Send(model);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await mediator.Send(model);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
     }
