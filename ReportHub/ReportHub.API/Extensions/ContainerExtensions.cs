@@ -88,8 +88,6 @@ namespace ReportHub.API.Extensions
 
         public static void AddApplicationLayer(this WebApplicationBuilder builder)
         {
-            // Register middleware
-            builder.Services.AddScoped<ErrorHandlingMiddleware>();
             builder.Services.AddApplication();
         }
 

@@ -1,11 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.Queries;
-using ReportHub.Application.Validators.Exceptions;
-using Serilog;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace ReportHub.API.Controllers
 {
@@ -25,25 +25,11 @@ namespace ReportHub.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCustomers([FromQuery][Required] int? pageNumber = 1, [FromQuery][Required] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery][Required] bool ascending = true)
         {
-            try
-            {
-                Log.Information("Fetching all customers.");
+            var query = new GetAllCustomersQuery(pageNumber, pageSize, sortingParameter, ascending);
+            var result = await mediator.Send(query);
 
-                var query = new GetAllCustomersQuery(pageNumber, pageSize, sortingParameter, ascending);
-                var customers = await mediator.Send(query);
-
-                return Ok(customers);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -55,25 +41,10 @@ namespace ReportHub.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSingleCustomer([FromRoute][Required] string id)
         {
-            try
-            {
-                Log.Information("Getting a single customer.");
-
-                var query = new GetCustomerByIdQuery(id);
-                var customer = await mediator.Send(query);
-
-                return Ok(customer);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var query = new GetCustomerByIdQuery(id);
+            var result = await mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -85,23 +56,9 @@ namespace ReportHub.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddNewCustomer([FromBody] CreateCustomerCommand model)
         {
-            try
-            {
-                Log.Information("Adding a new customer.");
-                var customer = await mediator.Send(model);
-                return Ok(customer);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-
+            var result = await mediator.Send(model);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -113,25 +70,10 @@ namespace ReportHub.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCustomer([FromRoute][Required] string id)
         {
-            try
-            {
-                Log.Information("Deleting a single customer.");
-
-                var command = new DeleteCustomerCommand(id);
-                var client = await mediator.Send(command);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var command = new DeleteCustomerCommand(id);
+            var result = await mediator.Send(command);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
@@ -143,24 +85,9 @@ namespace ReportHub.API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateCustomer([FromForm][Required] UpdateCustomerCommand model)
         {
-            try
-            {
-                Log.Information("Updating a single customer.");
-
-                var client = await mediator.Send(model);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await mediator.Send(model);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
     }
 }

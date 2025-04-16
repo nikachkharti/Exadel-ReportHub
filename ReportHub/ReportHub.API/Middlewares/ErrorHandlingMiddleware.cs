@@ -1,28 +1,58 @@
-﻿using ReportHub.Application.Validators.Exceptions;
+﻿using ReportHub.Application.Common.Models;
+using ReportHub.Application.Validators.Exceptions;
+using System.Net;
+using System.Text.Json;
 
 namespace ReportHub.API.Middlewares;
 
-public class ErrorHandlingMiddleware(ILogger<ErrorHandlingMiddleware> logger) : IMiddleware
+public class ErrorHandlingMiddleware
 {
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    private readonly RequestDelegate _next;
+    public ErrorHandlingMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task Invoke(HttpContext context)
     {
         try
         {
-            await next.Invoke(context);
-
+            await _next.Invoke(context);
         }
-        catch (InputValidationException inputException)
-        {
-            context.Response.StatusCode = 400;
-            await context.Response.WriteAsJsonAsync(inputException.Errors);
-        }
-
         catch (Exception ex)
         {
-            logger.LogError(ex, ex.Message);
-
-            context.Response.StatusCode = 500;
-            await context.Response.WriteAsync("Something went wrong.");
+            await HandleException(context, ex);
         }
     }
+
+    private Task HandleException(HttpContext context, Exception exception)
+    {
+        var apiResponse = exception switch
+        {
+            BadHttpRequestException badRequest => CreateErrorResponse(badRequest, HttpStatusCode.BadRequest),
+            InputValidationException validationEx => CreateErrorResponse(validationEx, HttpStatusCode.BadRequest),
+            NotFoundException notFoundEx => CreateErrorResponse(notFoundEx, HttpStatusCode.NotFound),
+            InternalServerException internalEx => CreateErrorResponse(internalEx, HttpStatusCode.InternalServerError),
+            _ => CreateErrorResponse(exception, HttpStatusCode.InternalServerError)
+        };
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = apiResponse.HttpStatusCode;
+
+        var json = JsonSerializer.Serialize(apiResponse);
+        return context.Response.WriteAsync(json);
+    }
+
+    private static EndpointResponse CreateErrorResponse(Exception ex, HttpStatusCode statusCode)
+    {
+        return new EndpointResponse()
+        {
+            IsSuccess = false,
+            HttpStatusCode = (int)statusCode,
+            Message = $"{ex.Message}{(ex.InnerException != null ? ": " + ex.InnerException.Message : string.Empty)}",
+            Result = null
+        };
+    }
+
+
 }
