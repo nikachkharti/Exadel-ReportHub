@@ -65,6 +65,7 @@ namespace ReportHub.API.Extensions
         public static void AddInfrastructureLayer(this WebApplicationBuilder builder)
         {
             builder.Services.AddInfrastructure(builder.Configuration);
+            builder.Services.AddHttpClient();
         }
 
         public static void ConfigureSerilog()
