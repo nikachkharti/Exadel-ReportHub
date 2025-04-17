@@ -29,6 +29,7 @@ namespace ReportHub.Infrastructure
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
             services.AddScoped<IClientUserRepository, ClientUserRepository>();
+            services.AddScoped<IClientRoleRepository, ClientRoleRepository>();
 
             return services;
         }
