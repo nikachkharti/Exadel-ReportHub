@@ -18,7 +18,6 @@ namespace ReportHub.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class InvoiceController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -33,6 +32,7 @@ namespace ReportHub.Presentation.Controllers
         /// Getting all invoices from database
         /// </summary>
         /// <returns>IActionResult</returns>
+        [Authorize(Policy = "CreateReadUpdatePolicy")]
         [HttpGet]
         public async Task<IActionResult> GetAllInvoices()
         {

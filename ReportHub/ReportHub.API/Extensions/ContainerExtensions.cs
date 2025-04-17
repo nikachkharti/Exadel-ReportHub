@@ -14,6 +14,7 @@ using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using ReportHub.API.Middlewares;
 using ReportHub.API.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
+using ReportHub.API.Authorization.Handlers;
 
 namespace ReportHub.API.Extensions
 {
@@ -138,6 +139,9 @@ namespace ReportHub.API.Extensions
                     .AddPolicy("GetItemPolicy", ["Owner", "ClientAdmin", "Operator"])
                     .AddPolicy("CreateReadUpdatePolicy", ["Owner", "ClientAdmin"]);
             });
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IAuthorizationHandler, ClientRoleHandler>();
         }
 
         private static AuthorizationOptions AddPolicy(this AuthorizationOptions options, string policyName, IList<string> requiredRoles)
