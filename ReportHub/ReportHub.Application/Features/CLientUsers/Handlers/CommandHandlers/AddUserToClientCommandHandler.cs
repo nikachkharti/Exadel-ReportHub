@@ -39,12 +39,12 @@ namespace ReportHub.Application.Features.CLientUsers.Handlers.CommandHandlers
             return true;
         }
 
-
         private async Task EnsureEntitiesExist(string userId, string clientId, CancellationToken cancellationToken)
         {
             await _mediator.Send(new GetClientByIdQuery(clientId), cancellationToken);
             await _identityService.ValidateUserIdExists(userId, cancellationToken);
         }
+
         private async Task MakeUserAdminIfRoleAppropraite(string role, string userId, CancellationToken cancellationToken)
         {
             string[] roles = ["SuperAdmin", "Owner", "ClientAdmin"];
