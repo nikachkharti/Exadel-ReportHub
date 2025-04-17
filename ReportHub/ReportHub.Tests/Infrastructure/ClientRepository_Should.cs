@@ -85,7 +85,6 @@ namespace ReportHub.Tests.Infrastructure
         #endregion
 
 
-
         #region GET
 
         [Fact]
@@ -218,8 +217,129 @@ namespace ReportHub.Tests.Infrastructure
 
         #endregion
 
+        #region INSERT
+
+        [Fact]
+        public async Task Insert_New_Client()
+        {
+            var beforeCount = (await _repository.GetAll()).Count();
+            var newClient = new Client()
+            {
+                Name = "Eduworld",
+                Specialization = "Education and schoolarship"
+            };
+
+            await _repository.Insert(newClient);
+
+            var afterCount = (await _repository.GetAll()).Count();
+            Assert.Equal(beforeCount + 1, afterCount);
+        }
 
 
+        [Fact]
+        public async Task Insert_Multiple_New_Clients()
+        {
+            var beforeCount = (await _repository.GetAll()).Count();
+            var newClients = new List<Client>()
+            {
+                new Client() {Name = "Test Client #1",Specialization = "Software development"},
+                new Client() {Name = "Test Client #2",Specialization = "Softwre development"}
+            };
+
+            await _repository.InsertMultiple(newClients);
+
+            var afterCount = (await _repository.GetAll()).Count();
+            Assert.Equal(beforeCount + 2, afterCount);
+        }
+
+        #endregion
+
+
+        #region DELETE
+
+        [Fact]
+        public async Task Delete_Client()
+        {
+            var beforeCount = (await _repository.GetAll()).Count();
+
+            await _repository.Delete(c => c.Id == "67fa2d8114e2389cd8064454");
+
+            var afterCount = (await _repository.GetAll()).Count();
+            Assert.Equal(beforeCount - 1, afterCount);
+        }
+
+
+        [Fact]
+        public async Task Not_Delete_When_Client_Not_Found()
+        {
+            var beforeCount = (await _repository.GetAll()).Count();
+
+            await _repository.Delete(c => c.Id == "67fa2d8114e2389cd8064456");
+
+            var afterCount = (await _repository.GetAll()).Count();
+            Assert.Equal(beforeCount, afterCount);
+        }
+
+
+        #endregion
+
+
+        #region UPDATE
+
+        [Fact]
+        public async Task Update_Specific_Field()
+        {
+            // Arrange
+            var originalClient = (await _repository.GetAll(c => c.Id == "67fa2d8114e2389cd8064452")).First();
+            var newName = "Updated alpha soft";
+
+            // Act
+            await _repository.UpdateSingleField(c => c.Id == "67fa2d8114e2389cd8064452", c => c.Name, newName);
+            var updatedClient = await _repository.Get(c => c.Id == "67fa2d8114e2389cd8064452");
+
+            // Assert
+            Assert.Equal(newName, updatedClient.Name);
+            Assert.Equal(originalClient.Id, updatedClient.Id); // Other fields remain unchanged
+            Assert.Equal(originalClient.Specialization, updatedClient.Specialization);
+        }
+
+        [Fact]
+        public async Task Not_Update_If_Client_Not_Found()
+        {
+            // Arrange
+            var beforeCount = (await _repository.GetAll()).Count();
+
+            // Act
+            await _repository.UpdateSingleField(c => c.Id == "67fa2d8114e2389cd8064457", c => c.Specialization, "TEST");
+
+            // Assert
+            var afterCount = (await _repository.GetAll()).Count();
+            Assert.Equal(beforeCount, afterCount); // Count remains unchanged
+        }
+
+
+        [Fact]
+        public async Task Update_Multiple_Fields()
+        {
+            // Arrange
+            var originalInvoice = (await _repository.GetAll(c => c.Id == "67fa2d8114e2389cd8064452")).First();
+
+            var updates = new Dictionary<Expression<Func<Client, object>>, object>()
+            {
+                { c => c.Name, "TEST NAME" },
+                { c => c.Specialization, "TEST SPECIALIZATION" }
+            };
+
+            // Act
+            await _repository.UpdateMultipleFields(c => c.Name == "Alpha Soft", updates);
+            var updatedClient = (await _repository.Get(c => c.Id == "67fa2d8114e2389cd8064452"));
+
+            // Assert
+            Assert.Equal("TEST NAME", updatedClient.Name); // Name is updated
+            Assert.Equal("TEST SPECIALIZATION", updatedClient.Specialization); // Specialization is updated
+        }
+
+        #endregion
 
     }
 }
