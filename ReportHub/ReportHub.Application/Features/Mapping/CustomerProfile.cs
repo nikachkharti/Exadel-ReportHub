@@ -26,6 +26,5 @@ public class CustomerProfile : Profile
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
             .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
-
     }
 }
