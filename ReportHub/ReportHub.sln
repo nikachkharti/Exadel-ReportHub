@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Infrastructure", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Identity", "ReportHub.Identity\ReportHub.Identity.csproj", "{436F76B7-59C0-4503-8B0A-49DCCF31DBF4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Tests", "ReportHub.Tests\ReportHub.Tests.csproj", "{39A47619-8B80-4587-8E42-F9C4F1BEE071}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{436F76B7-59C0-4503-8B0A-49DCCF31DBF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{436F76B7-59C0-4503-8B0A-49DCCF31DBF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{436F76B7-59C0-4503-8B0A-49DCCF31DBF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39A47619-8B80-4587-8E42-F9C4F1BEE071}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39A47619-8B80-4587-8E42-F9C4F1BEE071}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39A47619-8B80-4587-8E42-F9C4F1BEE071}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39A47619-8B80-4587-8E42-F9C4F1BEE071}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
