@@ -83,18 +83,18 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
         /// <summary>
-        /// Add user to client
+        /// Add user to client with role
         /// </summary>
         /// <param name="clientId"></param>
+        /// <param name="userId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
-        [HttpPost("{clientId}/users")]
-        public async Task<IActionResult> AddUserToClient(string clientId, [FromBody] AddUserToClientDto model)
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{clientId}/users/{userId}/role")]
+        public async Task<IActionResult> AddUserToClient(string clientId, string userId, [FromBody] AddUserToClientDto model)
         {
-            var result = await mediator.Send(new AddUserToClientCommand(clientId, model.UserId, model.Role));
+            var result = await mediator.Send(new AddUserToClientCommand(clientId, userId, model.Role));
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);
