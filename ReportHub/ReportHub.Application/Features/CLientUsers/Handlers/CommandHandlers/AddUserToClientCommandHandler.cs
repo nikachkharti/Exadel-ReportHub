@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Domain.Entities;
 
@@ -10,17 +11,22 @@ namespace ReportHub.Application.Features.CLientUsers.Handlers.CommandHandlers
     {
         private readonly IClientUserRepository _clientUserRepository;
         private readonly IIdentityService _identityService;
+        private readonly IMediator _mediator;
 
         public AddUserToClientCommandHandler
             (IClientUserRepository clientUserRepository,
-            IIdentityService identityService)
+            IIdentityService identityService,
+            IMediator mediator)
         {
             _clientUserRepository = clientUserRepository;
             _identityService = identityService;
+            _mediator = mediator;
         }
 
         public async Task<bool> Handle(AddUserToClientCommand request, CancellationToken cancellationToken)
         {
+            await EnsureEntitiesExist(request.UserId, request.ClientId,cancellationToken);
+
             var clientUser = new ClientUser
             {
                 ClientId = request.ClientId,
@@ -28,16 +34,27 @@ namespace ReportHub.Application.Features.CLientUsers.Handlers.CommandHandlers
                 Role = request.Role
             };
 
-            var roleAssigned = await _identityService.AssignUserRole(request.UserId, request.Role, cancellationToken);
-
-            if (!roleAssigned)
-            {
-                return false;
-            }
-            
-            await _clientUserRepository.Insert(clientUser, cancellationToken);
+            await Task.WhenAll(
+                _clientUserRepository.Insert(clientUser, cancellationToken),
+                MakeUserAdminIfRoleAppropraite(request.Role, request.UserId, cancellationToken));
 
             return true;
+        }
+
+        private async Task MakeUserAdminIfRoleAppropraite(string role, string userId, CancellationToken cancellationToken)
+        {
+            string[] roles = ["SuperAdmin", "Owner", "ClientAdmin"];
+
+            if (roles.Any(r => r.Equals(role)))
+            {
+                await _identityService.AssignUserRole(userId, cancellationToken);
+            }
+        }
+
+        private async Task EnsureEntitiesExist(string userId, string clientId, CancellationToken cancellationToken)
+        {
+             await _mediator.Send(new GetClientByIdQuery(clientId), cancellationToken);
+            await _identityService.ValidateUserIdExists(userId, cancellationToken);
         }
     }
 }

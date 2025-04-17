@@ -2,7 +2,7 @@
 
 public interface IIdentityService
 {
-    Task<bool> AssignUserRole(string userId, string roleName, CancellationToken cancellationToken);
+    Task<bool> AssignUserRole(string userId, CancellationToken cancellationToken);
 
     Task<bool> ValidateUserIdExists(string userId, CancellationToken cancellationToken);
 

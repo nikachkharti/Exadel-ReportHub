@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using ReportHub.Application.Contracts.IdentityContracts;
+using ReportHub.Application.Validators.Exceptions;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -28,11 +29,11 @@ public class IdentityService : IIdentityService
         }
     }
 
-    public async Task<bool> AssignUserRole(string userId, string roleName, CancellationToken cancellationToken)
+    public async Task<bool> AssignUserRole(string userId, CancellationToken cancellationToken)
     {
         var requestBody = new
         {
-            roleName = roleName
+            roleName = "Admin"
         };
         var result = await _httpClient
                     .PostAsJsonAsync($"{_identitBaseyUrl}/api/Admin/users/{userId}/roles", requestBody, cancellationToken);
@@ -51,10 +52,14 @@ public class IdentityService : IIdentityService
     public async Task<bool> ValidateUserIdExists(string userId, CancellationToken cancellationToken)
     {
         var response = await _httpClient.GetAsync(
-            $"{_identitBaseyUrl}/api/Admin/users/{userId}",
-            cancellationToken);
+            $"{_identitBaseyUrl}/api/Admin/users/{userId}", cancellationToken);
 
-        return response.IsSuccessStatusCode;
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new NotFoundException($"User with {userId} not found");
+        }
+
+        return true;
     }
 
     public async Task<bool> ValidateRoleExists(string role, CancellationToken cancellationToken)
