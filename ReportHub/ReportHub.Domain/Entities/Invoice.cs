@@ -17,7 +17,8 @@ namespace ReportHub.Domain.Entities
         public DateTime IssueDate { get; set; }
         public DateTime DueDate { get; set; }
         public decimal Amount { get; set; }
-        public string Currency { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string CurrencyId { get; set; }
         public string PaymentStatus { get; set; }
         public List<string> ItemIds { get; set; }
     }
