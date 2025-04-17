@@ -5,7 +5,7 @@ using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Models;
 
 namespace ReportHub.Identity.Controllers;
-[Authorize(Roles = "Admin, SuperAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+[Authorize(Roles = "Admin, SystemAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 [Route("api/[controller]/users")]
 [ApiController]
 public class AdminController : ControllerBase
