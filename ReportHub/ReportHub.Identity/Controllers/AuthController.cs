@@ -148,6 +148,7 @@ public class AuthController : ControllerBase
 
         identity
             .SetClaim(Claims.Subject, principal.GetClaim(Claims.Subject))
+            .SetClaim(ClaimTypes.NameIdentifier, principal.GetClaim(ClaimTypes.NameIdentifier))
             .SetClaim(Claims.Audience, principal.GetClaim(Claims.Audience))
             .SetClaim(Claims.Email, principal.GetClaim(Claims.Email))
             .SetClaim(Claims.Name, principal.GetClaim(Claims.Name))
@@ -179,7 +180,7 @@ public class AuthController : ControllerBase
     {
         identity
                     .SetClaim(Claims.Subject, request.ClientId)
-                    .SetClaim("UserId", user.Id)
+                    .SetClaim(ClaimTypes.NameIdentifier, user.Id)
                     .SetClaim(Claims.Audience, "report-hub-api-audience")
                     .SetClaim(Claims.Email, user.Email)
                     .SetClaim(Claims.Name, user.UserName)
