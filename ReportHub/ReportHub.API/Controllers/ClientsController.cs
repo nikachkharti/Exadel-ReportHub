@@ -15,7 +15,6 @@ namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Superadmin, Admin, ClientAdmin")]
     public class ClientsController(IMediator mediator) : ControllerBase
     {
         /// <summary>
@@ -26,6 +25,7 @@ namespace ReportHub.API.Controllers
         /// <param name="sortingParameter">Sorting field</param>
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
+        [Authorize(Roles = "SystemAdmin")]
         [HttpGet]
         public async Task<IActionResult> GetAllClients([FromQuery][Required] int? pageNumber = 1, [FromQuery][Required] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery][Required] bool ascending = true)
         {
@@ -90,7 +90,7 @@ namespace ReportHub.API.Controllers
         /// <param name="userId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "SystemAdmin")]
         [HttpPost("{clientId}/users/{userId}/role")]
         public async Task<IActionResult> AddUserToClient(string clientId, string userId, [FromBody] AddUserToClientDto model)
         {
@@ -100,12 +100,33 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
+        /// <summary>
+        /// Get client users
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpGet("{clientId}/users")]
         public async Task<IActionResult> GetClientUsersByClientId(string clientId, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(new GetAllClientUserByClientIdQuery(clientId), cancellationToken);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
+        /// <summary>
+        ///  Remove user from client
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="userId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [HttpDelete("{clientId}/users/{userId}")]
+        public async Task<IActionResult> DeleteUserFromClient(string clientId, string userId, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(new DeleteClientUserCommand(clientId, userId), cancellationToken);
+
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);
         }
 

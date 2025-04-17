@@ -2,6 +2,7 @@
 using MediatR;
 using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Features.ClientRoles.Queries;
 using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Domain.Entities;
@@ -29,20 +30,22 @@ namespace ReportHub.Application.Features.CLientUsers.Handlers.CommandHandlers
 
         public async Task<bool> Handle(AddUserToClientCommand request, CancellationToken cancellationToken)
         {
-            await EnsureEntitiesExist(request.UserId, request.ClientId,cancellationToken);
+            await EnsureEntitiesExist(request,cancellationToken);
 
             var clientUser = _mapper.Map<ClientUser>(request);
 
             await _clientUserRepository.Insert(clientUser, cancellationToken);
+
             await MakeUserAdminIfRoleAppropraite(request.Role, request.UserId, cancellationToken);
 
             return true;
         }
 
-        private async Task EnsureEntitiesExist(string userId, string clientId, CancellationToken cancellationToken)
+        private async Task EnsureEntitiesExist(AddUserToClientCommand request, CancellationToken cancellationToken)
         {
-            await _mediator.Send(new GetClientByIdQuery(clientId), cancellationToken);
-            await _identityService.ValidateUserIdExists(userId, cancellationToken);
+            await _mediator.Send(new GetClientByIdQuery(request.ClientId), cancellationToken);
+            await _mediator.Send(new GetClientRoleByNameQuery(request.Role));
+            await _identityService.ValidateUserIdExists(request.UserId, cancellationToken);
         }
 
         private async Task MakeUserAdminIfRoleAppropraite(string role, string userId, CancellationToken cancellationToken)

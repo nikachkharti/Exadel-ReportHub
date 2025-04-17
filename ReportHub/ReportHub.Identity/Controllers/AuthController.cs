@@ -27,8 +27,8 @@ public class AuthController : ControllerBase
         _applicationManager = applicationManager;
         _userManager = userManager;
     }
-    [Authorize(Roles = "SuperAdmin, Admin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    [HttpPost("sign-up")]
+    [Authorize(Roles = "SystemAdmin, Admin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [HttpPost("users")]
     public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
     {
         if (await _userManager.FindByEmailAsync(request.Email) is not null)

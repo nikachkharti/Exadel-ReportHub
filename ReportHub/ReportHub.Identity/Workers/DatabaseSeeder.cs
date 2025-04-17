@@ -51,7 +51,6 @@ public class DatabaseSeeder : IHostedService
         const string adminEmail = "admin@example.com";
         const string adminPassword = "Admin123$";
         const string adminRole = "Admin";
-        const string superAdmin = "SystemAdmin";
 
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
         var user = await userManager.FindByEmailAsync(adminEmail);
@@ -68,7 +67,6 @@ public class DatabaseSeeder : IHostedService
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(user, adminRole);
-                await userManager.AddToRoleAsync(user, superAdmin);
             }
         }
     }
