@@ -12,6 +12,8 @@ using ReportHub.Infrastructure.Configurations;
 using Serilog;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using ReportHub.API.Middlewares;
+using ReportHub.API.Authorization.Requirements;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ReportHub.API.Extensions
 {
@@ -126,11 +128,26 @@ namespace ReportHub.API.Extensions
         {
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("admin", policy =>
-                    policy.RequireRole("admin"));
-                options.AddPolicy("user", policy =>
-                    policy.RequireRole("user"));
+                options
+                    .AddPolicy("CreateOrDeleteClientPolicy", ["SuperAdmin"])
+                    .AddPolicy("UpdateClientPolicy", ["SuperAdmin", "Owner"])
+                    .AddPolicy("GetClientPolicy", [])
+                    .AddPolicy("ManageClientUserPolicy", ["SuperAdmin", "Owner", "ClientAdmin"])
+                    .AddPolicy("GetClientUserPolicy", [])
+                    .AddPolicy("ManageItemPolicy", ["Owner", "ClientAdmin"])
+                    .AddPolicy("GetItemPolicy", ["Owner", "ClientAdmin", "Operator"])
+                    .AddPolicy("CreateReadUpdatePolicy", ["Owner", "ClientAdmin"]);
             });
+        }
+
+        private static AuthorizationOptions AddPolicy(this AuthorizationOptions options, string policyName, IList<string> requiredRoles)
+        {
+            options.AddPolicy(policyName, policy =>
+            {
+                policy.Requirements.Add(new ClientRoleRequirement(requiredRoles));
+            });
+
+            return options;
         }
     }
 }
