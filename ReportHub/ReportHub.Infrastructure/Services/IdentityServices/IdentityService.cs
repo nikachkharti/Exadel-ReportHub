@@ -17,6 +17,7 @@ public class IdentityService : IIdentityService
         _httpContextAccessor = httpContextAccessor;
         _identitBaseyUrl = configuration["Authentication:Issuer"] ?? 
                                     throw new ArgumentNullException("Identity url is not set");
+
         _httpClient = new HttpClient();
 
         var token = GetBearerTokenFromRequest();
@@ -31,11 +32,19 @@ public class IdentityService : IIdentityService
     {
         var requestBody = new
         {
-            userId = userId,
             roleName = roleName
         };
-        var result = await _httpClient.PostAsJsonAsync($"{_identitBaseyUrl}/api/Admin/assign-role", requestBody, cancellationToken);
+        var result = await _httpClient
+                    .PostAsJsonAsync($"{_identitBaseyUrl}/api/Admin/users/{userId}/roles", requestBody, cancellationToken);
 
+        return result.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> RemoveUserRole(string userId, CancellationToken cancellationToken)
+    {
+        var result = await _httpClient
+                    .DeleteAsync($"{_identitBaseyUrl}/api/Admin/users/{userId}/roles/Admin", cancellationToken);
+        
         return result.IsSuccessStatusCode;
     }
 
