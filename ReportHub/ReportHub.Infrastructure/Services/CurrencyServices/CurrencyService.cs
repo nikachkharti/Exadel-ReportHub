@@ -1,13 +1,10 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using OfficeOpenXml.FormulaParsing.LexicalAnalysis;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Net;
 using System.Xml.Linq;
 
 namespace ReportHub.Infrastructure.Services.CurrencyServices;

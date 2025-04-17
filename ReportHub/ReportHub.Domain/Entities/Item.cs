@@ -14,7 +14,6 @@ namespace ReportHub.Domain.Entities
         public string Name { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string CurrencyId { get; set; }
+        public string Currency { get; set; }
     }
 }

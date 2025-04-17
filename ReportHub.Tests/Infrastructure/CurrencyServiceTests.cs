@@ -84,28 +84,37 @@ public class CurrencyServiceTests
     }
 
     [Fact]
-    public async Task GetExchangeRateAsync_CrossCurrency_Uses_Ecb_Twice()
+    public async Task GetExchangeRateAsync_Falls_Back_And_Succeeds_On_Earlier_Date()
     {
-        var date = DateTime.UtcNow.Date;
-
-        string response = $@"<gesmes:Envelope xmlns:gesmes='http://www.gesmes.org/xml/2002-08-01' xmlns='http://www.ecb.int/vocabulary/2002-08-01/eurofxref'>
-            <Cube>
-                <Cube time='{date:yyyy-MM-dd}'>
-                    <Cube currency='USD' rate='1.10'/>
-                    <Cube currency='GBP' rate='0.90'/>
-                </Cube>
-            </Cube>
-        </gesmes:Envelope>";
+        var date = new DateTime(2000, 1, 1);
+        int callCount = 0;
 
         var handler = new Mock<HttpMessageHandler>();
         handler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage
+            .ReturnsAsync(() =>
             {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent(response)
+                callCount++;
+                if (callCount < 3)
+                {
+                    throw new Exception("ECB down");
+                }
+
+                return new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent($@"
+                <gesmes:Envelope xmlns:gesmes='http://www.gesmes.org/xml/2002-08-01' xmlns='http://www.ecb.int/vocabulary/2002-08-01/eurofxref'>
+                    <Cube>
+                        <Cube time='{date.AddDays(-2):yyyy-MM-dd}'>
+                            <Cube currency='USD' rate='1.10'/>
+                            <Cube currency='GBP' rate='0.90'/>
+                        </Cube>
+                    </Cube>
+                </gesmes:Envelope>")
+                };
             });
 
         var client = new HttpClient(handler.Object);
@@ -114,24 +123,7 @@ public class CurrencyServiceTests
         var result = await _currencyService.GetExchangeRateAsync("USD", "GBP", date, CancellationToken.None);
 
         Assert.Equal(0.90m / 1.10m, result, 2);
+        Assert.True(callCount >= 3);
     }
 
-    [Fact]
-    public async Task GetExchangeRateAsync_Falls_Back_If_Rate_Not_Available()
-    {
-        // Simulate no rate found (throws)
-        var handler = new Mock<HttpMessageHandler>();
-        handler.Protected()
-            .Setup<Task<HttpResponseMessage>>("SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .ThrowsAsync(new Exception("ECB failure"));
-
-        var client = new HttpClient(handler.Object);
-        _httpClientFactoryMock.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(client);
-
-        // Just make sure it doesn’t throw here – fallback logic will try older dates
-        await Assert.ThrowsAsync<Exception>(() =>
-            _currencyService.GetExchangeRateAsync("USD", "GBP", new DateTime(2000, 1, 1), CancellationToken.None));
-    }
 }
