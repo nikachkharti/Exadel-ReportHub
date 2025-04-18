@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Serilog;
@@ -26,6 +27,7 @@ namespace ReportHub.Infrastructure.Middleware
                 var customerRepository = scope.ServiceProvider.GetRequiredService<ICustomerRepository>();
                 var itemRepository = scope.ServiceProvider.GetRequiredService<IItemRepository>();
                 var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
+                var planRepository = scope.ServiceProvider.GetRequiredService<IPlanRepository>();
 
                 #region CLIENTS SEED
                 var existingClients = await clientRepository.GetAll(pageNumber: 1, pageSize: 1);
@@ -324,6 +326,61 @@ namespace ReportHub.Infrastructure.Middleware
                     Log.Information("Database already contains invoice data. Skipping seeding...");
                 }
 
+                #endregion
+
+
+                #region PLANS SEED
+                var existingPlans = await planRepository.GetAll(pageNumber: 1, pageSize: 1);
+                if (!existingPlans.Any())
+                {
+                    Log.Information("Seeding initial plans data...");
+
+                    var plans = new List<Plan>()
+                    {
+                        new Plan()
+                        {
+                            Id = "680234508ed022f95e0789d9",
+                            ClientId = "67fa2d8114e2389cd8064452",
+                            ItemId = "67fa2d8114e2389cd8064460",
+                            Amount = 3000.00m,
+                            StartDate = DateTime.UtcNow.AddDays(1),
+                            EndDate = DateTime.UtcNow.AddMonths(3),
+                            Status = PlanStatus.Planned
+                        },
+                        new Plan()
+                        {
+                            Id = "680234508ed022f95e0789da",
+                            ClientId = "67fa2d8114e2389cd8064453",
+                            ItemId = "67fa2d8114e2389cd8064464",
+                            Amount = 9000.00m,
+                            StartDate = DateTime.UtcNow.AddDays(10),
+                            EndDate = DateTime.UtcNow.AddMonths(6),
+                            Status = PlanStatus.Planned
+                        },
+                        new Plan()
+                        {
+                            Id = "680234508ed022f95e0789db",
+                            ClientId = "67fa2d8114e2389cd8064454",
+                            ItemId = "67fa2d8114e2389cd8064465",
+                            Amount = 350.00m,
+                            StartDate = DateTime.UtcNow.AddDays(-5),
+                            EndDate = DateTime.UtcNow.AddMonths(1),
+                            Status = PlanStatus.InProgress
+                        }
+                    };
+
+                    foreach (var plan in plans)
+                    {
+                        Log.Information($"Seeding plan for item: {plan.ItemId}");
+                        await planRepository.Insert(plan);
+                    }
+
+                    Log.Information("Plan seeding completed");
+                }
+                else
+                {
+                    Log.Information("Database already contains plan data. Skipping seeding...");
+                }
                 #endregion
             }
             catch (Exception ex)

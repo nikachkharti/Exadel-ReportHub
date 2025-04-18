@@ -4,7 +4,10 @@ using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.DTOs;
 using ReportHub.Application.Features.Invoices.DTOs;
+using ReportHub.Application.Features.Item.Commands;
 using ReportHub.Application.Features.Item.DTOs;
+using ReportHub.Application.Features.Plans.Commands;
+using ReportHub.Application.Features.Plans.DTOs;
 using ReportHub.Domain.Entities;
 
 namespace ReportHub.Application.Features.Mapping;
@@ -75,6 +78,46 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Description, options => options.MapFrom(src => src.Description))
             .ForMember(dest => dest.Price, options => options.MapFrom(src => src.Price))
             .ForMember(dest => dest.Currency, options => options.MapFrom(src => src.Currency));
+
+        CreateMap<CreateItemCommand, Domain.Entities.Item>()
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
+            .ForMember(dest => dest.Description, options => options.MapFrom(src => src.Description))
+            .ForMember(dest => dest.Price, options => options.MapFrom(src => src.Price))
+            .ForMember(dest => dest.Currency, options => options.MapFrom(src => src.Currency));
+
+
+        #endregion
+
+
+        #region PLAN
+
+        CreateMap<Plan, PlanForGettingDto>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.StartDate, options => options.MapFrom(src => src.StartDate))
+            .ForMember(dest => dest.EndDate, options => options.MapFrom(src => src.EndDate))
+            .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status))
+            .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount));
+
+        CreateMap<CreatePlanCommand, Plan>()
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.StartDate, options => options.MapFrom(src => src.StartDate))
+            .ForMember(dest => dest.EndDate, options => options.MapFrom(src => src.EndDate))
+            .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status))
+            .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount));
+
+
+        CreateMap<UpdatePlanCommand, Plan>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.StartDate, options => options.MapFrom(src => src.StartDate))
+            .ForMember(dest => dest.EndDate, options => options.MapFrom(src => src.EndDate))
+            .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status))
+            .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount));
 
         #endregion
 
