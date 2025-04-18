@@ -6,7 +6,7 @@ using ReportHub.Application.Features.ClientRoles.Queries;
 
 namespace ReportHub.API.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "SystemAdmin")]
     [ApiController]
     [Route("api/[controller]")]
     public class ClientRolesController(IMediator mediator) : ControllerBase
