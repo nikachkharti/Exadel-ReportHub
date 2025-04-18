@@ -7,13 +7,13 @@ public static class RolePermissions
         [ "SuperAdmin" ] = new()
         {
             PermissionType.CreateClient, PermissionType.GetAllClients, PermissionType.GetOneClient, PermissionType.UpdateClient, PermissionType.DeleteClient,
-            PermissionType.AddUserToClient, PermissionType.GetAllUsersInClient, PermissionType.RemoveUserFromClient,
+            PermissionType.AddUserToClient, PermissionType.GetClientUsers, PermissionType.RemoveUserFromClient,
         },
 
         [ "Owner" ] = new HashSet<PermissionType>
         {
             PermissionType.GetAllClients, PermissionType.GetOneClient, PermissionType.UpdateClient, 
-            PermissionType.AddUserToClient, PermissionType.GetAllUsersInClient, PermissionType.RemoveUserFromClient,
+            PermissionType.AddUserToClient, PermissionType.GetClientUsers, PermissionType.RemoveUserFromClient,
             PermissionType.CreateItem, PermissionType.GetClientItems, PermissionType.UpdateItem, PermissionType.DeleteItem,
             PermissionType.CreateInvoice, PermissionType.GetClientInvoices, PermissionType.UpdateInvoice, PermissionType.DeleteInvoice,
             PermissionType.CreateCustomer, PermissionType.GetClientCustomers, PermissionType.UpdateCustomer, PermissionType.DeleteCustomer,
@@ -35,7 +35,7 @@ public static class RolePermissions
         [ "Operator" ] = new()
         {
             PermissionType.GetAllClients, PermissionType.GetOneClient,
-            PermissionType.GetAllUsersInClient,
+            PermissionType.GetClientUsers,
             PermissionType.GetClientItems,
             PermissionType.CreateInvoice, PermissionType.GetClientInvoices,
             PermissionType.CreateCustomer, PermissionType.GetClientCustomers

@@ -9,7 +9,7 @@ public enum PermissionType
     DeleteClient,
 
     AddUserToClient,
-    GetAllUsersInClient,
+    GetClientUsers,
     RemoveUserFromClient,
 
     CreateItem,

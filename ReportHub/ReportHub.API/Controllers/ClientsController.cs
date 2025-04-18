@@ -27,7 +27,7 @@ namespace ReportHub.API.Controllers
         /// <param name="sortingParameter">Sorting field</param>
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
-        [Authorize(Roles = "SystemAdmin")]
+        [Permission(PermissionType.GetAllClients)]
         [HttpGet]
         public async Task<IActionResult> GetAllClients([FromQuery][Required] int? pageNumber = 1, [FromQuery][Required] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery][Required] bool ascending = true)
         {
@@ -44,6 +44,7 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="id">Client Id</param>
         /// <returns>IActionResult</returns>
+        [Permission(PermissionType.GetOneClient)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSingleClient([FromRoute][Required] string id)
         {
@@ -60,6 +61,7 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="id">Client Id</param>
         /// <returns>IActionResult</returns>
+        [Permission(PermissionType.GetClientItems)]
         [HttpGet("{id}/items")]
         public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string id)
         {
@@ -76,6 +78,7 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="model">Client model</param>
         /// <returns>IActionResult</returns>
+        [Permission(PermissionType.CreateClient)]
         [HttpPost]
         public async Task<IActionResult> AddNewClient([FromForm] CreateClientCommand model)
         {
@@ -108,6 +111,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [Permission(PermissionType.GetClientUsers)]
         [HttpGet("{clientId}/users")]
         public async Task<IActionResult> GetClientUsersByClientId(string clientId, CancellationToken cancellationToken)
         {
@@ -123,6 +127,7 @@ namespace ReportHub.API.Controllers
         /// <param name="userId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        [Permission(PermissionType.RemoveUserFromClient)]
         [HttpDelete("{clientId}/users/{userId}")]
         public async Task<IActionResult> DeleteUserFromClient(string clientId, string userId, CancellationToken cancellationToken)
         {
@@ -137,6 +142,7 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="id">Client Id</param>
         /// <returns>IActionResult</returns>
+        [Permission(PermissionType.DeleteClient)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteClient([FromRoute][Required] string id)
         {
@@ -154,6 +160,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId">Client Id</param>
         /// <param name="itemId">Item Id</param>
         /// <returns>IActionResult</returns>
+        [Permission(PermissionType.DeleteItem)]
         [HttpDelete("clients/{clientId}/items/{itemId}")]
         public async Task<IActionResult> DeleteItem([FromRoute][Required] string clientId, [FromRoute][Required] string itemId)
         {
@@ -169,6 +176,7 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="model">Update document</param>
         /// <returns>IActionResult</returns>
+        [Permission(PermissionType.UpdateClient)]
         [HttpPut]
         public async Task<IActionResult> UpdateClient([FromForm][Required] UpdateClientCommand model)
         {
