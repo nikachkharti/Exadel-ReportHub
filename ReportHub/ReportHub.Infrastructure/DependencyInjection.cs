@@ -5,7 +5,6 @@ using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Infrastructure.Repository;
 using ReportHub.Infrastructure.Services.FileServices;
 using ReportHub.Application.Contracts.RepositoryContracts;
-using ReportHub.Infrastructure.Middleware;
 using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Infrastructure.Services.IdentityServices;
 
@@ -29,6 +28,7 @@ namespace ReportHub.Infrastructure
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
             services.AddScoped<IClientUserRepository, ClientUserRepository>();
+            services.AddScoped<IPlanRepository, PlanRepository>();
 
             return services;
         }
