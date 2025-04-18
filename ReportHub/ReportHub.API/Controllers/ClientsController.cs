@@ -10,6 +10,8 @@ using ReportHub.Application.Features.Item.Commands;
 using System.ComponentModel.DataAnnotations;
 using ReportHub.Application.Common.Models;
 using System.Net;
+using ReportHub.API.Authorization.Attributes;
+using ReportHub.API.Authorization.Permissions;
 
 namespace ReportHub.API.Controllers
 {
@@ -90,7 +92,7 @@ namespace ReportHub.API.Controllers
         /// <param name="userId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [Authorize(Roles = "SystemAdmin")]
+        [Permission(PermissionType.AddUserToClient)]
         [HttpPost("{clientId}/users/{userId}/role")]
         public async Task<IActionResult> AddUserToClient(string clientId, string userId, [FromBody] AddUserToClientDto model)
         {

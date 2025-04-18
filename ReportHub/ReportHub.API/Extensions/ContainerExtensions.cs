@@ -15,6 +15,7 @@ using ReportHub.API.Middlewares;
 using ReportHub.API.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using ReportHub.API.Authorization.Handlers;
+using ReportHub.API.Authorization.Permissions;
 
 namespace ReportHub.API.Extensions
 {
@@ -129,29 +130,17 @@ namespace ReportHub.API.Extensions
         {
             builder.Services.AddAuthorization(options =>
             {
-                options
-                    .AddPolicy("CreateOrDeleteClientPolicy", ["SuperAdmin"])
-                    .AddPolicy("UpdateClientPolicy", ["SuperAdmin", "Owner"])
-                    .AddPolicy("GetClientPolicy", [])
-                    .AddPolicy("ManageClientUserPolicy", ["SuperAdmin", "Owner", "ClientAdmin"])
-                    .AddPolicy("GetClientUserPolicy", [])
-                    .AddPolicy("ManageItemPolicy", ["Owner", "ClientAdmin"])
-                    .AddPolicy("GetItemPolicy", ["Owner", "ClientAdmin", "Operator"])
-                    .AddPolicy("CreateReadUpdatePolicy", ["Owner", "ClientAdmin"]);
+                foreach (var permission in Enum.GetValues<PermissionType>())
+                {
+                    options.AddPolicy(permission.ToString(), policy =>
+                    {
+                        policy.Requirements.Add(new PermissionRequirement(permission));
+                    });
+                }
             });
 
             builder.Services.AddHttpContextAccessor();
-            builder.Services.AddScoped<IAuthorizationHandler, ClientRoleHandler>();
-        }
-
-        private static AuthorizationOptions AddPolicy(this AuthorizationOptions options, string policyName, IList<string> requiredRoles)
-        {
-            options.AddPolicy(policyName, policy =>
-            {
-                policy.Requirements.Add(new ClientRoleRequirement(requiredRoles));
-            });
-
-            return options;
+            builder.Services.AddScoped<IAuthorizationHandler, PermissionHandlers>();
         }
     }
 }
