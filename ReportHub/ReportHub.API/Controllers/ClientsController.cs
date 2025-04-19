@@ -28,7 +28,7 @@ namespace ReportHub.API.Controllers
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
         [HttpGet]
-        public async Task<IActionResult> GetAllClients([FromQuery][Required] int? pageNumber = 1, [FromQuery][Required] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery][Required] bool ascending = true)
+        public async Task<IActionResult> GetAllClients([FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
             var query = new GetAllClientsQuery(pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
@@ -169,10 +169,10 @@ namespace ReportHub.API.Controllers
         [HttpGet("{clientId}/plans")]
         public async Task<IActionResult> GetAllPlansOfClient(
             [FromRoute][Required] string clientId,
-            [FromQuery][Required] int? pageNumber = 1,
-            [FromQuery][Required] int? pageSize = 10,
+            [FromQuery] int? pageNumber = 1,
+            [FromQuery] int? pageSize = 10,
             [FromQuery] string sortingParameter = "",
-            [FromQuery][Required] bool ascending = true)
+            [FromQuery] bool ascending = true)
         {
             var query = new GetPlansOfClientQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
