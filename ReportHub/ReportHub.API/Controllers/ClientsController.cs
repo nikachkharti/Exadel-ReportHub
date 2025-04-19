@@ -11,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using ReportHub.Application.Common.Models;
 using System.Net;
 using ReportHub.Application.Features.Plans.Queries;
-using ReportHub.Application.Features.Sale.Commands;
+using ReportHub.Application.Features.Sale.Queries;
 
 namespace ReportHub.API.Controllers
 {
@@ -161,7 +161,7 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Get all plans of client
         /// </summary>
-        /// <param name="clientId">Page number</param>
+        /// <param name="clientId">Client id</param>
         /// <param name="pageNumber">Page number</param>
         /// <param name="pageSize">Page size</param>
         /// <param name="sortingParameter">Sorting field</param>
@@ -182,6 +182,31 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
+
+        /// <summary>
+        /// Get all sells of client
+        /// </summary>
+        /// <param name="clientId">Client id</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortingParameter">Sorting field</param>
+        /// <param name="ascending">Is ascended</param>
+        /// <returns>IActionResult</returns>
+        /// <returns>IActionResult</returns>
+        [HttpGet("{clientId}/sales")]
+        public async Task<IActionResult> GetAllSalesOfClient(
+            [FromRoute][Required] string clientId,
+            [FromQuery] int? pageNumber = 1,
+            [FromQuery] int? pageSize = 10,
+            [FromQuery] string sortingParameter = "",
+            [FromQuery] bool ascending = true)
+        {
+            var query = new GetSalesByClientIdQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
+            var result = await mediator.Send(query);
+
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
 
 
         /// <summary>
