@@ -25,17 +25,17 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
         _cache = cache;
     }
 
-    public Task<CurrencyDto> GetCurrencyAsync(string fromCurrency, string toCurrency)
+    public Task<decimal> GetCurrencyAsync(string fromCurrency, string toCurrency)
         => GetCurrencyAsync(fromCurrency, toCurrency, DateTime.UtcNow);
 
-    public async Task<CurrencyDto> GetCurrencyAsync(
+    public async Task<decimal> GetCurrencyAsync(
         string fromCurrency,
         string toCurrency,
         DateTime date)
     {
         var key = $"{fromCurrency}_{toCurrency}_{date:yyyy-MM-dd}";
 
-        if (_cache.TryGetValue<CurrencyDto>(key, out var cachedDto))
+        if (_cache.TryGetValue<decimal>(key, out var cachedDto))
         {
             return cachedDto;
         }
@@ -77,7 +77,7 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
         //    SlidingExpiration = TimeSpan.FromMinutes(15)
         //};
         //_cache.Set(key, dto, cacheOptions);
-        return null;
+        return rate;
     }
     //cach should be first, first try to get data from catch 
 }

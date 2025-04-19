@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.VisualBasic;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Invoices.Commands;
@@ -33,9 +34,23 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
         var totalAmount = 0m;
         foreach(var item in items)
         {
-            var itemCurrency = await _exchangeCurrencyService.GetCurrencyAsync(item.Currency, currency.Code);
+            var rate = await _exchangeCurrencyService.GetCurrencyAsync(item.Currency, currency.Code);
+            totalAmount += rate * item.Price;
         }
 
-        return null;
+        var invoice = new Invoice
+        {
+            Amount = totalAmount,
+            ClientId = request.ClientId,
+            CustomerId = request.CustomerId,
+            ItemIds = request.items.ToList(),
+            Currency = currency.Code,
+            PaymentStatus = "InProgress",
+            IssueDate = DateTime.UtcNow.AddDays(-10),
+            DueDate = DateTime.UtcNow.AddDays(20)
+        };
+
+        await _invoiceRepository.Insert(invoice);
+        return invoice;
     }
 }
