@@ -119,6 +119,11 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status))
             .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount));
 
+
+        CreateMap<UpdatePlanStatusCommand, Plan>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status));
+
         #endregion
 
     }

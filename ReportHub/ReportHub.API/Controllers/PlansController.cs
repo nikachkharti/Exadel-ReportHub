@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Plans.Commands;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace ReportHub.API.Controllers
@@ -53,6 +52,20 @@ namespace ReportHub.API.Controllers
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
+
+        /// <summary>
+        /// Update status of plan manually
+        /// </summary>
+        /// <param name="model">Status update model</param>
+        /// <returns>IActionResult</returns>
+        [HttpPatch("status")]
+        public async Task<IActionResult> ChangePlanStatus([FromBody] UpdatePlanStatusCommand model)
+        {
+            var result = await mediator.Send(model);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
 
