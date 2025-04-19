@@ -5,7 +5,6 @@ using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Infrastructure.Repository;
 using ReportHub.Infrastructure.Services.FileServices;
 using ReportHub.Application.Contracts.RepositoryContracts;
-using ReportHub.Infrastructure.Middleware;
 using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Infrastructure.Services.IdentityServices;
 using ReportHub.Application.Contracts.CurrencyContracts;
@@ -24,6 +23,7 @@ namespace ReportHub.Infrastructure
             services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IExcelService, ExcelService>();
             services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 
             // Register repositories
             services.AddScoped<IClientRepository, ClientRepository>();
@@ -31,7 +31,14 @@ namespace ReportHub.Infrastructure
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
             services.AddScoped<IClientUserRepository, ClientUserRepository>();
-            services.AddScoped<ICurrencyService, CurrencyService>();
+
+
+            // Currency api service
+            services.AddHttpClient
+               <IExchangeCurrencyService, ExchangeCurrencyService>(c => c.BaseAddress = new Uri("https://api.frankfurter.app/"));
+            // Caching
+            services.AddMemoryCache();
+
 
             return services;
         }
