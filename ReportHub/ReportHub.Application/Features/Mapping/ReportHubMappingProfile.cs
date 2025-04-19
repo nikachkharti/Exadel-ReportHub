@@ -8,6 +8,8 @@ using ReportHub.Application.Features.Item.Commands;
 using ReportHub.Application.Features.Item.DTOs;
 using ReportHub.Application.Features.Plans.Commands;
 using ReportHub.Application.Features.Plans.DTOs;
+using ReportHub.Application.Features.Sale.Commands;
+using ReportHub.Application.Features.Sale.DTOs;
 using ReportHub.Domain.Entities;
 
 namespace ReportHub.Application.Features.Mapping;
@@ -123,6 +125,31 @@ public class ReportHubMappingProfile : Profile
         CreateMap<UpdatePlanStatusCommand, Plan>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status));
+
+        #endregion
+
+
+        #region SALE
+
+        CreateMap<Domain.Entities.Sale, SaleForGettingDto>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount))
+            .ForMember(dest => dest.SaleDate, options => options.MapFrom(src => src.SaleDate));
+
+        CreateMap<CreateSaleCommand, Domain.Entities.Sale>()
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount))
+            .ForMember(dest => dest.SaleDate, options => options.MapFrom(src => src.SaleDate));
+
+        CreateMap<UpdateSaleCommand, Domain.Entities.Sale>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount))
+            .ForMember(dest => dest.SaleDate, options => options.MapFrom(src => src.SaleDate));
 
         #endregion
 
