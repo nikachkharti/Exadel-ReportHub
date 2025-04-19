@@ -23,7 +23,6 @@
 	<ItemGroup>
 		<Folder Include="Features\Invoices\Commands\" />
 		<Folder Include="Features\Invoices\Handlers\CommandHandlers\" />
-		<Folder Include="Features\Sale\Handlers\" />
 	</ItemGroup>
 
 </Project>

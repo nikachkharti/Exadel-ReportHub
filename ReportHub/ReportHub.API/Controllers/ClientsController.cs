@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations;
 using ReportHub.Application.Common.Models;
 using System.Net;
 using ReportHub.Application.Features.Plans.Queries;
+using ReportHub.Application.Features.Sale.Commands;
 
 namespace ReportHub.API.Controllers
 {
@@ -181,5 +182,19 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
+
+
+        /// <summary>
+        /// Selling of item
+        /// </summary>
+        /// <param name="model">Selling item model</param>
+        /// <returns>IActionResult</returns>
+        [HttpPost("sell")]
+        public async Task<IActionResult> SellItem([FromBody][Required] CreateSaleCommand model)
+        {
+            var result = await mediator.Send(model);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
     }
 }
