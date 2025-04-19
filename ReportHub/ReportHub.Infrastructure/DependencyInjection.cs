@@ -23,7 +23,7 @@ namespace ReportHub.Infrastructure
             services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IExcelService, ExcelService>();
             services.AddScoped<IIdentityService, IdentityService>();
-            services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+            services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
 
             // Register repositories
             services.AddScoped<IClientRepository, ClientRepository>();
@@ -31,6 +31,8 @@ namespace ReportHub.Infrastructure
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             services.AddScoped<IItemRepository, ItemRepository>();
             services.AddScoped<IClientUserRepository, ClientUserRepository>();
+            services.AddScoped<ICountryRepository, CountryRepository>();
+            services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 
 
             // Currency api service

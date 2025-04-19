@@ -5,9 +5,9 @@ using ReportHub.Infrastructure.Configurations;
 
 namespace ReportHub.Infrastructure.Repository;
 
-public class CurrencyRepository : MongoRepositoryBase<Currency>, ICurrencyRepository
+public class CountryRepository : MongoRepositoryBase<Country>, ICountryRepository
 {
-    public CurrencyRepository(IOptions<MongoDbSettings> options) : base(options, "Currency")
+    public CountryRepository(IOptions<MongoDbSettings> options) : base(options, "Countries")
     {
     }
 }

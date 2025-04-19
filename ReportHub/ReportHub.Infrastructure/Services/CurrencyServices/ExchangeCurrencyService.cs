@@ -4,17 +4,18 @@ using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.Extensions.Caching.Memory;
+using System.Net.Http;
 
 namespace ReportHub.Infrastructure.Services.CurrencyServices;
 public class ExchangeCurrencyService : IExchangeCurrencyService
 {
     private readonly HttpClient _httpClient;
-    private readonly ICurrencyRepository _currencyRepository;
+    private readonly IExchangeRateRepository _currencyRepository;
     private readonly IMemoryCache _cache;         
 
     public ExchangeCurrencyService(
         HttpClient httpClient,
-        ICurrencyRepository currencyRepository,
+        IExchangeRateRepository currencyRepository,
         IMemoryCache cache)                       
     {
         _httpClient = httpClient;
@@ -36,9 +37,10 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
         {
             return cachedDto;                    
         }
+        var something = new HttpClient();
         var dateStr = date.ToString("yyyy-MM-dd");
-        var uri = $"{dateStr}?from={fromCurrency}&to={toCurrency}";
-        var response = await _httpClient.GetAsync(uri);
+        var uri = $"https://api.frankfurter.app/{dateStr}?from={fromCurrency}&to={toCurrency}";
+        var response = await something.GetAsync(uri);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
@@ -48,7 +50,7 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
 
         if (dto != null)
         {
-            var entity = new Currency
+            var entity = new ExchangeRate
             {
                 Base = dto.Base,
                 Date = dto.Date,
@@ -60,13 +62,15 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
                 isUpsert: true);
 
             // Store in cache with expiration
-            var cacheOptions = new MemoryCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1),
-                SlidingExpiration = TimeSpan.FromMinutes(15)
-            };
-            _cache.Set(key, dto, cacheOptions);
+            //var cacheOptions = new MemoryCacheEntryOptions
+            //{
+            //    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
+            //    SlidingExpiration = TimeSpan.FromMinutes(15)
+            //};
+            //_cache.Set(key, dto, cacheOptions);
         }
+
+        //cach should be first, first try to get data from catch 
 
         return dto;
     }

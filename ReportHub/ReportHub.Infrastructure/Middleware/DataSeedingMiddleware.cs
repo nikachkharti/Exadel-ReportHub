@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
+using ReportHub.Infrastructure.Repository;
 using Serilog;
 using Item = ReportHub.Domain.Entities.Item;
 
@@ -10,6 +12,8 @@ namespace ReportHub.Infrastructure.Middleware
     public class DataSeedingMiddleware
     {
         private readonly RequestDelegate _next;
+        private ICurrencyRepository _currencyRepository;
+        private ICountryRepository _countryRepository;
 
         public DataSeedingMiddleware(RequestDelegate next)
         {
@@ -22,10 +26,15 @@ namespace ReportHub.Infrastructure.Middleware
             {
                 using var scope = serviceProvider.CreateScope();
 
+                _currencyRepository = scope.ServiceProvider.GetRequiredService<ICurrencyRepository>();
+                _countryRepository = scope.ServiceProvider.GetRequiredService<ICountryRepository>();
+
                 var clientRepository = scope.ServiceProvider.GetRequiredService<IClientRepository>();
                 var customerRepository = scope.ServiceProvider.GetRequiredService<ICustomerRepository>();
                 var itemRepository = scope.ServiceProvider.GetRequiredService<IItemRepository>();
                 var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
+
+                await SeedCountryAndCurrencyAsync();
 
                 #region CLIENTS SEED
                 var existingClients = await clientRepository.GetAll(pageNumber: 1, pageSize: 1);
@@ -80,28 +89,28 @@ namespace ReportHub.Infrastructure.Middleware
                         {
                             Id = "67fa2d8114e2389cd8064457",
                             Name = "John Doe",
-                            Address = "Doe street 12",
+                            //Address = "Doe street 12",
                             Email = "jonhode1@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd8064458",
                             Name = "Bill Butcher",
-                            Address = "Butch street 1",
+                            //Address = "Butch street 1",
                             Email = "bb@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd8064459",
                             Name = "Freddy Krueger",
-                            Address = "Krug street 31",
+                            //Address = "Krug street 31",
                             Email = "freddy@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd806445a",
                             Name = "John Cenna",
-                            Address = "Cen street 20",
+                            //Address = "Cen street 20",
                             Email = "joncena@gmail.com"
                         }
                     };
@@ -332,6 +341,78 @@ namespace ReportHub.Infrastructure.Middleware
             }
 
             await _next(context);
+        }
+
+        private async Task SeedCountryAndCurrencyAsync()
+        {
+            #region COUNTRY & CURRENCY SEED
+            var existingCountries = await _countryRepository.GetAll(pageNumber: 1, pageSize: 1);
+            if (!existingCountries.Any())
+            {
+                Log.Information("Fetching and seeding countries and currencies from REST Countries API...");
+
+                using var httpClient = new HttpClient();
+                var response = await httpClient.GetAsync("https://restcountries.com/v3.1/all");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var countriesData = System.Text.Json.JsonDocument.Parse(jsonString).RootElement;
+
+                    var countryEntities = new List<Country>();
+                    var currencyEntities = new List<Currency>();
+
+                    foreach (var country in countriesData.EnumerateArray())
+                    {
+                        var name = country.GetProperty("name").GetProperty("common").GetString();
+                        var currencies = country.TryGetProperty("currencies", out var currencyProp)
+                            ? currencyProp.EnumerateObject()
+                            : Enumerable.Empty<System.Text.Json.JsonProperty>();
+
+                        var countryEntity = new Country()
+                        {
+                            Id = ObjectId.GenerateNewId().ToString(), 
+                            Name = name!
+                        };
+
+                        countryEntities.Add(countryEntity);
+
+                        foreach (var currency in currencies)
+                        {
+                            currencyEntities.Add(new Currency()
+                            {
+                                Id = ObjectId.GenerateNewId().ToString(),
+                                Code = currency.Name,
+                                CountryId = countryEntity.Id
+                            });
+                        }
+                    }
+
+                    foreach (var c in countryEntities)
+                    {
+                        Log.Information($"Seeding country: {c.Name}");
+                        await _countryRepository.Insert(c);
+                    }
+
+                    foreach (var c in currencyEntities)
+                    {
+                        Log.Information($"Seeding currency: {c.Code}");
+                        await _currencyRepository.Insert(c);
+                    }
+
+                    Log.Information("Country and currency seeding completed");
+                }
+                else
+                {
+                    Log.Warning("Failed to fetch data from REST Countries API");
+                }
+            }
+            else
+            {
+                Log.Information("Database already contains country data. Skipping seeding...");
+            }
+            #endregion
+
         }
     }
 }

@@ -3,6 +3,6 @@ using ReportHub.Application.Features.Customers.Commands;
 
 namespace ReportHub.Application.Validators.CustomerValidators.CustomerCommandValidators;
 
-public class CreateCustomerCommandValidator : BaseCustomerCommandValidator<CreateCustomerCommand>
+public class CreateCustomerCommandValidator 
 {
 }
