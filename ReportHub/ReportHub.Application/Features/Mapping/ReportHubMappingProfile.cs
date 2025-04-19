@@ -144,6 +144,12 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount))
             .ForMember(dest => dest.SaleDate, options => options.MapFrom(src => src.SaleDate));
 
+        CreateMap<SellItemCommand, Domain.Entities.Sale>()
+            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+            .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
+            .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount))
+            .ForMember(dest => dest.SaleDate, options => options.MapFrom(src => src.SaleDate));
+
         CreateMap<UpdateSaleCommand, Domain.Entities.Sale>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))

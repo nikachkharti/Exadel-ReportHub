@@ -190,7 +190,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Selling item model</param>
         /// <returns>IActionResult</returns>
         [HttpPost("sell")]
-        public async Task<IActionResult> SellItem([FromBody][Required] CreateSaleCommand model)
+        public async Task<IActionResult> SellItem([FromBody][Required] SellItemCommand model)
         {
             var result = await mediator.Send(model);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
