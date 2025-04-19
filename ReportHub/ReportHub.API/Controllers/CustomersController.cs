@@ -83,7 +83,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Update document</param>
         /// <returns>IActionResult</returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateCustomer([FromForm][Required] UpdateCustomerCommand model)
+        public async Task<IActionResult> UpdateCustomer([FromBody] UpdateCustomerCommand model)
         {
             var result = await mediator.Send(model);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
