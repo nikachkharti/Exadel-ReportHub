@@ -16,8 +16,7 @@ public class BaseCustomerCommandValidator<TCommand> : AbstractValidator<TCommand
             .NotEmpty().WithMessage("Email is required.")
             .EmailAddress().WithMessage("A valid email is required.");
 
-        RuleFor(x => x.Address)
-            .NotEmpty().WithMessage("Address is required.")
-            .MaximumLength(200).WithMessage("Address must not exceed 200 characters.");
+        RuleFor(x => x.CountryId)
+            .NotEmpty().WithMessage("Country is required.");
     }
 }

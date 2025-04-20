@@ -24,7 +24,7 @@ namespace ReportHub.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCustomers(string clientId,[FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
-            var query = new GetAllCustomersQuery(pageNumber, pageSize, sortingParameter, ascending);
+            var query = new GetAllCustomersQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
