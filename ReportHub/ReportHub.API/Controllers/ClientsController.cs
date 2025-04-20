@@ -41,7 +41,6 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
         /// <summary>
         /// Get client by id
         /// </summary>
@@ -74,7 +73,6 @@ namespace ReportHub.API.Controllers
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
-
 
         /// <summary>
         /// Add new client
@@ -156,7 +154,6 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
         /// <summary>
         /// Delete single item of client
         /// </summary>
@@ -213,7 +210,6 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
         /// <summary>
         /// Get all sells of client
         /// </summary>
@@ -238,7 +234,6 @@ namespace ReportHub.API.Controllers
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
-
 
         /// <summary>
         /// Selling of item
