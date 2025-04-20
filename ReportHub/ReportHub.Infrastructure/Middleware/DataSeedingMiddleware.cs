@@ -36,7 +36,7 @@ namespace ReportHub.Infrastructure.Middleware
                 var planRepository = scope.ServiceProvider.GetRequiredService<IPlanRepository>();
                 var saleRepository = scope.ServiceProvider.GetRequiredService<ISaleRepository>();
 
-                await SeedCountryAndCurrencyAsync();
+                var countryId = await SeedCountryAndCurrencyAsync();
 
                 #region CLIENTS SEED
                 var existingClients = await clientRepository.GetAll(pageNumber: 1, pageSize: 1);
@@ -91,7 +91,7 @@ namespace ReportHub.Infrastructure.Middleware
                         {
                             Id = "67fa2d8114e2389cd8064457",
                             Name = "John Doe",
-                            CountryId = "680398332b1400012193855f",
+                            CountryId = countryId,
                             ClientId = "67fa2d8114e2389cd8064454",
                             Email = "jonhode1@gmail.com"
                         },
@@ -99,24 +99,24 @@ namespace ReportHub.Infrastructure.Middleware
                         {
                             Id = "67fa2d8114e2389cd8064458",
                             Name = "Bill Butcher",
-                            CountryId = "680398332b14000121938563",
-                            ClientId = "68037763307daba69a1ec28b",
+                            CountryId = countryId,
+                            ClientId = "67fa2d8114e2389cd8064453",
                             Email = "bb@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd8064459",
                             Name = "Freddy Krueger",
-                            CountryId = "680398332b14000121938563",
-                            ClientId = "67fa2d8114e2389cd8064454",
+                            CountryId = countryId,
+                            ClientId = "67fa2d8114e2389cd8064452",
                             Email = "freddy@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd806445a",
                             Name = "John Cenna",
-                            CountryId = "680398332b1400012193855f",
-                            ClientId = "68037763307daba69a1ec28b",
+                            CountryId = countryId,
+                            ClientId = "67fa2d8114e2389cd8064452",
                             Email = "joncena@gmail.com"
                         }
                     };
@@ -475,10 +475,11 @@ namespace ReportHub.Infrastructure.Middleware
             await _next(context);
         }
 
-        private async Task SeedCountryAndCurrencyAsync()
+        private async Task<string> SeedCountryAndCurrencyAsync()
         {
             #region COUNTRY & CURRENCY SEED
             var existingCountries = await _countryRepository.GetAll(pageNumber: 1, pageSize: 1);
+            var countryId = "";
             if (!existingCountries.Any())
             {
                 Log.Information("Fetching and seeding countries and currencies from REST Countries API...");
@@ -506,6 +507,7 @@ namespace ReportHub.Infrastructure.Middleware
                             Id = ObjectId.GenerateNewId().ToString(), 
                             Name = name!
                         };
+                        countryId = countryEntity.Id;
 
                         countryEntities.Add(countryEntity);
 
@@ -543,6 +545,8 @@ namespace ReportHub.Infrastructure.Middleware
             {
                 Log.Information("Database already contains country data. Skipping seeding...");
             }
+
+            return countryId;
             #endregion
 
         }
