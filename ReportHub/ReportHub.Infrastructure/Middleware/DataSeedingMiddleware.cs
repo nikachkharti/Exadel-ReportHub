@@ -89,28 +89,32 @@ namespace ReportHub.Infrastructure.Middleware
                         {
                             Id = "67fa2d8114e2389cd8064457",
                             Name = "John Doe",
-                            //Address = "Doe street 12",
+                            CountryId = "680398332b1400012193855f",
+                            ClientId = "67fa2d8114e2389cd8064454",
                             Email = "jonhode1@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd8064458",
                             Name = "Bill Butcher",
-                            //Address = "Butch street 1",
+                            CountryId = "680398332b14000121938563",
+                            ClientId = "68037763307daba69a1ec28b",
                             Email = "bb@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd8064459",
                             Name = "Freddy Krueger",
-                            //Address = "Krug street 31",
+                            CountryId = "680398332b14000121938563",
+                            ClientId = "67fa2d8114e2389cd8064454",
                             Email = "freddy@gmail.com"
                         },
                         new Customer()
                         {
                             Id = "67fa2d8114e2389cd806445a",
                             Name = "John Cenna",
-                            //Address = "Cen street 20",
+                            CountryId = "680398332b1400012193855f",
+                            ClientId = "68037763307daba69a1ec28b",
                             Email = "joncena@gmail.com"
                         }
                     };

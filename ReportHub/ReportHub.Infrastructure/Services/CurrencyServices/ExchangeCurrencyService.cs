@@ -1,11 +1,7 @@
 ﻿using System.Text.Json;
-using ReportHub.Application.Common.Models;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
-using ReportHub.Domain.Entities;
 using Microsoft.Extensions.Caching.Memory;
-using System.Net.Http;
-using System;
 using MongoDB.Driver;
 
 namespace ReportHub.Infrastructure.Services.CurrencyServices;
@@ -52,11 +48,7 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
                       .GetProperty("rates")
                       .GetProperty(toCurrency)
                       .GetDecimal();
-
-        //var dto = JsonSerializer.Deserialize<CurrencyDto>(
-        //    json,
-        //    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
+        // Logic If we want to save Exchange Rate
         //if (dto != null)
         //{
         //    var entity = new ExchangeRate
@@ -70,14 +62,12 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
         //        entity,
         //        isUpsert: true);
 
-        // Store in cache with expiration
-        //var cacheOptions = new MemoryCacheEntryOptions
-        //{
-        //    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
-        //    SlidingExpiration = TimeSpan.FromMinutes(15)
-        //};
-        //_cache.Set(key, dto, cacheOptions);
+       var cacheOptions = new MemoryCacheEntryOptions
+       {
+           AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(2),
+           SlidingExpiration = TimeSpan.FromMinutes(15)
+       };
+        _cache.Set(key, rate, cacheOptions);
         return rate;
     }
-    //cach should be first, first try to get data from catch 
 }
