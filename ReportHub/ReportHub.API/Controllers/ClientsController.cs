@@ -68,7 +68,7 @@ namespace ReportHub.API.Controllers
         [HttpGet("{clientId}/items")]
         public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string clientId)
         {
-            var query = new GetAllItemsOfClientQuery(id);
+            var query = new GetAllItemsOfClientQuery(clientId);
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
