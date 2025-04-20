@@ -42,28 +42,32 @@ namespace ReportHub.Tests.Infrastructure
                {
                    Id = "67fa2d8114e2389cd8064457",
                    Name = "John Doe",
-                   Address = "Doe street 12",
+                   CountryId = "680398332b1400012193855f",
+                   ClientId = "67fa2d8114e2389cd8064454",
                    Email = "jonhode1@gmail.com"
                },
                new Customer()
                {
                    Id = "67fa2d8114e2389cd8064458",
                    Name = "Bill Butcher",
-                   Address = "Butch street 1",
+                   CountryId = "680398332b1400012193855f",
+                   ClientId = "67fa2d8114e2389cd8064454",
                    Email = "bb@gmail.com"
                },
                new Customer()
                {
                    Id = "67fa2d8114e2389cd8064459",
                    Name = "Freddy Krueger",
-                   Address = "Krug street 31",
+                   CountryId = "680398332b1400012193855f",
+                   ClientId = "67fa2d8114e2389cd8064454",
                    Email = "freddy@gmail.com"
                },
                new Customer()
                {
                    Id = "67fa2d8114e2389cd806445a",
                    Name = "John Cenna",
-                   Address = "Cen street 20",
+                   CountryId = "680398332b1400012193855f",
+                   ClientId = "67fa2d8114e2389cd8064454",
                    Email = "joncena@gmail.com"
                }
             });
@@ -139,7 +143,7 @@ namespace ReportHub.Tests.Infrastructure
 
             Assert.NotNull(result);
             Assert.Equal("John Doe", result.Name);
-            Assert.Equal("Doe street 12", result.Address);
+            Assert.Equal("680398332b1400012193855f", result.CountryId);
             Assert.Equal("jonhode1@gmail.com", result.Email);
         }
 
@@ -162,7 +166,7 @@ namespace ReportHub.Tests.Infrastructure
             var newCustomer = new Customer()
             {
                 Name = "New Customer",
-                Address = "New Address",
+                CountryId = "680398332b1400012193855f",
                 Email = "new@example.com"
             };
 
@@ -179,8 +183,8 @@ namespace ReportHub.Tests.Infrastructure
 
             var newCustomers = new List<Customer>
             {
-                new Customer { Name = "Customer A", Address = "Addr A", Email = "a@email.com" },
-                new Customer { Name = "Customer B", Address = "Addr B", Email = "b@email.com" }
+                new Customer { Name = "Customer A", CountryId = "680398332b1400012193855f", Email = "a@email.com" },
+                new Customer { Name = "Customer B", CountryId = "680398332b1400012193855f", Email = "b@email.com" }
             };
 
             await _repository.InsertMultiple(newCustomers);
