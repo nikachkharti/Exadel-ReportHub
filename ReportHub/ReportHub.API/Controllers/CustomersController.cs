@@ -4,6 +4,7 @@ using ReportHub.API.Authorization.Attributes;
 using ReportHub.API.Authorization.Permissions;
 using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Customers.Commands;
+using ReportHub.Application.Features.Customers.DTOs;
 using ReportHub.Application.Features.Customers.Queries;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -59,9 +60,9 @@ namespace ReportHub.API.Controllers
         /// <returns></returns>
         [Permission(PermissionType.CreateCustomer)]
         [HttpPost]
-        public async Task<IActionResult> AddNewCustomer(string clientId,[FromBody] CreateCustomerCommand model)
+        public async Task<IActionResult> AddNewCustomer(string clientId,[FromBody] CustomerForCreatingDto model)
         {
-            var result = await mediator.Send(model);
+            var result = await mediator.Send(new CreateCustomerCommand(model.Name, model.Email, model.CountryId, clientId));
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);
         }
