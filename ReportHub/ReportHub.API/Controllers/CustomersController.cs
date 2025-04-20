@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Customers.Commands;
@@ -9,21 +8,21 @@ using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/clients/{clientId}/[controller]")]
     [ApiController]
-    [Authorize(Roles = "SystemAdmin, Admin, ClientAdmin")]
     public class CustomersController(IMediator mediator) : ControllerBase
     {
         /// <summary>
         /// Get all customers
         /// </summary>
-        /// <param name="pageNumber">Page number</param>
-        /// <param name="pageSize">Page size</param>
-        /// <param name="sortingParameter">Sorting field</param>
-        /// <param name="ascending">Is ascended</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="sortingParameter"></param>
+        /// <param name="ascending"></param>
+        /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> GetAllCustomers([FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
+        public async Task<IActionResult> GetAllCustomers(string clientId,[FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
             var query = new GetAllCustomersQuery(pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
@@ -36,10 +35,11 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Get customer by id
         /// </summary>
-        /// <param name="id">Customer Id</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetSingleCustomer([FromRoute][Required] string id)
+        public async Task<IActionResult> GetSingleCustomer(string clientId ,[FromRoute][Required] string id)
         {
             var query = new GetCustomerByIdQuery(id);
             var result = await mediator.Send(query);
@@ -51,10 +51,12 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Add new customer
         /// </summary>
-        /// <param name="model">Customer model</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+
         [HttpPost]
-        public async Task<IActionResult> AddNewCustomer([FromBody] CreateCustomerCommand model)
+        public async Task<IActionResult> AddNewCustomer(string clientId,[FromBody] CreateCustomerCommand model)
         {
             var result = await mediator.Send(model);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
@@ -65,10 +67,11 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Delete customer
         /// </summary>
-        /// <param name="id">Customer Id</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer([FromRoute][Required] string id)
+        public async Task<IActionResult> DeleteCustomer(string clientId,[FromRoute][Required] string id)
         {
             var command = new DeleteCustomerCommand(id);
             var result = await mediator.Send(command);
@@ -80,10 +83,11 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Update customer
         /// </summary>
-        /// <param name="model">Update document</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateCustomer([FromBody] UpdateCustomerCommand model)
+        public async Task<IActionResult> UpdateCustomer(string clientId, [FromBody] UpdateCustomerCommand model)
         {
             var result = await mediator.Send(model);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
