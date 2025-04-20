@@ -43,6 +43,7 @@ namespace ReportHub.Infrastructure
             // Caching
             services.AddMemoryCache();
 
+            services.AddScoped<IClientRoleRepository, ClientRoleRepository>();
 
             return services;
         }

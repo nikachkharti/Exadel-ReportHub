@@ -18,6 +18,7 @@ namespace ReportHub.Application.Features.Customers.Handlers.QueryHandlers
 
             var customers = await customerRepository.GetAll
             (
+                c => c.ClientId == request.ClientId,
                 request.PageNumber ?? 1,
                 request.PageSize ?? 10,
                 sortBy: sortExpression,

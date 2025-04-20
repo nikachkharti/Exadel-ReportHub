@@ -12,6 +12,10 @@ using ReportHub.Infrastructure.Configurations;
 using Serilog;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using ReportHub.API.Middlewares;
+using ReportHub.API.Authorization.Requirements;
+using Microsoft.AspNetCore.Authorization;
+using ReportHub.API.Authorization.Handlers;
+using ReportHub.API.Authorization.Permissions;
 
 namespace ReportHub.API.Extensions
 {
@@ -126,11 +130,17 @@ namespace ReportHub.API.Extensions
         {
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("admin", policy =>
-                    policy.RequireRole("admin"));
-                options.AddPolicy("user", policy =>
-                    policy.RequireRole("user"));
+                foreach (var permission in Enum.GetValues<PermissionType>())
+                {
+                    options.AddPolicy(permission.ToString(), policy =>
+                    {
+                        policy.Requirements.Add(new PermissionRequirement(permission));
+                    });
+                }
             });
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<IAuthorizationHandler, PermissionHandlers>();
         }
     }
 }
