@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
+using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.DTOs;
 using ReportHub.Application.Features.Invoices.DTOs;
@@ -46,6 +47,11 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Specialization, options => options.MapFrom(src => src.Specialization));
+        #endregion
+
+        #region ClientUser
+        CreateMap<AddUserToClientCommand, ClientUser>()
+                            .ReverseMap();
         #endregion
 
 

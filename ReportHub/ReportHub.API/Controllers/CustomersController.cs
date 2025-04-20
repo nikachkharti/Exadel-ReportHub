@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.API.Authorization.Attributes;
+using ReportHub.API.Authorization.Permissions;
 using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.Queries;
@@ -21,6 +23,7 @@ namespace ReportHub.API.Controllers
         /// <param name="sortingParameter"></param>
         /// <param name="ascending"></param>
         /// <returns></returns>
+        [Permission(PermissionType.GetClientCustomers)]
         [HttpGet]
         public async Task<IActionResult> GetAllCustomers(string clientId,[FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
@@ -54,7 +57,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-
+        [Permission(PermissionType.CreateCustomer)]
         [HttpPost]
         public async Task<IActionResult> AddNewCustomer(string clientId,[FromBody] CreateCustomerCommand model)
         {
@@ -70,6 +73,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId"></param>
         /// <param name="id"></param>
         /// <returns></returns>
+        [Permission(PermissionType.DeleteCustomer)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCustomer(string clientId,[FromRoute][Required] string id)
         {
@@ -86,6 +90,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Permission(PermissionType.UpdateCustomer)]
         [HttpPut]
         public async Task<IActionResult> UpdateCustomer(string clientId, [FromBody] UpdateCustomerCommand model)
         {
