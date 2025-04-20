@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Item.Commands;
+using ReportHub.Application.Features.Item.DTOs;
 using ReportHub.Application.Features.Item.Queries;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
@@ -10,8 +11,7 @@ using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    //[Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
-    [Route("api/[controller]")]
+    [Route("api/clients/{clientId}/[controller]")]
     [ApiController]
     public class ItemsController(IMediator mediator) : ControllerBase
     {
@@ -31,17 +31,18 @@ namespace ReportHub.API.Controllers
         }
 
 
+
         /// <summary>
-        /// Create new item
+        /// Create item for client
         /// </summary>
-        /// <param name="command">Create item command</param>
-        /// <returns>IActionResult</returns>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="command"></param>
+        /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> CreateItem([FromBody] CreateItemCommand command)
+        public async Task<IActionResult> CreateItem(string clientId, [FromBody] ItemForCreatingDto model)
         {
             Log.Information("Creating a new item.");
-            var result = await mediator.Send(command);
+            var result = await mediator.Send(new CreateItemCommand(clientId, model.Name, model.Description, model.Price, model.Currency));
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);
