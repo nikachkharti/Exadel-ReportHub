@@ -14,6 +14,7 @@ using ReportHub.API.Authorization.Attributes;
 using ReportHub.API.Authorization.Permissions;
 using ReportHub.Application.Features.Plans.Queries;
 using ReportHub.Application.Features.Sale.Queries;
+using ReportHub.Application.Features.Clients.DTOs;
 
 namespace ReportHub.API.Controllers
 {
@@ -44,13 +45,13 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Get client by id
         /// </summary>
-        /// <param name="id">Client Id</param>
+        /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
         [Permission(PermissionType.GetOneClient)]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetSingleClient([FromRoute][Required] string id)
+        [HttpGet("{clientId}")]
+        public async Task<IActionResult> GetSingleClient([FromRoute][Required] string clientId)
         {
-            var query = new GetClientByIdQuery(id);
+            var query = new GetClientByIdQuery(clientId);
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
@@ -61,11 +62,11 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Get all items of client
         /// </summary>
-        /// <param name="id">Client Id</param>
+        /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
         [Permission(PermissionType.GetClientItems)]
-        [HttpGet("{id}/items")]
-        public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string id)
+        [HttpGet("{clientId}/items")]
+        public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string clientId)
         {
             var query = new GetAllItemsOfClientQuery(id);
             var result = await mediator.Send(query);
@@ -142,13 +143,13 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Delete client
         /// </summary>
-        /// <param name="id">Client Id</param>
+        /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
         [Permission(PermissionType.DeleteClient)]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteClient([FromRoute][Required] string id)
+        [HttpDelete("{clientId}")]
+        public async Task<IActionResult> DeleteClient([FromRoute][Required] string clientId)
         {
-            var command = new DeleteClientCommand(id);
+            var command = new DeleteClientCommand(clientId);
             var result = await mediator.Send(command);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
@@ -173,21 +174,20 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
         /// <summary>
         /// Update client
         /// </summary>
-        /// <param name="model">Update document</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [Permission(PermissionType.UpdateClient)]
-        [HttpPut]
-        public async Task<IActionResult> UpdateClient([FromForm][Required] UpdateClientCommand model)
+        [HttpPut("{clientId}")]
+        public async Task<IActionResult> UpdateClient(string clientId, [FromForm][Required] ClientForUpdatingDto model)
         {
-            var result = await mediator.Send(model);
+            var result = await mediator.Send(new UpdateClientCommand(clientId, model.Name, model.Specialization));
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
-
 
         /// <summary>
         /// Get all plans of client
