@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Item.Commands;
@@ -36,7 +35,7 @@ namespace ReportHub.API.Controllers
         /// Create item for client
         /// </summary>
         /// <param name="clientId"></param>
-        /// <param name="command"></param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> CreateItem(string clientId, [FromBody] ItemForCreatingDto model)
