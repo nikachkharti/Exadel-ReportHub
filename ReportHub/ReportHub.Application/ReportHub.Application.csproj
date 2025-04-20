@@ -20,9 +20,4 @@
 		<ProjectReference Include="..\ReportHub.Domain\ReportHub.Domain.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Features\Invoices\Commands\" />
-		<Folder Include="Features\Invoices\Handlers\CommandHandlers\" />
-	</ItemGroup>
-
 </Project>

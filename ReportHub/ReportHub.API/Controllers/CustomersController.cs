@@ -23,7 +23,7 @@ namespace ReportHub.API.Controllers
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
         [HttpGet]
-        public async Task<IActionResult> GetAllCustomers([FromQuery][Required] int? pageNumber = 1, [FromQuery][Required] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery][Required] bool ascending = true)
+        public async Task<IActionResult> GetAllCustomers([FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
             var query = new GetAllCustomersQuery(pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
@@ -83,7 +83,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Update document</param>
         /// <returns>IActionResult</returns>
         [HttpPut]
-        public async Task<IActionResult> UpdateCustomer([FromForm][Required] UpdateCustomerCommand model)
+        public async Task<IActionResult> UpdateCustomer([FromBody] UpdateCustomerCommand model)
         {
             var result = await mediator.Send(model);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));

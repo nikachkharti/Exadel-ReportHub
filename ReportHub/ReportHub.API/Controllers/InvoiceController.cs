@@ -9,6 +9,7 @@ using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
 using ReportHub.Application.Features.DataImports.Queries;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
+using ReportHub.Application.Features.Invoices.Commands;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using Serilog;
@@ -27,6 +28,12 @@ namespace ReportHub.Presentation.Controllers
             _mediator = mediator;
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateInvoiceCommand createInvoiceCommand)
+        {
+            return Ok(await _mediator.Send(createInvoiceCommand));
+        }
 
         /// <summary>
         /// Getting all invoices from database

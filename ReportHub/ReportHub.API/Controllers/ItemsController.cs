@@ -10,7 +10,7 @@ using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
+    //[Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     [Route("api/[controller]")]
     [ApiController]
     public class ItemsController(IMediator mediator) : ControllerBase
