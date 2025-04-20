@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.API.Authorization.Attributes;
+using ReportHub.API.Authorization.Permissions;
 using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Item.Commands;
 using ReportHub.Application.Features.Item.DTOs;
@@ -15,14 +17,15 @@ namespace ReportHub.API.Controllers
     public class ItemsController(IMediator mediator) : ControllerBase
     {
         /// <summary>
-        /// Get single item by id
+        /// Get client item by item id
         /// </summary>
-        /// <param name="id">Item Id</param>
-        /// <returns>IActionResult</returns>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetSingleItem([FromRoute][Required] string id)
+        /// <param name="clientId"></param>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
+        [HttpGet("{itemId}")]
+        public async Task<IActionResult> GetSingleItem(string clientId,[FromRoute][Required] string itemId)
         {
-            var query = new GetItemByIdQuery(id);
+            var query = new GetItemByIdQuery(itemId);
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
@@ -37,6 +40,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
+        [Permission(PermissionType.CreateItem)]
         [HttpPost]
         public async Task<IActionResult> CreateItem(string clientId, [FromBody] ItemForCreatingDto model)
         {
