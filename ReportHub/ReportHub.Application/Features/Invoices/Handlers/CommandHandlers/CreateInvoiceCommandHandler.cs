@@ -1,8 +1,8 @@
 ﻿using MediatR;
-using Microsoft.VisualBasic;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Invoices.Commands;
+using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Domain.Entities;
 
 namespace ReportHub.Application.Features.Invoices.Handlers.CommandHandlers;
@@ -24,18 +24,35 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
     }
     public async Task<Invoice> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
     {
-        var items = new List<ReportHub.Domain.Entities.Item>();
+        var items = new List<Item>();
         foreach(var itemId in request.items)
         {
-            items.Add(await _itemRepository.Get(i =>  i.Id == itemId));
+            var item = await _itemRepository.Get(i =>  i.Id == itemId);
+            if(item == null)
+            {
+                throw new NotFoundException($"Item with Id {itemId} not found.");
+            }
+
+            if(item.ClientId !=  request.ClientId)
+            {
+                throw new BadRequestException($"Client {request.ClientId} does not have this item with Id {itemId}.");
+            }
         }
+
+
         var customer = await _customerRepository.Get(c => c.Id == request.CustomerId);
-        var currency = await _currencyRepository.Get(c => c.CountryId == customer.CountryId);
+        var customerCurrency = await _currencyRepository.Get(c => c.CountryId == customer.CountryId);
         var totalAmount = 0m;
-        foreach(var item in items)
+        foreach (var item in items)
         {
-            var rate = await _exchangeCurrencyService.GetCurrencyAsync(item.Currency, currency.Code);
+            decimal rate = 1;
+            if (item.Currency != customerCurrency.Code)
+                rate = await _exchangeCurrencyService.GetCurrencyAsync(item.Currency, customerCurrency.Code);
+            
+
+                rate = await _exchangeCurrencyService.GetCurrencyAsync(item.Currency, customerCurrency.Code);
             totalAmount += rate * item.Price;
+
         }
 
         var invoice = new Invoice
@@ -44,7 +61,7 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
             ClientId = request.ClientId,
             CustomerId = request.CustomerId,
             ItemIds = request.items.ToList(),
-            Currency = currency.Code,
+            Currency = customerCurrency.Code,
             PaymentStatus = "InProgress",
             IssueDate = DateTime.UtcNow.AddDays(-10),
             DueDate = DateTime.UtcNow.AddDays(20)

@@ -262,7 +262,8 @@ namespace ReportHub.Tests.Infrastructure
             await _planRepository.Delete(p => p.Id == planId);
             var deleted = await _planRepository.Get(p => p.Id == planId);
 
-            Assert.Null(deleted);
+            Assert.NotNull(deleted);
+            Assert.True(deleted.IsDeleted);
         }
 
         [Fact]

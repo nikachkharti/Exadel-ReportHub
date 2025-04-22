@@ -9,16 +9,16 @@ using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
 using ReportHub.Application.Features.DataImports.Queries;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
-using ReportHub.Application.Features.Invoices.Commands;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using Serilog;
 using System.Net;
 
-namespace ReportHub.Presentation.Controllers
+namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class InvoiceController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -29,17 +29,10 @@ namespace ReportHub.Presentation.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateInvoiceCommand createInvoiceCommand)
-        {
-            return Ok(await _mediator.Send(createInvoiceCommand));
-        }
-
         /// <summary>
         /// Getting all invoices from database
         /// </summary>
         /// <returns>IActionResult</returns>
-        [Authorize(Policy = "CreateReadUpdatePolicy")]
         [HttpGet]
         public async Task<IActionResult> GetAllInvoices()
         {

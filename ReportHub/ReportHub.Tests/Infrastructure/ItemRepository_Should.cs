@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Extensions.Options;
 using Mongo2Go;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -245,7 +246,8 @@ namespace ReportHub.Tests.Infrastructure
             await _itemRepository.Delete(i => i.Id == itemId);
 
             var deletedItem = await _itemRepository.Get(i => i.Id == itemId);
-            Assert.Null(deletedItem);
+            Assert.NotNull(deletedItem);
+            Assert.True(deletedItem.IsDeleted);
         }
 
         [Fact]

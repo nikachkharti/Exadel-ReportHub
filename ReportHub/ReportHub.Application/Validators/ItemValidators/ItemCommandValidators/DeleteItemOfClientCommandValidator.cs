@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using ReportHub.Application.Features.Item.Commands;
+using ReportHub.Application.Features.Items.Commands;
 
 namespace ReportHub.Application.Validators.ItemValidators.ItemCommandValidators;
 

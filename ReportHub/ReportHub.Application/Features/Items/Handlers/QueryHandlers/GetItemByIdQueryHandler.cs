@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using MediatR;
 using ReportHub.Application.Contracts.RepositoryContracts;
-using ReportHub.Application.Features.Item.DTOs;
-using ReportHub.Application.Features.Item.Queries;
+using ReportHub.Application.Features.Items.DTOs;
+using ReportHub.Application.Features.Items.Queries;
 using ReportHub.Application.Validators.Exceptions;
 
-namespace ReportHub.Application.Features.Item.Handlers.QueryHandlers
+namespace ReportHub.Application.Features.Items.Handlers.QueryHandlers
 {
     public class GetItemByIdQueryHandler(IItemRepository itemRepository, IMapper mapper)
         : IRequestHandler<GetItemByIdQuery, ItemForGettingDto>

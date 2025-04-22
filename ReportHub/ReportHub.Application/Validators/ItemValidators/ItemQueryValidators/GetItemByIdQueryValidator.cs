@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using ReportHub.Application.Features.Item.Queries;
+using ReportHub.Application.Features.Items.Queries;
 
 namespace ReportHub.Application.Validators.ItemValidators.ItemQueryValidators;
 

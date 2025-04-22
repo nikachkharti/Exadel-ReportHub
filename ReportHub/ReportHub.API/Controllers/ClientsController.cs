@@ -6,7 +6,7 @@ using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Application.Features.CLientUsers.DTOs;
 using ReportHub.Application.Features.CLientUsers.Queries;
-using ReportHub.Application.Features.Item.Commands;
+using ReportHub.Application.Features.Items.Commands;
 using System.ComponentModel.DataAnnotations;
 using ReportHub.Application.Common.Models;
 using System.Net;

@@ -1,15 +1,38 @@
 ﻿using FluentValidation;
-using ReportHub.Application.Features.Item.Commands;
+using Microsoft.AspNetCore.Http;
+using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Features.Items.Commands;
+using System.Security.Claims;
 
 namespace ReportHub.Application.Validators.ItemValidators.ItemCommandValidators;
 
 public class CreateItemCommandValidator : AbstractValidator<CreateItemCommand>
 {
-    public CreateItemCommandValidator()
+    public CreateItemCommandValidator(IClientRepository clientRepository,
+        IHttpContextAccessor httpContextAccessor,
+        IClientUserRepository clientUserRepository)
     {
-        RuleFor(x => x.ClientId)
-            .NotEmpty()
-            .WithMessage("Client ID is required.");
+        //RuleFor(x => x.ClientId)
+        //    .NotEmpty()
+        //    .WithMessage("Client ID is required.")
+        //    .MustAsync(async (string clientId, CancellationToken cancellationToken) =>
+        //    {
+        //        return await clientRepository.Get(c => c.Id == clientId) is not null;
+        //    })
+        //    .WithMessage("Client does not exist")
+        //    .MustAsync(async (string clientId, CancellationToken cancellationToken) =>
+        //    {
+        //        var roles = httpContextAccessor.HttpContext?.User.FindFirst("role")?.Value;
+
+        //        var userId = httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value;
+
+        //        var role = await clientUserRepository.Get(c => c.ClientId == clientId && c.UserId == userId);
+
+        //        if (role is null) return false;
+
+        //        return role.Role.Equals("ClientAdmin") || role.Role.Equals("Admin");
+        //    })
+        //    .WithMessage("You do not have accecc to create item for this client");
 
 
         RuleFor(x => x.Name)
