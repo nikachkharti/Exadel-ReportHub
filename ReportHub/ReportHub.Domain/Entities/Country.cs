@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace ReportHub.Domain.Entities;
 
-public class Country
+public class Country : SoftDeletion
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]

@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using ReportHub.Application.Features.Item.DTOs;
+using ReportHub.Application.Features.Items.DTOs;
 
 namespace ReportHub.Application.Features.Clients.Queries
 {

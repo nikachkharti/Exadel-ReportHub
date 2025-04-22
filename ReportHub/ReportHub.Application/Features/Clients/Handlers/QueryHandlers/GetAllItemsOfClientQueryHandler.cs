@@ -2,7 +2,7 @@
 using MediatR;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Clients.Queries;
-using ReportHub.Application.Features.Item.DTOs;
+using ReportHub.Application.Features.Items.DTOs;
 
 namespace ReportHub.Application.Features.Clients.Handlers.QueryHandlers
 {

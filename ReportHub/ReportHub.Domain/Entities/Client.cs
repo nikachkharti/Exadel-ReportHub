@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace ReportHub.Domain.Entities
 {
-    public class Client
+    public class Client : SoftDeletion
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]

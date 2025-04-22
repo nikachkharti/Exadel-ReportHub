@@ -1,9 +1,9 @@
 ﻿using MediatR;
 using ReportHub.Application.Contracts.RepositoryContracts;
-using ReportHub.Application.Features.Item.Commands;
+using ReportHub.Application.Features.Items.Commands;
 using ReportHub.Application.Validators.Exceptions;
 
-namespace ReportHub.Application.Features.Item.Handlers.CommandHandlers
+namespace ReportHub.Application.Features.Items.Handlers.CommandHandlers
 {
     public class DeleteItemOfClientCommandHandler(IItemRepository itemRepository)
         : IRequestHandler<DeleteItemOfClientCommand, string>

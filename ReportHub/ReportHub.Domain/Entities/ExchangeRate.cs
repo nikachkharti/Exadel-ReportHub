@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ReportHub.Domain.Entities;
 
-public class ExchangeRate
+public class ExchangeRate : SoftDeletion
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]

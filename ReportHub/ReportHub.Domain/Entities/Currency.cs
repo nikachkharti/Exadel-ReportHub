@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace ReportHub.Domain.Entities;
 
-public class Currency
+public class Currency : SoftDeletion
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
