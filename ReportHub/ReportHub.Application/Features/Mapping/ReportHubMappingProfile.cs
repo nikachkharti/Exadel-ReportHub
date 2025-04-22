@@ -1,18 +1,16 @@
 ﻿using AutoMapper;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
-using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.DTOs;
 using ReportHub.Application.Features.Invoices.DTOs;
-using ReportHub.Application.Features.Item.Commands;
-using ReportHub.Application.Features.Item.DTOs;
+using ReportHub.Application.Features.Items.Commands;
+using ReportHub.Application.Features.Items.DTOs;
 using ReportHub.Application.Features.Plans.Commands;
 using ReportHub.Application.Features.Plans.DTOs;
 using ReportHub.Application.Features.Sale.Commands;
 using ReportHub.Application.Features.Sale.DTOs;
 using ReportHub.Domain.Entities;
-using System.Numerics;
 
 namespace ReportHub.Application.Features.Mapping;
 
@@ -49,11 +47,6 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Specialization, options => options.MapFrom(src => src.Specialization));
         #endregion
 
-        #region ClientUser
-        CreateMap<AddUserToClientCommand, ClientUser>()
-                            .ReverseMap();
-        #endregion
-
 
         #region CUSTOMER
 
@@ -61,21 +54,19 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
-            .ForMember(dest => dest.CountryId, options => options.MapFrom(src => src.CountryId))
-            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId));
+            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
 
         CreateMap<CreateCustomerCommand, Customer>()
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
-            .ForMember(dest => dest.CountryId, options => options.MapFrom(src => src.CountryId))
-            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId));
+            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
 
 
         CreateMap<UpdateCustomerCommand, Customer>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
-            .ForMember(dest => dest.CountryId, options => options.MapFrom(src => src.CountryId));
+            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
 
         #endregion
 
@@ -85,13 +76,6 @@ public class ReportHubMappingProfile : Profile
 
         CreateMap<Domain.Entities.Item, ItemForGettingDto>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
-            .ForMember(dest => dest.Description, options => options.MapFrom(src => src.Description))
-            .ForMember(dest => dest.Price, options => options.MapFrom(src => src.Price))
-            .ForMember(dest => dest.Currency, options => options.MapFrom(src => src.Currency));
-
-        CreateMap<CreateItemCommand, Domain.Entities.Item>()
-            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Description, options => options.MapFrom(src => src.Description))
             .ForMember(dest => dest.Price, options => options.MapFrom(src => src.Price))
@@ -174,5 +158,6 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.SaleDate, options => options.MapFrom(src => src.SaleDate));
 
         #endregion
+
     }
 }

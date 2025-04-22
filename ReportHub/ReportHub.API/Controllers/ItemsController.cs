@@ -1,31 +1,29 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ReportHub.API.Authorization.Attributes;
-using ReportHub.API.Authorization.Permissions;
 using ReportHub.Application.Common.Models;
-using ReportHub.Application.Features.Item.Commands;
-using ReportHub.Application.Features.Item.DTOs;
 using ReportHub.Application.Features.Item.Queries;
+using ReportHub.Application.Features.Items.Commands;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Route("api/clients/{clientId}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
+    //[Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class ItemsController(IMediator mediator) : ControllerBase
     {
         /// <summary>
-        /// Get client item by item id
+        /// Get single item by id
         /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="itemId"></param>
-        /// <returns></returns>
-        [HttpGet("{itemId}")]
-        public async Task<IActionResult> GetSingleItem(string clientId,[FromRoute][Required] string itemId)
+        /// <param name="id">Item Id</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSingleItem([FromRoute][Required] string id)
         {
-            var query = new GetItemByIdQuery(itemId);
+            var query = new GetItemByIdQuery(id);
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
@@ -33,19 +31,17 @@ namespace ReportHub.API.Controllers
         }
 
 
-
         /// <summary>
-        /// Create item for client
+        /// Create new item
         /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [Permission(PermissionType.CreateItem)]
+        /// <param name="command">Create item command</param>
+        /// <returns>IActionResult</returns>
+        /// <returns>IActionResult</returns>
         [HttpPost]
-        public async Task<IActionResult> CreateItem(string clientId, [FromBody] ItemForCreatingDto model)
+        public async Task<IActionResult> CreateItem([FromBody] CreateItemCommand command)
         {
             Log.Information("Creating a new item.");
-            var result = await mediator.Send(new CreateItemCommand(clientId, model.Name, model.Description, model.Price, model.Currency));
+            var result = await mediator.Send(command);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);

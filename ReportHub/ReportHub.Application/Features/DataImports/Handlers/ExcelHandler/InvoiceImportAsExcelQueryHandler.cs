@@ -4,7 +4,7 @@ using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
 using ReportHub.Domain.Entities;
 
-namespace ReportHub.Application.Features.DataImports.Handlers.ExcelHandlers;
+namespace ReportHub.Application.Features.DataImports.Handlers.ExcelHandler;
 
 public class InvoiceImportAsExcelQueryHandler : IRequestHandler<InvoiceImportAsExcelQuery, bool>
 {

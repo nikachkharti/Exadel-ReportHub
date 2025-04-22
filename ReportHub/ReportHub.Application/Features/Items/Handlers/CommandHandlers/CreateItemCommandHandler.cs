@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using MediatR;
 using ReportHub.Application.Contracts.RepositoryContracts;
-using ReportHub.Application.Features.Item.Commands;
+using ReportHub.Application.Features.Items.Commands;
 
-namespace ReportHub.Application.Features.Item.Handlers.CommandHandlers
+namespace ReportHub.Application.Features.Items.Handlers.CommandHandlers
 {
     public class CreateItemCommandHandler(IItemRepository itemRepository, IMapper mapper)
         : IRequestHandler<CreateItemCommand, string>
