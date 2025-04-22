@@ -61,9 +61,9 @@ public partial class DataSeeder
     private async Task AddCurrencyIfNotExist(ICurrencyRepository currencyRepository, List<Currency> currencyEntities, 
         Country countryEntity, string currencyName, CancellationToken cancellationToken)
     {
-        var currencyExist = await currencyRepository.Get(c => c.Code.Equals(currencyName), cancellationToken);
+        var existingCurrency = await currencyRepository.Get(c => c.Code.Equals(currencyName), cancellationToken);
 
-        if (currencyExist is not null) return;
+        if (existingCurrency is not null) return;
 
         currencyEntities.Add(new Currency()
         {
@@ -76,9 +76,9 @@ public partial class DataSeeder
     private async Task<Country> AddCountryIfNotExist(ICountryRepository countryRepository, List<Country> countryEntities,
         string countryName, CancellationToken cancellationToken)
     {
-        var exist = await countryRepository.Get(c => c.Name.Equals(countryName), cancellationToken);
+        var existingCountry = await countryRepository.Get(c => c.Name.Equals(countryName), cancellationToken);
 
-        if (exist is not null) return exist;
+        if (existingCountry is not null) return existingCountry;
 
         var countryEntity = new Country()
         {
