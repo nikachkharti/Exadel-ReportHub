@@ -5,8 +5,8 @@ using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Models;
 
 namespace ReportHub.Identity.Controllers;
-[Authorize(Roles = "Admin, SuperAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-[Route("api/[controller]")]
+[Authorize(Roles = "Admin, SystemAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+[Route("api/[controller]/users")]
 [ApiController]
 public class AdminController : ControllerBase
 {
@@ -18,15 +18,25 @@ public class AdminController : ControllerBase
         _userManager = userManager;
         _roleManager = roleManager;
     }
-    [HttpGet("users")]
-    public IActionResult GetAllUsers() => Ok(_userManager.Users.ToList());
+    [HttpGet]
+    public IActionResult GetAllUsers()
+    {
+        var users = _userManager.Users.ToList();
 
-    [HttpGet("users/{userId}")]
-    public async Task<IActionResult> GetAllUsers(string userId)
+        if (users is null || users.Count == 0)
+        {
+            return NoContent();
+        }
+
+        return Ok(users);
+    }
+
+    [HttpGet("{userId}")]
+    public async Task<IActionResult> GetUserById(string userId)
     {
         var user = await _userManager.FindByIdAsync(userId);
 
-        if(user is null)
+        if (user is null)
         {
             return NotFound();
         }
@@ -34,11 +44,11 @@ public class AdminController : ControllerBase
         return Ok(user);
     }
 
-    [HttpPost("assign-role")]
-    public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
+    [HttpPost("{userId}/roles")]
+    public async Task<IActionResult> AssignRole(string userId, [FromBody] AssignRoleRequest request)
     {
 
-        var user = await _userManager.FindByIdAsync(request.UserId);
+        var user = await _userManager.FindByIdAsync(userId);
 
         if (user is null)
             return NotFound("User not found");
@@ -56,20 +66,20 @@ public class AdminController : ControllerBase
         return BadRequest(result.Errors);
     }
 
-    [HttpDelete("remove-role")]
-    public async Task<IActionResult> RemoveRole([FromBody] AssignRoleRequest request)
+    [HttpDelete("{userId}/roles/{roleName}")]
+    public async Task<IActionResult> RemoveRole(string userId, string roleName)
     {
-        var user = await _userManager.FindByIdAsync(request.UserId);
+        var user = await _userManager.FindByIdAsync(userId);
 
         if (user is null)
             return NotFound("User not found");
 
-        var roleExists = await _roleManager.RoleExistsAsync(request.RoleName);
+        var roleExists = await _roleManager.RoleExistsAsync(roleName);
 
         if (!roleExists)
             return BadRequest("Role does not exist");
 
-        var result = await _userManager.RemoveFromRoleAsync(user, request.RoleName);
+        var result = await _userManager.RemoveFromRoleAsync(user, roleName);
 
         if (result.Succeeded)
             return Ok("Role removed successfully");

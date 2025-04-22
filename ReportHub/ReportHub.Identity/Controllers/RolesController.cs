@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Models;
-using System.Threading.Tasks;
 
 namespace ReportHub.Identity.Controllers;
 
+[Authorize(Roles = "Admin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
 [Route("api/[controller]")]
 [ApiController]
 public class RolesController : ControllerBase
@@ -17,14 +19,24 @@ public class RolesController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult Get() => Ok(_roleManager.Roles.Select(r => r.Name).ToList());
-
-    [HttpGet("{roleName}")]
-    public async Task<IActionResult> Get(string roleName)
+    public IActionResult Get()
     {
-        var role = await _roleManager.FindByNameAsync(roleName);
+        var roles = _roleManager.Roles.ToList();
 
-        if(role is null)
+        if(roles is null || roles.Count == 0)
+        {
+            return NoContent();
+        }
+
+        return Ok(roles);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Get(string id)
+    {
+        var role = await _roleManager.FindByIdAsync(id);
+
+        if (role is null)
             return NotFound("Role not found");
 
         return Ok(role);
@@ -37,9 +49,25 @@ public class RolesController : ControllerBase
             return BadRequest("Role name cannot be empty.");
 
         var result = await _roleManager.CreateAsync(new Role(newRole.Name));
-        
+
         if (result.Succeeded)
             return Created();
+
+        return BadRequest(result.Errors);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(string id)
+    {
+        var role = await _roleManager.FindByIdAsync(id);
+
+        if (role is null)
+            return NotFound("Role not found");
+
+        var result = await _roleManager.DeleteAsync(role);
+
+        if (result.Succeeded)
+            return NoContent();
 
         return BadRequest(result.Errors);
     }

@@ -1,66 +1,54 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.API.Authorization.Attributes;
+using ReportHub.API.Authorization.Permissions;
+using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Item.Commands;
+using ReportHub.Application.Features.Item.DTOs;
 using ReportHub.Application.Features.Item.Queries;
-using ReportHub.Application.Validators.Exceptions;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
-    [Route("api/[controller]")]
+    [Route("api/clients/{clientId}/[controller]")]
     [ApiController]
     public class ItemsController(IMediator mediator) : ControllerBase
     {
         /// <summary>
-        /// Get single item by id
+        /// Get client item by item id
         /// </summary>
-        /// <param name="id">Item Id</param>
-        /// <returns>IActionResult</returns>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetSingleItem([FromRoute][Required] string id)
+        /// <param name="clientId"></param>
+        /// <param name="itemId"></param>
+        /// <returns></returns>
+        [HttpGet("{itemId}")]
+        public async Task<IActionResult> GetSingleItem(string clientId,[FromRoute][Required] string itemId)
         {
-            try
-            {
-                Log.Information("Getting a single item.");
+            var query = new GetItemByIdQuery(itemId);
+            var result = await mediator.Send(query);
 
-                var query = new GetItemByIdQuery(id);
-                var item = await mediator.Send(query);
-
-                return Ok(item);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
+
+
+
+        /// <summary>
+        /// Create item for client
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Permission(PermissionType.CreateItem)]
         [HttpPost]
-        public async Task<IActionResult> ActionResult([FromBody] CreateItemCommand command)
+        public async Task<IActionResult> CreateItem(string clientId, [FromBody] ItemForCreatingDto model)
         {
-            try
-            {
-                Log.Information("Creating a new item.");
-                var itemId = await mediator.Send(command);
-                return CreatedAtAction(nameof(GetSingleItem), new { id = itemId }, itemId);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return BadRequest(new { errorMessage = ex.Message, errors = ex.Errors });
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            Log.Information("Creating a new item.");
+            var result = await mediator.Send(new CreateItemCommand(clientId, model.Name, model.Description, model.Price, model.Currency));
+
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
     }

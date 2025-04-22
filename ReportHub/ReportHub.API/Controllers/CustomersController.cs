@@ -1,166 +1,103 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.API.Authorization.Attributes;
+using ReportHub.API.Authorization.Permissions;
+using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Customers.Commands;
+using ReportHub.Application.Features.Customers.DTOs;
 using ReportHub.Application.Features.Customers.Queries;
-using ReportHub.Application.Validators.Exceptions;
-using Serilog;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/clients/{clientId}/[controller]")]
     [ApiController]
-    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class CustomersController(IMediator mediator) : ControllerBase
     {
         /// <summary>
         /// Get all customers
         /// </summary>
-        /// <param name="pageNumber">Page number</param>
-        /// <param name="pageSize">Page size</param>
-        /// <param name="sortingParameter">Sorting field</param>
-        /// <param name="ascending">Is ascended</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="sortingParameter"></param>
+        /// <param name="ascending"></param>
+        /// <returns></returns>
+        [Permission(PermissionType.GetClientCustomers)]
         [HttpGet]
-        public async Task<IActionResult> GetAllCustomers([FromQuery][Required] int? pageNumber = 1, [FromQuery][Required] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery][Required] bool ascending = true)
+        public async Task<IActionResult> GetAllCustomers(string clientId,[FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
-            try
-            {
-                Log.Information("Fetching all customers.");
+            var query = new GetAllCustomersQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
+            var result = await mediator.Send(query);
 
-                var query = new GetAllCustomersQuery(pageNumber, pageSize, sortingParameter, ascending);
-                var customers = await mediator.Send(query);
-
-                return Ok(customers);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
         /// <summary>
         /// Get customer by id
         /// </summary>
-        /// <param name="id">Customer Id</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetSingleCustomer([FromRoute][Required] string id)
+        public async Task<IActionResult> GetSingleCustomer(string clientId ,[FromRoute][Required] string id)
         {
-            try
-            {
-                Log.Information("Getting a single customer.");
-
-                var query = new GetCustomerByIdQuery(id);
-                var customer = await mediator.Send(query);
-
-                return Ok(customer);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var query = new GetCustomerByIdQuery(id);
+            var result = await mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
         /// <summary>
         /// Add new customer
         /// </summary>
-        /// <param name="model">Customer model</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Permission(PermissionType.CreateCustomer)]
         [HttpPost]
-        public async Task<IActionResult> AddNewCustomer([FromBody] CreateCustomerCommand model)
+        public async Task<IActionResult> AddNewCustomer(string clientId,[FromBody] CustomerForCreatingDto model)
         {
-            try
-            {
-                Log.Information("Adding a new customer.");
-                var customer = await mediator.Send(model);
-                return Ok(customer);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-
+            var result = await mediator.Send(new CreateCustomerCommand(model.Name, model.Email, model.CountryId, clientId));
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
         /// <summary>
         /// Delete customer
         /// </summary>
-        /// <param name="id">Customer Id</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Permission(PermissionType.DeleteCustomer)]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer([FromRoute][Required] string id)
+        public async Task<IActionResult> DeleteCustomer(string clientId,[FromRoute][Required] string id)
         {
-            try
-            {
-                Log.Information("Deleting a single customer.");
-
-                var command = new DeleteCustomerCommand(id);
-                var client = await mediator.Send(command);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var command = new DeleteCustomerCommand(id);
+            var result = await mediator.Send(command);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
         /// <summary>
         /// Update customer
         /// </summary>
-        /// <param name="model">Update document</param>
-        /// <returns>IActionResult</returns>
+        /// <param name="clientId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [Permission(PermissionType.UpdateCustomer)]
         [HttpPut]
-        public async Task<IActionResult> UpdateCustomer([FromForm][Required] UpdateCustomerCommand model)
+        public async Task<IActionResult> UpdateCustomer(string clientId, [FromBody] UpdateCustomerCommand model)
         {
-            try
-            {
-                Log.Information("Updating a single customer.");
-
-                var client = await mediator.Send(model);
-
-                return Ok(client);
-            }
-            catch (InputValidationException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(400, ex.Errors);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return StatusCode(500, ex.Message);
-            }
+            var result = await mediator.Send(model);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
     }
 }

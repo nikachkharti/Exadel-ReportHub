@@ -5,6 +5,7 @@
         string Id,
         string Name,
         string Email,
-        string Address
+        string ClientId,
+        string CountryId
     );
 }
