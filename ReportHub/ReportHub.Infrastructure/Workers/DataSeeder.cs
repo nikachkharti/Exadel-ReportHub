@@ -2,7 +2,7 @@
 
 namespace ReportHub.Infrastructure.Workers;
 
-public class DataSeeder(IServiceProvider serviceProvider) : IHostedService
+public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
