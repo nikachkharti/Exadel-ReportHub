@@ -54,19 +54,19 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
-            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
+            .ForMember(dest => dest.CountryId, options => options.MapFrom(src => src.CountryId));
 
         CreateMap<CreateCustomerCommand, Customer>()
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
-            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
+            .ForMember(dest => dest.CountryId, options => options.MapFrom(src => src.CountryId));
 
 
         CreateMap<UpdateCustomerCommand, Customer>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
-            .ForMember(dest => dest.Address, options => options.MapFrom(src => src.Address));
+            .ForMember(dest => dest.CountryId, options => options.MapFrom(src => src.CountryId));
 
         #endregion
 

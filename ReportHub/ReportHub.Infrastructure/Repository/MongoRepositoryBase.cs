@@ -3,10 +3,12 @@ using MongoDB.Driver;
 using System.Linq.Expressions;
 using ReportHub.Infrastructure.Configurations;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using MongoDB.Bson;
+using ReportHub.Domain.Entities;
 
 namespace ReportHub.Infrastructure.Repository
 {
-    public class MongoRepositoryBase<T> : IMongoRepositoryBase<T> where T : class
+    public class MongoRepositoryBase<T> : IMongoRepositoryBase<T> where T : SoftDeletion
     {
         private readonly IMongoCollection<T> _collection;
 
@@ -14,10 +16,24 @@ namespace ReportHub.Infrastructure.Repository
         {
             var settings = options.Value;
             var client = new MongoClient(settings.ConnectionString);
-            var db = client.GetDatabase(settings.DatabaseName);
-            _collection = db.GetCollection<T>(collectionName);
+            _mongoDatabase = client.GetDatabase(settings.DatabaseName);
+            _collection = _mongoDatabase.GetCollection<T>(collectionName);
+            EnsureIsDeletedFieldExistsAsync().Wait();
         }
+        private readonly IMongoDatabase _mongoDatabase;
 
+        public async Task EnsureIsDeletedFieldExistsAsync()
+        {
+            var names = await _mongoDatabase.ListCollectionNames().ToListAsync();
+
+            foreach (var name in names)
+            {
+                var col = _mongoDatabase.GetCollection<BsonDocument>(name);
+                var update = Builders<BsonDocument>.Update.Set("IsDeleted", false);
+                var filter = Builders<BsonDocument>.Filter.Exists("IsDeleted", false);
+                await col.UpdateManyAsync(filter, update);
+            }
+        }
 
         #region GET
 
@@ -111,13 +127,30 @@ namespace ReportHub.Infrastructure.Repository
 
         #region DELETE
 
-        public async Task Delete(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default) =>
-            await _collection
-            .DeleteOneAsync(filter, cancellationToken);
+        public async Task Delete(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
+        {
+            var update = Builders<T>
+                    .Update
+                    .Set(x => x.IsDeleted, true);
+            await _collection.UpdateOneAsync(
+                    filter,
+                    update,
+                    cancellationToken: cancellationToken
+                    );
+        }
 
-        public async Task DeleteMultiple(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default) =>
-            await _collection
-            .DeleteManyAsync(filter, cancellationToken);
+        public async Task DeleteMultiple(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default)
+        {
+            var update = Builders<T>.Update.Set(x => x.IsDeleted, true);
+
+            await _collection.UpdateManyAsync(
+                filter,
+                update,
+                cancellationToken: cancellationToken
+            );
+        }
+
+
 
         #endregion
 

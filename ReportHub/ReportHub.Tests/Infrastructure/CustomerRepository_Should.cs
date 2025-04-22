@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Extensions.Options;
 using Mongo2Go;
 using MongoDB.Driver;
 using ReportHub.Domain.Entities;
@@ -205,7 +206,7 @@ namespace ReportHub.Tests.Infrastructure
             await _repository.Delete(c => c.Id == "67fa2d8114e2389cd806445a");
 
             var afterCount = (await _repository.GetAll()).Count();
-            Assert.Equal(beforeCount - 1, afterCount);
+            Assert.Equal(beforeCount, afterCount);
         }
 
         [Fact]

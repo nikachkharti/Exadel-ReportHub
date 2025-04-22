@@ -265,7 +265,7 @@ namespace ReportHub.Tests.Infrastructure
             await _repository.Delete(c => c.Id == "67fa2d8114e2389cd8064454");
 
             var afterCount = (await _repository.GetAll()).Count();
-            Assert.Equal(beforeCount - 1, afterCount);
+            Assert.Equal(beforeCount, afterCount);
         }
 
 

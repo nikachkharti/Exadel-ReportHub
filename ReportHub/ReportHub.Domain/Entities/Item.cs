@@ -3,7 +3,7 @@ using MongoDB.Bson;
 
 namespace ReportHub.Domain.Entities
 {
-    public class Item
+    public class Item : SoftDeletion
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -15,6 +15,5 @@ namespace ReportHub.Domain.Entities
         public string Description { get; set; }
         public decimal Price { get; set; }
         public string Currency { get; set; }
-        public bool IsDeleted { get; set; } = false;
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Common.Models;
-using ReportHub.Application.Features.Item.Queries;
+using ReportHub.Application.Features.Items.Queries;
 using ReportHub.Application.Features.Items.Commands;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
