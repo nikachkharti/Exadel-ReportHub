@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using ReportHub.Application.Validators;
+using ReportHub.Application.Workers;
 namespace ReportHub.Application.Extensions;
 
 public static class DependencyInjection
@@ -20,5 +21,7 @@ public static class DependencyInjection
         services.AddAutoMapper(applicationAssembly);
 
         services.AddHttpContextAccessor();
+
+        services.AddHostedService<PlanExpireWorker>();
     }
 }
