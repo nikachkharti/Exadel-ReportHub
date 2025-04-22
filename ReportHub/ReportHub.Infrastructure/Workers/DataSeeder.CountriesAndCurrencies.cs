@@ -9,7 +9,7 @@ namespace ReportHub.Infrastructure.Workers;
 
 public partial class DataSeeder
 {
-    private async Task SeedCountriesAndCurrencies(IServiceScope scope, CancellationToken cancellationToken)
+    private async Task SeedCountriesAndCurrenciesAsync(IServiceScope scope, CancellationToken cancellationToken)
     {
         var countryRepository = scope.ServiceProvider.GetRequiredService<ICountryRepository>();
         var currencyRepository = scope.ServiceProvider.GetRequiredService<ICurrencyRepository>();

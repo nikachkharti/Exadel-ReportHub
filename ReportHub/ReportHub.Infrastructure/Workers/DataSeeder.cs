@@ -11,7 +11,8 @@ public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedServi
         var scope = serviceProvider.CreateScope();
         
         await SeedClientsAsync(scope, cancellationToken);
-        await SeedCountriesAndCurrencies(scope, cancellationToken);
+        await SeedCountriesAndCurrenciesAsync(scope, cancellationToken);
+        await SeedItemsAsync(scope, cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
