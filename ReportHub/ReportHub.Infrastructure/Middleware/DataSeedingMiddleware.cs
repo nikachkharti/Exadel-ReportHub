@@ -5,6 +5,7 @@ using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using ReportHub.Infrastructure.Repository;
 using Serilog;
+using System.Reflection;
 using Item = ReportHub.Domain.Entities.Item;
 
 namespace ReportHub.Infrastructure.Middleware
@@ -35,8 +36,11 @@ namespace ReportHub.Infrastructure.Middleware
                 var invoiceRepository = scope.ServiceProvider.GetRequiredService<IInvoiceRepository>();
                 var planRepository = scope.ServiceProvider.GetRequiredService<IPlanRepository>();
                 var saleRepository = scope.ServiceProvider.GetRequiredService<ISaleRepository>();
+                var permissionRepository = scope.ServiceProvider.GetRequiredService<IPermissionRepository>();
 
                 var countryId = await SeedCountryAndCurrencyAsync();
+
+                await SeedPermissionsAsync(permissionRepository);
 
                 #region CLIENTS SEED
                 var existingClients = await clientRepository.GetAll(pageNumber: 1, pageSize: 1);
@@ -475,6 +479,41 @@ namespace ReportHub.Infrastructure.Middleware
             await _next(context);
         }
 
+        private async Task SeedPermissionsAsync(IPermissionRepository permissionRepository)
+        {
+            var types = typeof(SoftDeletion).Assembly.GetTypes().Where(t => t.BaseType.Equals(typeof(SoftDeletion)));
+
+            string[] permissions = [
+                "Create{{Entity}}", "GetAll{{Entity}}",
+                "GetOne{{Entity}}", "Update{{Entity}}", "Delete{{Entity}}" 
+                ];
+
+            var entities = new List<Permission>();
+
+            foreach(var type in types)
+            {
+                foreach(var permission in permissions)
+                {
+                    var entityPermission = permission.Replace("{{Entity}}", type.Name);
+                    var exist = await permissionRepository.Get(p => p.Name.Equals(entityPermission));
+                    
+                    if (exist is not null) break;
+
+                    var entity = new Permission()
+                    {
+                        Name = entityPermission
+                    };
+
+                    entities.Add(entity);
+                }
+
+            }
+
+            if (entities.Any())
+            {
+                await permissionRepository.InsertMultiple(entities);
+            }
+        }
         private async Task<string> SeedCountryAndCurrencyAsync()
         {
             #region COUNTRY & CURRENCY SEED
