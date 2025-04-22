@@ -13,6 +13,7 @@ public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedServi
         await SeedClientsAsync(scope, cancellationToken);
         await SeedCountriesAndCurrenciesAsync(scope, cancellationToken);
         await SeedItemsAsync(scope, cancellationToken);
+        await SeedInvoiesAsync(scope, cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
