@@ -21,6 +21,7 @@ namespace ReportHub.API
             builder.AddAuthorization();
 
 
+
             var app = builder.Build();
 
             app.UseDataSeeder();
