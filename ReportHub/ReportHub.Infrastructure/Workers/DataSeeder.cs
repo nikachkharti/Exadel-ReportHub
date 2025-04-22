@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace ReportHub.Infrastructure.Workers;
@@ -10,6 +11,7 @@ public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedServi
         var scope = serviceProvider.CreateScope();
         
         await SeedClientsAsync(scope, cancellationToken);
+        await SeedCountriesAndCurrencies(scope, cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
