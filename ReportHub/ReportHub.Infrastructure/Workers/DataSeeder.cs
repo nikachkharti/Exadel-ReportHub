@@ -1,12 +1,15 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace ReportHub.Infrastructure.Workers;
 
 public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedService
 {
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var scope = serviceProvider.CreateScope();
+        
+        await SeedClientsAsync(scope, cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
