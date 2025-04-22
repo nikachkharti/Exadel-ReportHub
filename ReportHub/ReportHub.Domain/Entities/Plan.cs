@@ -18,5 +18,6 @@ namespace ReportHub.Domain.Entities
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public PlanStatus Status { get; set; } = PlanStatus.Planned;
+        public bool IsDeleted { get; set; } = false;
     }
 }

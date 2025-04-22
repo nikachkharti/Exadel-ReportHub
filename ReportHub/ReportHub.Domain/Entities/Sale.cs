@@ -17,5 +17,6 @@ namespace ReportHub.Domain.Entities
 
         public decimal Amount { get; set; }
         public DateTime SaleDate { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }

@@ -20,5 +20,6 @@ namespace ReportHub.Domain.Entities
         public string Currency { get; set; }
         public string PaymentStatus { get; set; }
         public List<string> ItemIds { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }
