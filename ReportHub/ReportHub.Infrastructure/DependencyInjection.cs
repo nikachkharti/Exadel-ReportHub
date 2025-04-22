@@ -35,7 +35,7 @@ namespace ReportHub.Infrastructure
             services.AddScoped<ISaleRepository, SaleRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ICurrencyRepository, CurrencyRepository>();
-
+            services.AddScoped<IPermissionRepository, PermissionRepository>();
 
             // Currency api service
             services.AddHttpClient
