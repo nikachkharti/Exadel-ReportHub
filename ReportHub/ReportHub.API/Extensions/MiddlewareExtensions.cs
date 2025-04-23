@@ -1,5 +1,4 @@
 ﻿using ReportHub.API.Middlewares;
-using ReportHub.Infrastructure.Middleware;
 
 namespace ReportHub.API.Extensions
 {
@@ -7,7 +6,7 @@ namespace ReportHub.API.Extensions
     {
         public static IApplicationBuilder UseDataSeeder(this WebApplication app)
         {
-            return app.UseMiddleware<DataSeedingMiddleware>();
+            return app;
         }
 
         public static IApplicationBuilder UseExceptions(this WebApplication app)
