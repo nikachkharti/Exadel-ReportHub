@@ -10,6 +10,7 @@ using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Controllers;
+using ReportHub.Identity.Middlewares;
 using ReportHub.Identity.Models;
 using ReportHub.Identity.Validators;
 using ReportHub.Identity.Workers;
@@ -191,6 +192,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseRouting();
 
