@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using ClosedXML.Excel;
 using ReportHub.Application.Contracts.FileContracts;
+using ReportHub.Domain.Entities;
 
 namespace ReportHub.Infrastructure.Services.FileServices;
 
@@ -109,4 +110,9 @@ public class ExcelService : IExcelService
     }
 
     private static PropertyInfo[] GetTypeProperties<T>() => typeof(T).GetProperties();
+
+    public Task<Stream> WriteInvoiceAsync(Invoice invoices, IReadOnlyDictionary<string, object> statistics, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
 }

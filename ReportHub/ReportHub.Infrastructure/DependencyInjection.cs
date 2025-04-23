@@ -23,9 +23,9 @@ namespace ReportHub.Infrastructure
             // Register services
             services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IExcelService, ExcelService>();
+            services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
-
             // Register repositories
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();

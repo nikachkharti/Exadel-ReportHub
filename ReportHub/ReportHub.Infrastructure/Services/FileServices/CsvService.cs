@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using ReportHub.Application.Contracts.FileContracts;
+using ReportHub.Domain.Entities;
 using System.Globalization;
 using System.Reflection;
 
@@ -94,4 +95,9 @@ public class CsvService : ICsvService
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     private PropertyInfo[] GetTypeProperties<T>() => typeof(T).GetProperties();
+
+    public Task<Stream> WriteInvoiceAsync(Invoice invoices, IReadOnlyDictionary<string, object> statistics, CancellationToken token)
+    {
+        throw new NotImplementedException();
+    }
 }

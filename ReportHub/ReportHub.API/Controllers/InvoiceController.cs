@@ -6,6 +6,7 @@ using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.DataExports.Queries;
 using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
+using ReportHub.Application.Features.DataExports.Queries.PdfQueries;
 using ReportHub.Application.Features.DataImports.Queries;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
@@ -105,7 +106,7 @@ namespace ReportHub.API.Controllers
             {
                 FileExportingType.Csv => new InvoiceExportAsCsvQuery(),
                 FileExportingType.Excel => new InvoiceExportAsExcelQuery(),
-                FileExportingType.Pdf => throw new NotImplementedException(),
+                FileExportingType.Pdf => new InvoiceExportAsPdfQuery(),
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
         }
