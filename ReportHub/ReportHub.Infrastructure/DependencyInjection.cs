@@ -9,6 +9,7 @@ using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Infrastructure.Services.IdentityServices;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Infrastructure.Services.CurrencyServices;
+using ReportHub.Infrastructure.Workers;
 
 namespace ReportHub.Infrastructure
 {
@@ -44,6 +45,8 @@ namespace ReportHub.Infrastructure
             services.AddMemoryCache();
 
             services.AddScoped<IClientRoleRepository, ClientRoleRepository>();
+
+            services.AddHostedService<DataSeeder>();
 
             return services;
         }
