@@ -3,4 +3,4 @@ using ReportHub.Identity.Features.Users.DTOs;
 
 namespace ReportHub.Identity.Features.Users.Queries;
 
-public record GetAllUserQuery : IRequest<IEnumerable<UserForGettingDto>>;
+public record GetAllUsersQuery(int currentPage) : IRequest<IEnumerable<UserForGettingDto>>;
