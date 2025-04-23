@@ -1,4 +1,5 @@
 using AspNetCore.Identity.Mongo;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -10,13 +11,19 @@ using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Controllers;
 using ReportHub.Identity.Models;
+using ReportHub.Identity.Validators;
 using ReportHub.Identity.Workers;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(AuthController).Assembly));
+builder.Services.AddMediatR(c =>
+{
+    c.RegisterServicesFromAssembly(typeof(AuthController).Assembly);
+    c.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
+builder.Services.AddValidatorsFromAssemblyContaining(typeof(AuthController));
 builder.Services.AddAutoMapper(typeof(AuthController).Assembly);
 
 builder.Services.AddControllers();

@@ -26,11 +26,13 @@ public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumer
 
     private async Task<IEnumerable<UserForGettingDto>> GetUsersAsList(GetAllUsersQuery request)
     {
-        var users =  await _userManager
+        var users = await _userManager
               .Users
-              .Skip(10 * (request.currentPage))
+              .Skip(10 * (request.currentPage - 1))
               .Take(10)
-              .ToListAsync() ?? throw new NoContentException();
+              .ToListAsync();
+              
+         if(users is null || !users.Any()) throw new NoContentException();
 
         return _mapper.Map<IEnumerable<UserForGettingDto>>(users);
     }
