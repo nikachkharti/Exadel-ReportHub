@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(AuthController).Assembly));
+builder.Services.AddAutoMapper(typeof(AuthController).Assembly);
 
 builder.Services.AddControllers();
 builder.Configuration.AddEnvironmentVariables();
