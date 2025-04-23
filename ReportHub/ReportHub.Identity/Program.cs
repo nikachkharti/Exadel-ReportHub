@@ -15,6 +15,7 @@ using ReportHub.Identity.Models;
 using ReportHub.Identity.Validators;
 using ReportHub.Identity.Workers;
 using System.Security.Claims;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -115,6 +116,7 @@ builder.Services
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
 
+
         options.DisableAccessTokenEncryption();
 
         options.SetIntrospectionEndpointUris("connect/introspect");
@@ -126,6 +128,10 @@ builder.Services
             OpenIddictConstants.Scopes.OfflineAccess,
             "report-hub-api-scope");
 
+        options.AddEventHandler<OpenIddictServerEvents.ApplyTokenResponseContext>(b =>
+        {
+            b.UseScopedHandler<CustomTokenRequestEventHandler>();
+        });
         options.AddEventHandler<OpenIddictServerEvents.HandleIntrospectionRequestContext>(b =>
             b.UseInlineHandler(c =>
             {
@@ -191,8 +197,8 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ContentTypeMiddleware>();
 app.UseHttpsRedirection();
 app.UseRouting();
 

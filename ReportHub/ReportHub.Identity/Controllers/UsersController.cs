@@ -1,5 +1,7 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Features.Users.Commands;
 using ReportHub.Identity.Features.Users.Queries;
 
@@ -9,6 +11,7 @@ namespace ReportHub.Identity.Controllers
     [ApiController]
     public class UsersController(IMediator mediator) : ControllerBase
     {
+        [Authorize(Roles = "SystemAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command)
         {
