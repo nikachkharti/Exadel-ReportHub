@@ -32,9 +32,10 @@ public class DatabaseSeeder : IHostedService
 
         var roles = new List<string>
         {
-            "SystemAdmin",
-            "Admin",
-            "User"
+            "SuperAdmin",
+            "Owner",
+            "ClientAdmin",
+            "Operator",
         };
 
         foreach (var role in roles)
