@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 
-// alias iTextSharp namespaces to avoid collisions
 using iText = iTextSharp.text;
 using iTextPdf = iTextSharp.text.pdf;
 
 using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
+using iTextSharp.text.pdf;
+using Microsoft.AspNetCore.Http;
+using iTextSharp.text;
 
 namespace ReportHub.Infrastructure.Services.FileServices
 {
@@ -21,15 +17,18 @@ namespace ReportHub.Infrastructure.Services.FileServices
         private readonly IClientRepository _clientRepo;
         private readonly ICustomerRepository _customerRepo;
         private readonly IItemRepository _itemRepo;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PdfService(
             IClientRepository clientRepo,
             ICustomerRepository customerRepo,
-            IItemRepository itemRepo)
+            IItemRepository itemRepo,
+            IHttpContextAccessor httpContextAccessor)
         {
             _clientRepo = clientRepo;
             _customerRepo = customerRepo;
             _itemRepo = itemRepo;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Stream> WriteAllAsync<T>(
@@ -186,6 +185,44 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 isHeader: true);
 
             document.Add(itemsTable);
+
+            //qr ------------------------------------------------------------------------------------
+            var request = _httpContextAccessor.HttpContext.Request;
+            var protocol = request.Scheme;
+            var host = request.Host;
+            var url = $"{protocol}://{host}/invoice/download?invoiceId={invoice.Id}";
+
+            var qrCode = new BarcodeQRCode(url, 150, 150, null);
+            var qrImage = qrCode.GetImage();
+            qrImage.ScaleAbsolute(100, 100);
+
+            var qrContainer = new PdfPTable(1)
+            {
+                WidthPercentage = 30,
+                HorizontalAlignment = Element.ALIGN_RIGHT,
+                SpacingBefore = 30
+            };
+
+            var qrCell = new PdfPCell(qrImage)
+            {
+                Border = PdfPCell.NO_BORDER,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                Padding = 10
+            };
+
+            qrContainer.AddCell(qrCell);
+            document.Add(qrContainer);
+
+            // Explanatory text
+            var explanationFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
+            var explanation = new Paragraph("Scan to download invoice", explanationFont)
+            {
+                Alignment = Element.ALIGN_RIGHT,
+                SpacingAfter = 20
+            };
+            document.Add(explanation);
+            //qr ------------------------------------------------------------------------------------
         }
 
         private void AddStatisticsPage(
