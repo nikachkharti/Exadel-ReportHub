@@ -51,9 +51,15 @@ public partial class DataSeeder
             }
         }
 
-        await countryRepository.InsertMultiple(countryEntities, cancellationToken);
+        if (countryEntities.Any())
+        {
+            await countryRepository.InsertMultiple(countryEntities, cancellationToken);
+        }
 
-        await currencyRepository.InsertMultiple(currencyEntities, cancellationToken);
+        if (currencyEntities.Any())
+        {
+            await currencyRepository.InsertMultiple(currencyEntities, cancellationToken);
+        }
 
         Log.Information("Country and currency seeding completed");
     }
