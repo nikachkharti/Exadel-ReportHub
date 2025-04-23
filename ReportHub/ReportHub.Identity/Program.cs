@@ -8,6 +8,7 @@ using OpenIddict.Server;
 using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Contexts;
+using ReportHub.Identity.Controllers;
 using ReportHub.Identity.Models;
 using ReportHub.Identity.Workers;
 using System.Security.Claims;
@@ -15,7 +16,9 @@ using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddMediatR(c => c.RegisterServicesFromAssembly(typeof(AuthController).Assembly));
+
+builder.Services.AddControllers();
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddSwaggerGen(c =>
