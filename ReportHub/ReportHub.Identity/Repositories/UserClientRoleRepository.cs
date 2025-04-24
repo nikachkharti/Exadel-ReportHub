@@ -1,10 +1,11 @@
 ﻿using MongoDB.Driver;
 using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Models;
+using System.Linq.Expressions;
 
 namespace ReportHub.Identity.Repositories;
 
-public class UserClientRoleRepository(IdentityDbContext dbContext) : IRepository<UserClientRole>
+public class UserClientRoleRepository(IdentityDbContext dbContext) : IUserClientRoleRepository
 {
     public async Task<IEnumerable<UserClientRole>> GetAllAsync()
     {
@@ -14,5 +15,15 @@ public class UserClientRoleRepository(IdentityDbContext dbContext) : IRepository
     public async Task InsertAsync(UserClientRole entity)
     {
         await dbContext.UserClientRoles.InsertOneAsync(entity);
+    }
+
+    public Task<UserClientRole> GetAsync(Expression<Func<UserClientRole, bool>> predicate)
+    {
+        return dbContext.UserClientRoles.Find(predicate).FirstOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<UserClientRole>> GetAllAsync(Expression<Func<UserClientRole, bool>> predicate)
+    {
+        return await dbContext.UserClientRoles.Find(predicate).ToListAsync();
     }
 }

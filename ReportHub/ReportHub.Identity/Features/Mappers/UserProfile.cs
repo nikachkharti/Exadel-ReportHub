@@ -3,7 +3,7 @@ using ReportHub.Identity.Features.Users.Commands;
 using ReportHub.Identity.Features.Users.DTOs;
 using ReportHub.Identity.Models;
 
-namespace ReportHub.Identity.Features.Mapper;
+namespace ReportHub.Identity.Features.Mappers;
 
 public class UserProfile : Profile
 {

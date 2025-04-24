@@ -10,11 +10,10 @@ public class UserClientRole
     public string Id { get; set; } = string.Empty;
 
     [BsonRepresentation(BsonType.ObjectId)]
-    public string ClientId { get; set; } = string.Empty;
+    public string? ClientId { get; set; }
 
-    [BsonRepresentation(BsonType.Binary)]
-    [BsonGuidRepresentation(GuidRepresentation.Standard)]
-    public Guid UserId { get; set; }
+    [BsonRepresentation(BsonType.String)]
+    public string UserId { get; set; } = string.Empty;
 
     public string RoleId { get; set; } = string.Empty;
 }

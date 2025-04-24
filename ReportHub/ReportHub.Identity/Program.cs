@@ -12,14 +12,17 @@ using ReportHub.Identity.Contexts;
 using ReportHub.Identity.Controllers;
 using ReportHub.Identity.Middlewares;
 using ReportHub.Identity.Models;
+using ReportHub.Identity.Repositories;
 using ReportHub.Identity.Validators;
 using ReportHub.Identity.Workers;
+using System.Collections.Immutable;
 using System.Security.Claims;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IUserClientRoleRepository, UserClientRoleRepository>();
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssembly(typeof(AuthController).Assembly);
@@ -38,6 +41,8 @@ builder.Services.AddSwaggerGen(c =>
         Title = "ReportHub.Identity",
         Version = "v1"
     });
+
+    c.DocumentFilter<TokenEndpointDocumentFilter>();
 
     c.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme()
     {
@@ -128,10 +133,6 @@ builder.Services
             OpenIddictConstants.Scopes.OfflineAccess,
             "report-hub-api-scope");
 
-        options.AddEventHandler<OpenIddictServerEvents.ApplyTokenResponseContext>(b =>
-        {
-            b.UseScopedHandler<CustomTokenRequestEventHandler>();
-        });
         options.AddEventHandler<OpenIddictServerEvents.HandleIntrospectionRequestContext>(b =>
             b.UseInlineHandler(c =>
             {
@@ -198,7 +199,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseMiddleware<ContentTypeMiddleware>();
+//app.UseMiddleware<ContentTypeMiddleware>();
 app.UseHttpsRedirection();
 app.UseRouting();
 

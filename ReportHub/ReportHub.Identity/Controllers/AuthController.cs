@@ -27,7 +27,7 @@ public class AuthController : ControllerBase
         _applicationManager = applicationManager;
         _userManager = userManager;
     }
-    [Authorize(Roles = "SystemAdmin, Admin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+    [Authorize(Roles = "SuperAdmin, Admin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
     [HttpPost("users")]
     public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
     {
