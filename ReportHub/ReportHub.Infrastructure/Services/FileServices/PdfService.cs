@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-
 using iText = iTextSharp.text;
 using iTextPdf = iTextSharp.text.pdf;
 
@@ -9,6 +8,7 @@ using ReportHub.Domain.Entities;
 using iTextSharp.text.pdf;
 using Microsoft.AspNetCore.Http;
 using iTextSharp.text;
+using iTextSharp.text.pdf.draw;
 
 namespace ReportHub.Infrastructure.Services.FileServices
 {
@@ -18,6 +18,11 @@ namespace ReportHub.Infrastructure.Services.FileServices
         private readonly ICustomerRepository _customerRepo;
         private readonly IItemRepository _itemRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
+        // Added color constants
+        private readonly BaseColor LightGray = BaseColor.LIGHT_GRAY;
+        private readonly BaseColor DarkGray = new BaseColor(51, 51, 51);
+        private readonly BaseColor BrandColor = new BaseColor(52, 152, 219);
 
         public PdfService(
             IClientRepository clientRepo,
@@ -115,20 +120,25 @@ namespace ReportHub.Infrastructure.Services.FileServices
             var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId);
             var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
 
-            // Title header
+            // Enhanced Title Section
             var titleFont = iText.FontFactory.GetFont(
-                iText.FontFactory.HELVETICA_BOLD, 18);
-            var title = new iText.Paragraph(
-                $"Invoice Number: {invoice.Id}", titleFont)
+                iText.FontFactory.HELVETICA_BOLD, 18, DarkGray);
+
+            var title = new iText.Paragraph($"Invoice Number: {invoice.Id}", titleFont)
             {
                 Alignment = iText.Element.ALIGN_CENTER,
-                SpacingAfter = 20
+                SpacingAfter = 30,
+                Leading = 1.5f
             };
+            title.Add(new Chunk(new DottedLineSeparator()));
             document.Add(title);
 
-            // Details table
+            // Details Table
             var details = new iTextPdf.PdfPTable(2) { WidthPercentage = 100f };
-            details.SetWidths(new float[] { 1f, 2f });
+            details.SetWidths(new float[] { 1f, 3f });
+            details.DefaultCell.Border = PdfPCell.NO_BORDER;
+            details.DefaultCell.Padding = 10;
+            details.DefaultCell.HorizontalAlignment = Element.ALIGN_LEFT;
 
             AddCell(details, "Customer:", true);
             AddCell(details, customer?.Name ?? "N/A");
@@ -137,25 +147,27 @@ namespace ReportHub.Infrastructure.Services.FileServices
             AddCell(details, client?.Name ?? "N/A");
 
             AddCell(details, "Issue Date:", true);
-            AddCell(details, invoice.IssueDate
-                                     .ToString("dd-MM-yyyy"));
+            AddCell(details, invoice.IssueDate.ToString("dd MMM yyyy"));
 
             AddCell(details, "Due Date:", true);
-            AddCell(details, invoice.DueDate
-                                     .ToString("dd-MM-yyyy"));
+            AddCell(details, invoice.DueDate.ToString("dd MMM yyyy"));
 
             AddCell(details, "Payment Status:", true);
-            AddCell(details, invoice.PaymentStatus);
-
-            //AddCell(details, "Bank Account:", true);
-            //AddCell(details, client?.BankAccountNumber ?? "N/A");
+            AddCell(details, invoice.PaymentStatus, textColor: GetStatusColor(invoice.PaymentStatus));
 
             document.Add(details);
             document.Add(new iText.Paragraph(" "));
 
-            // Items table
+            // Items Table
             var itemsTable = new iTextPdf.PdfPTable(4) { WidthPercentage = 100f };
-            itemsTable.SetWidths(new float[] { 2f, 1f, 1f, 1f });
+            itemsTable.SetWidths(new float[] { 3f, 1f, 1.5f, 1.5f });
+            itemsTable.HeaderRows = 1;
+
+            // Set default cell properties
+            itemsTable.DefaultCell.Border = PdfPCell.LEFT_BORDER | PdfPCell.TOP_BORDER | PdfPCell.RIGHT_BORDER;
+            itemsTable.DefaultCell.BorderColor = LightGray;
+            itemsTable.DefaultCell.Padding = 10;
+
 
             AddCell(itemsTable, "Item Name", true);
             AddCell(itemsTable, "Quantity", true);
@@ -166,63 +178,70 @@ namespace ReportHub.Infrastructure.Services.FileServices
             foreach (var item in items)
             {
                 AddCell(itemsTable, item.Name);
-                AddCell(itemsTable, "1");  
-
-                AddCell(itemsTable,
-                    $"{item.Price.ToString("N2", CultureInfo.InvariantCulture)} {invoice.Currency}");
-
-                var lineTotal = item.Price; 
-                totalAmount += lineTotal;
-
-                AddCell(itemsTable,
-                    $"{lineTotal.ToString("N2", CultureInfo.InvariantCulture)} {invoice.Currency}");
+                AddCell(itemsTable, "1");
+                AddCell(itemsTable, $"{item.Price:N2} {invoice.Currency}");
+                AddCell(itemsTable, $"{item.Price:N2} {invoice.Currency}");
+                totalAmount += item.Price;
             }
 
-            // Grand total row
-            AddCell(itemsTable, "Total Amount:", true, colspan: 3);
-            AddCell(itemsTable,
-                $"{totalAmount.ToString("N2", CultureInfo.InvariantCulture)} {invoice.Currency}",
-                isHeader: true);
+            // Total Row
+            var totalCell = new iTextPdf.PdfPCell(new Phrase("Total Amount:",
+                iText.FontFactory.GetFont(iText.FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE)))
+            {
+                Colspan = 3,
+                BackgroundColor = BrandColor,
+                HorizontalAlignment = iText.Element.ALIGN_CENTER,
+                Padding = 10
+            };
+            itemsTable.AddCell(totalCell);
+
+            var amountCell = new iTextPdf.PdfPCell(new Phrase(
+                $"{totalAmount:N2} {invoice.Currency}",
+                iText.FontFactory.GetFont(iText.FontFactory.HELVETICA_BOLD, 12)))
+            {
+                BackgroundColor = BrandColor,
+                HorizontalAlignment = iText.Element.ALIGN_RIGHT,
+                Padding = 10
+            };
+            itemsTable.AddCell(amountCell);
 
             document.Add(itemsTable);
 
-            //qr ------------------------------------------------------------------------------------
+            // QR Code Section
             var request = _httpContextAccessor.HttpContext.Request;
-            var protocol = request.Scheme;           
-            var host = request.Host;    
+            var protocol = request.Scheme;
+            var host = request.Host;
             var url = $"{protocol}://{host}/invoice/download?invoiceId={invoice.Id}";
+
+            var qrTable = new iTextPdf.PdfPTable(1)
+            {
+                WidthPercentage = 30,
+                HorizontalAlignment = iText.Element.ALIGN_RIGHT,
+                SpacingBefore = 20
+            };
+
+            var qrCaption = new iTextPdf.PdfPCell(new Paragraph("Scan to download invoice",
+                iText.FontFactory.GetFont(iText.FontFactory.HELVETICA_OBLIQUE, 10, DarkGray)))
+            {
+                Border = PdfPCell.NO_BORDER,
+                PaddingBottom = 5
+            };
+            qrTable.AddCell(qrCaption);
 
             var qrCode = new BarcodeQRCode(url, 150, 150, null);
             var qrImage = qrCode.GetImage();
-            qrImage.ScaleAbsolute(100, 100);
+            qrImage.ScalePercent(50f);
 
-            var qrContainer = new PdfPTable(1)
-            {
-                WidthPercentage = 30,
-                HorizontalAlignment = Element.ALIGN_RIGHT,
-                SpacingBefore = 30
-            };
-
-            var qrCell = new PdfPCell(qrImage)
+            var qrCell = new iTextPdf.PdfPCell(qrImage)
             {
                 Border = PdfPCell.NO_BORDER,
-                HorizontalAlignment = Element.ALIGN_CENTER,
-                VerticalAlignment = Element.ALIGN_MIDDLE,
-                Padding = 10
+                HorizontalAlignment = iText.Element.ALIGN_CENTER,
+                VerticalAlignment = iText.Element.ALIGN_MIDDLE,
+                Padding = 15
             };
+            qrTable.AddCell(qrCell);
 
-            qrContainer.AddCell(qrCell);
-            document.Add(qrContainer);
-
-            // Explanatory text
-            var explanationFont = FontFactory.GetFont(FontFactory.HELVETICA, 10);
-            var explanation = new Paragraph("Scan to download invoice", explanationFont)
-            {
-                Alignment = Element.ALIGN_RIGHT,
-                SpacingAfter = 20
-            };
-            document.Add(explanation);
-            //qr ------------------------------------------------------------------------------------
+            document.Add(qrTable);
         }
 
         private void AddStatisticsPage(
@@ -230,7 +249,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
             IReadOnlyDictionary<string, object> statistics)
         {
             var titleFont = iText.FontFactory.GetFont(
-                iText.FontFactory.HELVETICA_BOLD, 16);
+                iText.FontFactory.HELVETICA_BOLD, 16, DarkGray);
             var title = new iText.Paragraph("Statistics", titleFont)
             {
                 Alignment = iText.Element.ALIGN_CENTER,
@@ -258,22 +277,38 @@ namespace ReportHub.Infrastructure.Services.FileServices
             iTextPdf.PdfPTable table,
             string text,
             bool isHeader = false,
-            int colspan = 1)
+            int colspan = 1,
+            BaseColor textColor = null)
         {
-            var phrase = new iText.Phrase(text);
-            var cell = new iTextPdf.PdfPCell(phrase)
+            var font = iText.FontFactory.GetFont(
+                iText.FontFactory.HELVETICA,
+                10,
+                isHeader ? iText.Font.BOLD : iText.Font.NORMAL,
+                textColor ?? BaseColor.BLACK);
+
+            var cell = new iTextPdf.PdfPCell(new iText.Phrase(text, font))
             {
                 Colspan = colspan,
-                Padding = 5
+                Padding = 8
             };
 
             if (isHeader)
             {
-                cell.BackgroundColor = iText.BaseColor.LIGHT_GRAY;
+                cell.BackgroundColor = LightGray;
                 cell.HorizontalAlignment = iText.Element.ALIGN_CENTER;
             }
 
             table.AddCell(cell);
+        }
+
+        private BaseColor GetStatusColor(string status)
+        {
+            return status switch
+            {
+                "Paid" => BaseColor.GREEN,
+                "Overdue" => BaseColor.RED,
+                _ => BaseColor.ORANGE
+            };
         }
     }
 }
