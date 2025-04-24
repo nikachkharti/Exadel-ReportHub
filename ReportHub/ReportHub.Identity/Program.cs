@@ -43,6 +43,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 
     c.DocumentFilter<TokenEndpointDocumentFilter>();
+    c.DocumentFilter<RefreshTokenEndpointDocumentFilter>();
+
 
     c.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme()
     {

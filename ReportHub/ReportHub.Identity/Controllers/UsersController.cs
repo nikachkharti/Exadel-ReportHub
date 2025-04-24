@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Features.UserClientRoles.Commands;
 using ReportHub.Identity.Features.Users.Commands;
@@ -36,6 +37,14 @@ namespace ReportHub.Identity.Controllers
             var result = await mediator.Send(command);
 
             return CreatedAtAction(nameof(CreateUserClientRole), result);
+        }
+
+        [HttpGet("my-clients")]
+        public async Task<IActionResult> GetMyClients()
+        {
+            var result = await mediator.Send(new);
+
+            return Ok(result);
         }
     }
 }
