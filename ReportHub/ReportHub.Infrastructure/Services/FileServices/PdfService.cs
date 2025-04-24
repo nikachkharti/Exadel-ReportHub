@@ -188,8 +188,8 @@ namespace ReportHub.Infrastructure.Services.FileServices
 
             //qr ------------------------------------------------------------------------------------
             var request = _httpContextAccessor.HttpContext.Request;
-            var protocol = request.Scheme;
-            var host = request.Host;
+            var protocol = request.Scheme;           
+            var host = request.Host;    
             var url = $"{protocol}://{host}/invoice/download?invoiceId={invoice.Id}";
 
             var qrCode = new BarcodeQRCode(url, 150, 150, null);

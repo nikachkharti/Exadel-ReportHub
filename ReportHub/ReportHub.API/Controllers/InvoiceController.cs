@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.API.Enums;
 using ReportHub.Application.Common.Models;
@@ -12,7 +11,6 @@ using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
-using Serilog;
 using System.Net;
 
 namespace ReportHub.API.Controllers
