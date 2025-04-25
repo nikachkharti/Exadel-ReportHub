@@ -1,6 +1,6 @@
-﻿using ReportHub.Identity.Domain.Entities;
+﻿using ReportHub.Identity.Application.Validators.Exceptions;
+using ReportHub.Identity.Domain.Entities;
 using ReportHub.Identity.Infrastructure.Repositories;
-using ReportHub.Identity.Validators.Exceptions;
 using System.Linq.Expressions;
 
 namespace ReportHub.Identity.Application.Features.UserClients.Handlers.QueryHandlers;

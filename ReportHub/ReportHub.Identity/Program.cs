@@ -86,8 +86,9 @@ if (mongoDbSettings == null)
 
 builder.Services.AddSingleton<IdentityDbContext>();
 
-builder.Services.AddIdentityMongoDbProvider<User, Role, string>(identity =>
+builder.Services.AddIdentityMongoDbProvider<User, Role,string>(identity =>
         {
+            identity.Password.RequiredLength = 6;
             identity.Password.RequiredLength = 6;
             identity.Password.RequireDigit = false;
             identity.Password.RequireLowercase = false;

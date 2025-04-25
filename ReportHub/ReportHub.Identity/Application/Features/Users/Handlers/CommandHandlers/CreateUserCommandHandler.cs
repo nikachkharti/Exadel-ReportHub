@@ -2,8 +2,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using ReportHub.Identity.Application.Features.Users.Commands;
+using ReportHub.Identity.Application.Validators.Exceptions;
 using ReportHub.Identity.Domain.Entities;
-using ReportHub.Identity.Validators.Exceptions;
 
 namespace ReportHub.Identity.Application.Features.Users.Handlers.CommandHandlers;
 

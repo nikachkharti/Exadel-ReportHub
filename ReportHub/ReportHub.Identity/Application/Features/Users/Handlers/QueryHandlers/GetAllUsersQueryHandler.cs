@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using MongoDB.Driver.Linq;
 using ReportHub.Identity.Application.Features.Users.DTOs;
 using ReportHub.Identity.Application.Features.Users.Queries;
+using ReportHub.Identity.Application.Validators.Exceptions;
 using ReportHub.Identity.Domain.Entities;
-using ReportHub.Identity.Validators.Exceptions;
 
 namespace ReportHub.Identity.Application.Features.Users.Handlers.QueryHandlers;
 

@@ -3,7 +3,6 @@ using MediatR;
 using ReportHub.Identity.Application.Features.UserClients.DTOs;
 using ReportHub.Identity.Application.Features.UserClients.Queries;
 using ReportHub.Identity.Infrastructure.Repositories;
-using ReportHub.Identity.Validators.Exceptions;
 
 namespace ReportHub.Identity.Application.Features.UserClients.Handlers.QueryHandlers;
 

@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
+using ReportHub.Identity.Application.Features.Auth.Commands;
 using ReportHub.Identity.Domain.Entities;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -18,12 +20,16 @@ public class AuthController : ControllerBase
     private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly UserManager<User> _userManager;
 
+    private readonly IMediator _mediator;
+
     public AuthController(
         IOpenIddictApplicationManager applicationManager,
-        UserManager<User> userManager)
+        UserManager<User> userManager,
+        IMediator mediator)
     {
         _applicationManager = applicationManager;
         _userManager = userManager;
+        _mediator = mediator;
     }
 
     [HttpPost("/auth/login"), Produces("application/json")]
@@ -40,49 +46,11 @@ public class AuthController : ControllerBase
             });
         }
 
-        if (request.ClientId is null)
-        {
-            return BadRequest(new OpenIddictResponse
-            {
-                Error = Errors.InvalidClient,
-                ErrorDescription = "The client_id parameter is missing."
-            });
-        }
-
-        return await Login(request);
-    }
-
-    private async Task<IActionResult> Login(OpenIddictRequest request)
-    {
-        var result = await ValidateUserCreadentials(request.Username!, request.Password!);
-
-        if (!result.isSuccess)
-        {
-            return BadRequest(new OpenIddictResponse
-            {
-                Error = Errors.InvalidGrant,
-                ErrorDescription = "The user name or password is invalid."
-            });
-        }
-
-
-        if (await _applicationManager.FindByClientIdAsync(request.ClientId) is null)
-            throw new InvalidOperationException("The application cannot be found.");
-
-        var roles = await _userManager.GetRolesAsync(result.user!);
-
-        ClaimsIdentity identity = GetIdentityClaims();
-
-        SetClaims(request, result.user!, identity, (roles is null || roles.Count == 0 ? ["User"] : roles));
-
-        identity.SetScopes(request.GetScopes());
-
-        var principal = new ClaimsPrincipal(identity);
-
-        SetDestinations(principal);
+        var principal = await _mediator.Send(new LoginCommand(request.Username!, request.Password!));
 
         return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
+
 
     [HttpPost("/auth/refresh-token")]
     public async Task<IActionResult> RefreshToken()
@@ -98,16 +66,8 @@ public class AuthController : ControllerBase
             });
         }
 
-        if (request.ClientId is null)
-        {
-            return BadRequest(new OpenIddictResponse
-            {
-                Error = Errors.InvalidClient,
-                ErrorDescription = "The client_id parameter is missing."
-            });
-        }
-
-        var principal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
+        
+        ClaimsPrincipal? principal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
         if (principal is null)
         {
             return BadRequest(new OpenIddictResponse
