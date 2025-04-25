@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
-using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Domain.Entities;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -26,30 +24,6 @@ public class AuthController : ControllerBase
     {
         _applicationManager = applicationManager;
         _userManager = userManager;
-    }
-    [Authorize(Roles = "SuperAdmin, Admin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
-    [HttpPost("users")]
-    public async Task<IActionResult> SignUp([FromBody] SignUpRequest request)
-    {
-        if (await _userManager.FindByEmailAsync(request.Email) is not null)
-        {
-            return BadRequest("Username already exists.");
-        }
-
-        var user = new User
-        {
-            Id = Guid.NewGuid().ToString(),
-            UserName = request.Username,
-            Email = request.Email
-        };
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            return BadRequest(result.Errors);
-        }
-
-        return Ok("User registered successfully.");
     }
 
     [HttpPost("/auth/login"), Produces("application/json")]

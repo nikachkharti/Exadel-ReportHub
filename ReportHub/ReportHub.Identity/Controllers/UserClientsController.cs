@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ReportHub.Identity.Features.UserClients.Queries;
+using ReportHub.Identity.Application.Features.UserClients.Queries;
 
 namespace ReportHub.Identity.Controllers
 {

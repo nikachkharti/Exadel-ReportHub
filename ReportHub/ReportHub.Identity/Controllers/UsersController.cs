@@ -1,11 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
 using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Application.Features.Users.Commands;
 using ReportHub.Identity.Application.Features.Users.Queries;
-using ReportHub.Identity.Features.UserClients.Commands;
 
 namespace ReportHub.Identity.Controllers
 {
