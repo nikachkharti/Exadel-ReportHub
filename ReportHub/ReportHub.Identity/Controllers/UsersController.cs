@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using OpenIddict.Validation.AspNetCore;
-using ReportHub.Identity.Features.UserClientRoles.Commands;
+using ReportHub.Identity.Features.UserClients.Commands;
 using ReportHub.Identity.Features.Users.Commands;
 using ReportHub.Identity.Features.Users.Queries;
 
@@ -32,7 +32,7 @@ namespace ReportHub.Identity.Controllers
         }
 
         [HttpPost("{userId}/clients")]
-        public async Task<IActionResult> CreateUserClientRole([FromBody] CreateUserClientRoleCommand command)
+        public async Task<IActionResult> CreateUserClientRole([FromBody] CreateUserClientCommand command)
         {
             var result = await mediator.Send(command);
 
@@ -42,9 +42,9 @@ namespace ReportHub.Identity.Controllers
         [HttpGet("my-clients")]
         public async Task<IActionResult> GetMyClients()
         {
-            var result = await mediator.Send(new);
+            //var result = await mediator.Send();
 
-            return Ok(result);
+            return Ok("result");
         }
     }
 }

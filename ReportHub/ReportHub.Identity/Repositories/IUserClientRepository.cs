@@ -2,6 +2,6 @@
 
 namespace ReportHub.Identity.Repositories;
 
-public interface IUserClientRoleRepository : IRepository<UserClientRole>
+public interface IUserClientRepository : IRepository<UserClient>
 {
 }

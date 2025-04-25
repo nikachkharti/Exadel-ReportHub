@@ -22,7 +22,7 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddScoped<IUserClientRoleRepository, UserClientRoleRepository>();
+builder.Services.AddScoped<IUserClientRepository, UserClientRepository>();
 builder.Services.AddMediatR(c =>
 {
     c.RegisterServicesFromAssembly(typeof(AuthController).Assembly);

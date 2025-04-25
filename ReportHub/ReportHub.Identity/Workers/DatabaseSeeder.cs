@@ -55,7 +55,7 @@ public class DatabaseSeeder : IHostedService
         const string adminRole = "SuperAdmin";
 
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-        var userClientRoleRepository = scope.ServiceProvider.GetRequiredService<IUserClientRoleRepository>();
+        var userClientRoleRepository = scope.ServiceProvider.GetRequiredService<IUserClientRepository>();
 
         var user = await userManager.FindByEmailAsync(adminEmail);
         if (user is null)
@@ -68,15 +68,10 @@ public class DatabaseSeeder : IHostedService
             };
             
             var result = await userManager.CreateAsync(user, adminPassword);
+
             if (result.Succeeded)
             {
-                await userManager.AddToRoleAsync(user, adminRole);
-
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-
-                var role = await roleManager.FindByNameAsync(adminRole);
-
-                await userClientRoleRepository.InsertAsync(new UserClientRole { UserId = user.Id, RoleId = role!.Id });
+                await userClientRoleRepository.InsertAsync(new UserClient { UserId = user.Id, Role = adminRole });
 
             }
         }

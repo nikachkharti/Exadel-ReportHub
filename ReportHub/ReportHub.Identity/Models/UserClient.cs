@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace ReportHub.Identity.Models;
 
-public class UserClientRole
+public class UserClient
 {
     [BsonId]
     [BsonRepresentation(BsonType.ObjectId)]
@@ -15,5 +15,5 @@ public class UserClientRole
     [BsonRepresentation(BsonType.String)]
     public string UserId { get; set; } = string.Empty;
 
-    public string RoleId { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 }
