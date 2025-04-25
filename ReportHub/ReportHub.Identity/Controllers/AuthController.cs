@@ -68,6 +68,7 @@ public class AuthController : ControllerBase
 
         
         ClaimsPrincipal? principal = (await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)).Principal;
+
         if (principal is null)
         {
             return BadRequest(new OpenIddictResponse
@@ -77,20 +78,9 @@ public class AuthController : ControllerBase
             });
         }
 
-        var identity = new ClaimsIdentity(TokenValidationParameters.DefaultAuthenticationType);
+        var newPrinciple = await _mediator.Send(new RefreshTokenCommand(principal));
 
-
-        identity
-            .SetClaim(Claims.Subject, principal.GetClaim(Claims.Subject))
-            .SetClaim(ClaimTypes.NameIdentifier, principal.GetClaim(ClaimTypes.NameIdentifier))
-            .SetClaim(Claims.Audience, principal.GetClaim(Claims.Audience))
-            .SetClaim(Claims.Email, principal.GetClaim(Claims.Email))
-            .SetClaim(Claims.Name, principal.GetClaim(Claims.Name))
-            .SetClaims(Claims.Role, [principal.GetClaim(Claims.Role) ?? "User"]);
-
-        identity.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
-
-        return SignIn(new ClaimsPrincipal(identity), OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+        return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
     }
 
     private async Task<(User? user, bool isSuccess)> ValidateUserCreadentials(string userName, string password)

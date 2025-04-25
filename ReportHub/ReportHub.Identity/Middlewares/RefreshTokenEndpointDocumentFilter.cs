@@ -52,7 +52,7 @@ public class RefreshTokenEndpointDocumentFilter : IDocumentFilter
                                         Type = "string",
                                     },
                                 },
-                                Required = new HashSet<string> { "grant_type", "client_id", "client_secret", "scope", "username", "password" }
+                                Required = new HashSet<string> { "grant_type", "client_id", "client_secret", "scope", "refresh_token" }
                             }
                         }
                     }
