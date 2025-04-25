@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using OpenIddict.Validation.AspNetCore;
+using ReportHub.Identity.Application.Features.Users.Commands;
+using ReportHub.Identity.Application.Features.Users.Queries;
 using ReportHub.Identity.Features.UserClients.Commands;
-using ReportHub.Identity.Features.Users.Commands;
-using ReportHub.Identity.Features.Users.Queries;
 
 namespace ReportHub.Identity.Controllers
 {
@@ -22,29 +22,13 @@ namespace ReportHub.Identity.Controllers
             return CreatedAtAction(nameof(CreateUser), new { id = result });
         }
 
-        [Authorize(Roles = "SuperAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+        //[Authorize(Roles = "SuperAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] GetAllUsersQuery query)
         {
             var result = await mediator.Send(query);
 
             return Ok(result);
-        }
-
-        [HttpPost("{userId}/clients")]
-        public async Task<IActionResult> CreateUserClientRole([FromBody] CreateUserClientCommand command)
-        {
-            var result = await mediator.Send(command);
-
-            return CreatedAtAction(nameof(CreateUserClientRole), result);
-        }
-
-        [HttpGet("my-clients")]
-        public async Task<IActionResult> GetMyClients()
-        {
-            //var result = await mediator.Send();
-
-            return Ok("result");
         }
     }
 }

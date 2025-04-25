@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
-using ReportHub.Identity.Models;
+using ReportHub.Identity.Domain.Entities;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 

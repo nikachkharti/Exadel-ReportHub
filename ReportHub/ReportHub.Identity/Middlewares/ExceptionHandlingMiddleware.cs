@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
+using ReportHub.Identity.Application.Validators.Exceptions;
 using ReportHub.Identity.Models;
-using ReportHub.Identity.Validators.Exceptions;
 using System.Net;
 using System.Text.Json;
 

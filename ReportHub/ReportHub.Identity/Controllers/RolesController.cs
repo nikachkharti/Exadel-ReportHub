@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using OpenIddict.Validation.AspNetCore;
-using ReportHub.Identity.Models;
+using ReportHub.Identity.Domain.Entities;
 
 namespace ReportHub.Identity.Controllers;
 

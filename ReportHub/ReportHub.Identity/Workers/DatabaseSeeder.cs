@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using ReportHub.Identity.Domain.Entities;
+using ReportHub.Identity.Infrastructure.Repositories;
 using ReportHub.Identity.Models;
-using ReportHub.Identity.Repositories;
 
 namespace ReportHub.Identity.Workers;
 
