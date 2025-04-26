@@ -12,6 +12,7 @@ using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using Serilog;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace ReportHub.API.Controllers
@@ -78,7 +79,7 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Exports invoices to file type user chose
         /// </summary>
-        /// <param name="fileType"></param>
+        /// <param name="fileType">0-CSV  1-Excel  2-PDF</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("export")]
@@ -89,6 +90,11 @@ namespace ReportHub.API.Controllers
             return File(result, "application/octet-stream", $"Invoices{query.Extension}");
         }
 
+        [HttpGet("export-logs")]
+        public async Task<IActionResult> ExportLogs([FromForm][Required] DateTime startDate, [FromForm][Required] DateTime endDate)
+        {
+            throw new NotImplementedException();
+        }
 
         private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
         {
