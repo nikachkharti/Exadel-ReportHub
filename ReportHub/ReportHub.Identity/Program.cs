@@ -7,21 +7,22 @@ using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
 using OpenIddict.Validation.AspNetCore;
+using ReportHub.Identity.Application.Interfaces.ServiceInterfaces;
 using ReportHub.Identity.Application.Validators;
 using ReportHub.Identity.Configurations;
 using ReportHub.Identity.Controllers;
 using ReportHub.Identity.Domain.Entities;
 using ReportHub.Identity.Infrastructure.Contexts;
 using ReportHub.Identity.Infrastructure.Repositories;
+using ReportHub.Identity.Infrastructure.Services;
 using ReportHub.Identity.Middlewares;
 using ReportHub.Identity.Workers;
-using System.Collections.Immutable;
 using System.Security.Claims;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IPrincipalService, PrincipalService>();
 builder.Services.AddScoped<IUserClientRepository, UserClientRepository>();
 builder.Services.AddMediatR(c =>
 {

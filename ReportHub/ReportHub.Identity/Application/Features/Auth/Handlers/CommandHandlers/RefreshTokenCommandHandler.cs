@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using ReportHub.Identity.Application.Features.Auth.Commands;
+using ReportHub.Identity.Application.Interfaces.ServiceInterfaces;
 using ReportHub.Identity.Application.Validators.Exceptions;
 using ReportHub.Identity.Domain.Entities;
 using System.Security.Claims;
@@ -13,10 +14,12 @@ namespace ReportHub.Identity.Application.Features.Auth.Handlers.CommandHandlers;
 public class RefreshTokenCommandHandler : BaseAuthCommandHandler, IRequestHandler<RefreshTokenCommand, ClaimsPrincipal>
 {
     private readonly UserManager<User> _userManager;
+    private readonly IPrincipalService _principalService;
 
-    public RefreshTokenCommandHandler(UserManager<User> userManager)
+    public RefreshTokenCommandHandler(UserManager<User> userManager, IPrincipalService principalService)
     {
         _userManager = userManager;
+        _principalService = principalService;
     }
 
     public async Task<ClaimsPrincipal> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -25,15 +28,10 @@ public class RefreshTokenCommandHandler : BaseAuthCommandHandler, IRequestHandle
 
         var user = await GetUserIfExist(request.Principal);
 
-        var identityClaim = GetIdentityClaims();
-
-        
-        SetClaims(user, identityClaim, request.Principal.GetClaim("Client")!, request.Principal.GetClaim(Claims.Role)!);
-        SetScopes(identityClaim);
-
-        identityClaim.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
-
-        var principal = new ClaimsPrincipal(identityClaim);
+        var principal = _principalService.GetClaimsPrincipal(
+                                            user, 
+                                            request.Principal.GetClaim("Client")!, 
+                                            request.Principal.GetClaim(Claims.Role)!);
 
         return principal;
     }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using OpenIddict.Abstractions;
 using ReportHub.Identity.Application.Features.Auth.Commands;
+using ReportHub.Identity.Application.Interfaces.ServiceInterfaces;
 using ReportHub.Identity.Application.Validators.Exceptions;
 using ReportHub.Identity.Domain.Entities;
 using System.Security.Claims;
@@ -9,27 +10,22 @@ using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace ReportHub.Identity.Application.Features.Auth.Handlers.CommandHandlers;
 
-public class LoginCommandHandler : BaseAuthCommandHandler, IRequestHandler<LoginCommand, ClaimsPrincipal>
+public class LoginCommandHandler : IRequestHandler<LoginCommand, ClaimsPrincipal>
 {
     private readonly UserManager<User> _userManager;
+    private readonly IPrincipalService _principalService;
 
-    public LoginCommandHandler(UserManager<User> userManager)
+    public LoginCommandHandler(UserManager<User> userManager, IPrincipalService principalService)
     {
         _userManager = userManager;
+        _principalService = principalService;
     }
 
     public async Task<ClaimsPrincipal> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         var user = await GetIfUserExist(request.UserName, request.Password);
 
-        var identityClaims = GetIdentityClaims();
-
-        SetClaims(user, identityClaims);
-        SetScopes(identityClaims);
-
-        var principal = new ClaimsPrincipal(identityClaims);
-
-        SetDestinations(principal);
+        var principal = _principalService.GetClaimsPrincipal(user);
 
         return principal;
     }
@@ -46,13 +42,5 @@ public class LoginCommandHandler : BaseAuthCommandHandler, IRequestHandler<Login
         }
 
         return user!;
-    }
-
-    private static void SetDestinations(ClaimsPrincipal principal)
-    {
-        foreach (var claim in principal.Claims)
-        {
-            claim.SetDestinations(Destinations.AccessToken, Destinations.IdentityToken);
-        }
     }
 }
