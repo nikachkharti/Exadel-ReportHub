@@ -19,7 +19,7 @@ namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
+    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin, User")]
     public class InvoiceController : ControllerBase
     {
         private readonly IMediator _mediator;

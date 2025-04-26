@@ -16,6 +16,8 @@ using ReportHub.API.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using ReportHub.API.Authorization.Handlers;
 using ReportHub.API.Authorization.Permissions;
+using ReportHub.Application.Contracts.IdentityContracts;
+using ReportHub.API.Authorization;
 
 namespace ReportHub.API.Extensions
 {
@@ -141,6 +143,8 @@ namespace ReportHub.API.Extensions
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddScoped<IAuthorizationHandler, PermissionHandlers>();
+            builder.Services.AddScoped<IUserContextService, UserContextService>();
         }
+
     }
 }

@@ -15,7 +15,7 @@ public class CsvService : ICsvService
         {
             MissingFieldFound = null
         });
-        
+
         return GetRecordsOneByOne<T>(csvReader);
     }
 
