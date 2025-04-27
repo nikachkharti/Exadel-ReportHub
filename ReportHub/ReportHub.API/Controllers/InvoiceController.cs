@@ -9,9 +9,9 @@ using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
 using ReportHub.Application.Features.DataImports.Queries;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
+using ReportHub.Application.Features.InvoiceLogs.Queries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
-using Serilog;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 
@@ -90,11 +90,59 @@ namespace ReportHub.API.Controllers
             return File(result, "application/octet-stream", $"Invoices{query.Extension}");
         }
 
-        [HttpGet("export-logs")]
-        public async Task<IActionResult> ExportLogs([FromForm][Required] DateTime startDate, [FromForm][Required] DateTime endDate)
+        /// <summary>
+        /// Export invoice logs in a specific date range
+        /// </summary>
+        /// <param name="startDate">From log create date</param>
+        /// <param name="endDate">To log create date</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortingParameter">Sorting field</param>
+        /// <param name="ascending">Is ascended</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("logs")]
+        public async Task<IActionResult> ExportLogsInDateRange
+            ([FromForm][Required] DateTime startDate,
+            [FromForm][Required] DateTime endDate,
+            [FromQuery] int? pageNumber = 1,
+            [FromQuery] int? pageSize = 10,
+            [FromQuery] string sortingParameter = "",
+            [FromQuery] bool ascending = true,
+            CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var query = new GetAllInvoiceLogsInDateRangeQuery(startDate, endDate, pageNumber, pageSize, sortingParameter, ascending, cancellationToken);
+            var result = await _mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
+
+
+        /// <summary>
+        /// Export invoice logs of specific user
+        /// </summary>
+        /// <param name="userId">User id</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortingParameter">Sorting field</param>
+        /// <param name="ascending">Is ascended</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("logs/user/{userId}")]
+        public async Task<IActionResult> ExportLogsOfUser
+            ([FromRoute] string userId,
+            [FromQuery] int? pageNumber = 1,
+            [FromQuery] int? pageSize = 10,
+            [FromQuery] string sortingParameter = "",
+            [FromQuery] bool ascending = true,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAllInvoiceLogsOfUserQuery(userId, pageNumber, pageSize, sortingParameter, ascending, cancellationToken);
+            var result = await _mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
 
         private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
         {

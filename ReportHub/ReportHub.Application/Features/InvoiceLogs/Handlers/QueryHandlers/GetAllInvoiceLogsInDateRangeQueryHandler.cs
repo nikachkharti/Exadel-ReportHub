@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using MediatR;
+using MongoDB.Driver;
 using ReportHub.Application.Common.Helper;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.InvoiceLogs.DTOs;
 using ReportHub.Application.Features.InvoiceLogs.Queries;
+using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Domain.Entities;
 using System.Linq.Expressions;
 
@@ -14,13 +16,22 @@ namespace ReportHub.Application.Features.InvoiceLogs.Handlers.QueryHandlers
     {
         public async Task<IEnumerable<InvoiceLogForGettingDto>> Handle(GetAllInvoiceLogsInDateRangeQuery request, CancellationToken cancellationToken)
         {
+            if (request.From > request.To)
+                throw new BadRequestException("Start date value can't be greater than end date");
+
             var sortExpression = ConfigureSortingExpression(request);
+
+            var filterBuilder = Builders<InvoiceLog>.Filter;
+            var filter = filterBuilder.And(
+                filterBuilder.Gte(x => x.TimeStamp, request.From),
+                filterBuilder.Lte(x => x.TimeStamp, request.To)
+            );
 
             var invoiceLogs = await invoiceLogRepository.GetAll
             (
-                i => i.TimeStamp >= request.From && i.TimeStamp <= request.To,
+                filter,
                 request.PageNumber ?? 1,
-                request.PageSize ?? 10,
+                request.PageSize ?? 50,
                 sortBy: sortExpression,
                 ascending: request.Ascending,
                 cancellationToken
@@ -55,5 +66,6 @@ namespace ReportHub.Application.Features.InvoiceLogs.Handlers.QueryHandlers
 
             return sortExpression;
         }
+
     }
 }
