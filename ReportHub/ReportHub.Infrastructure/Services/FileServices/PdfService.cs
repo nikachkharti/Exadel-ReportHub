@@ -95,6 +95,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
             var ms = new MemoryStream();
             var doc = new iText.Document(iText.PageSize.A4, 50, 50, 50, 50);
             var writer = iTextPdf.PdfWriter.GetInstance(doc, ms);
+            writer.CloseStream = false;
             doc.Open();
 
             await AddInvoicePageToDocumentAsync(doc, invoice, statistics);

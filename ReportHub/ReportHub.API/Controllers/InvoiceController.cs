@@ -87,7 +87,29 @@ namespace ReportHub.API.Controllers
             var result = await _mediator.Send(query, cancellationToken);
             return File(result, "application/octet-stream", $"Invoices{query.Extension}");
         }
+        /// <summary>
+        /// Exports specific invoice by id to file type user chose
+        /// </summary>
+        /// <param name="id">Invoice ID</param>
+        /// <param name="fileType">Export file type</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>File result</returns>
+        [HttpGet("{id}/export")]
+        public async Task<IActionResult> ExportById([FromRoute] string id, [FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
+        {
+            var query = GetExportingQueryById(id, fileType);
+            var result = await _mediator.Send(query, cancellationToken);
+            return File(result, "application/octet-stream", $"Invoice_{id}{query.Extension}");
+        }
 
+        private ExportBaseQuery GetExportingQueryById(string id, FileExportingType fileType)
+        {
+            return fileType switch
+            {
+                FileExportingType.Pdf => new InvoiceExportByIdAsPdfQuery(id),
+                _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
+            };
+        }
 
         private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
         {
