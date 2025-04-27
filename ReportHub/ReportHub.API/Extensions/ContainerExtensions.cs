@@ -10,12 +10,11 @@ using ReportHub.Application.Extensions;
 using ReportHub.Infrastructure;
 using ReportHub.Infrastructure.Configurations;
 using Serilog;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using ReportHub.API.Middlewares;
 using ReportHub.API.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using ReportHub.API.Authorization.Handlers;
 using ReportHub.API.Authorization.Permissions;
+using System.Text.Json.Serialization;
 
 namespace ReportHub.API.Extensions
 {
@@ -23,7 +22,11 @@ namespace ReportHub.API.Extensions
     {
         public static void AddControllers(this WebApplicationBuilder builder)
         {
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
         }
 
         public static void AddSwagger(this WebApplicationBuilder builder)

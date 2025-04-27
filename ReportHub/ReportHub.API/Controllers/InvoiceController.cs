@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.API.Enums;
 using ReportHub.Application.Common.Models;
+using ReportHub.Application.Features.DataExports.Handlers.CsvHandlers;
 using ReportHub.Application.Features.DataExports.Queries;
 using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
@@ -56,22 +57,22 @@ namespace ReportHub.API.Controllers
         }
 
 
-        /// <summary>
-        /// Reads file and imports invoices to database if not exist
-        /// </summary>
-        /// <param name="fileType"></param>
-        /// <param name="file"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [HttpPost("import")]
-        public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file, CancellationToken cancellationToken)
-        {
-            var query = GetImportingQuery(fileType, file.OpenReadStream(), Path.GetExtension(file.FileName));
-            var result = await _mediator.Send(query, cancellationToken);
+        ///// <summary>
+        ///// Reads file and imports invoices to database if not exist
+        ///// </summary>
+        ///// <param name="fileType"></param>
+        ///// <param name="file"></param>
+        ///// <param name="cancellationToken"></param>
+        ///// <returns></returns>
+        //[HttpPost("import")]
+        //public async Task<IActionResult> Import([FromQuery] FileImportingType fileType, IFormFile file, CancellationToken cancellationToken)
+        //{
+        //    var query = GetImportingQuery(fileType, file.OpenReadStream(), Path.GetExtension(file.FileName));
+        //    var result = await _mediator.Send(query, cancellationToken);
 
-            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
-            return StatusCode(response.HttpStatusCode, response);
-        }
+        //    var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+        //    return StatusCode(response.HttpStatusCode, response);
+        //}
 
 
         /// <summary>
@@ -108,19 +109,20 @@ namespace ReportHub.API.Controllers
             {
                 FileExportingType.Pdf => new InvoiceExportByIdAsPdfQuery(id),
                 FileExportingType.Excel => new InvoiceExportByIdAsExcelQuery(id),
+                FileExportingType.Csv => new InvoiceExportByIdAsCsvQuery(id),
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
         }
 
-        private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
-        {
-            return fileType switch
-            {
-                FileImportingType.CSV => new InvoiceImportAsCsvQuery(stream, extension),
-                FileImportingType.Excel => new InvoiceImportAsExcelQuery(stream, extension),
-                _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
-            };
-        }
+        //private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
+        //{
+        //    return fileType switch
+        //    {
+        //        FileImportingType.CSV => new InvoiceImportAsCsvQuery(stream, extension),
+        //        FileImportingType.Excel => new InvoiceImportAsExcelQuery(stream, extension),
+        //        _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
+        //    };
+        //}
         private ExportBaseQuery GetExportingQuery(FileExportingType fileType)
         {
             return fileType switch
