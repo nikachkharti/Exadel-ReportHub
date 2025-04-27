@@ -23,7 +23,6 @@ namespace ReportHub.API
 
             var app = builder.Build();
 
-            app.UseDataSeeder();
             app.UseSerilogRequestLogging();
             app.UseExceptions();
             app.UseSwagger();

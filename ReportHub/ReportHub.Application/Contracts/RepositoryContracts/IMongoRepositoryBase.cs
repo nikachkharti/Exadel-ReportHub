@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using MongoDB.Driver;
+using System.Linq.Expressions;
 
 namespace ReportHub.Application.Contracts.RepositoryContracts
 {
@@ -85,6 +86,17 @@ namespace ReportHub.Application.Contracts.RepositoryContracts
         /// <returns>Task IEnumerable T</returns>
         Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true, CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Get filtered documents with mongo FilterDefiniction
+        /// </summary>
+        /// <param name="filter">Filter</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortBy">Sort by property</param>
+        /// <param name="ascending">Is ascending</param>
+        /// <param name="cancellationToken">Token for task cancel, none by default</param>
+        /// <returns>Task IEnumerable T</returns>
+        Task<IEnumerable<T>> GetAll(FilterDefinition<T> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true, CancellationToken cancellationToken = default);
 
 
         /// <summary>
