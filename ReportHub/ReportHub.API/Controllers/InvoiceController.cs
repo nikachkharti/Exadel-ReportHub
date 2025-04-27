@@ -107,6 +107,7 @@ namespace ReportHub.API.Controllers
             return fileType switch
             {
                 FileExportingType.Pdf => new InvoiceExportByIdAsPdfQuery(id),
+                FileExportingType.Excel => new InvoiceExportByIdAsExcelQuery(id),
                 _ => throw new ArgumentOutOfRangeException(nameof(fileType), fileType, null)
             };
         }
