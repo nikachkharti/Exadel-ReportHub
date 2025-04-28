@@ -30,7 +30,7 @@ namespace ReportHub.Identity.Controllers
         {
             var result = await mediator.Send(command);
 
-            return CreatedAtAction(nameof(Created), );
+            return CreatedAtAction(nameof(Created),  result);
         }
 
     }
