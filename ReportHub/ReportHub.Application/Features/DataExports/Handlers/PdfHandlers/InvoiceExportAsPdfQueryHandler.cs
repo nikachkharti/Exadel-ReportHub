@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using ReportHub.Application.Contracts.FileContracts;
+using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.DataExports.Queries.PdfQueries;
+using ReportHub.Domain.Entities;
 
 namespace ReportHub.Application.Features.DataExports.Handlers.PdfHandlers
 {
@@ -9,32 +11,76 @@ namespace ReportHub.Application.Features.DataExports.Handlers.PdfHandlers
     {
         private readonly IInvoiceRepository _invoiceRepository;
         private readonly IPdfService _pdfService;
+        private readonly IInvoiceLogRepository _invoiceLogRepository;
+        private readonly IUserContextService _userContext;
+        private IEnumerable<Invoice> invoices;
+
 
         public InvoiceExportAsPdfQueryHandler(
             IInvoiceRepository invoiceRepository,
-            IPdfService pdfService)
+            IPdfService pdfService,
+            IInvoiceLogRepository invoiceLogRepository,
+            IUserContextService userContext)
         {
             _invoiceRepository = invoiceRepository;
             _pdfService = pdfService;
+            _invoiceLogRepository = invoiceLogRepository;
+            _userContext = userContext;
         }
 
         public async Task<Stream> Handle(
             InvoiceExportAsPdfQuery request,
             CancellationToken cancellationToken)
         {
-            // load all invoices
-            var invoices = await _invoiceRepository
-                .GetAll(cancellationToken);
+            var authenticatedUserId = _userContext.GetUserId();
 
-            // generate PDF stream with summary
-            return await _pdfService.WriteAllAsync(
-                invoices,
-                GetSummary(invoices),
-                cancellationToken);
+            try
+            {
+                // load all invoices
+                invoices = await _invoiceRepository.GetAll(cancellationToken);
+                var summary = GetSummary(invoices);
+
+                if (invoices.Any())
+                {
+                    foreach (var invoice in invoices)
+                    {
+                        await _invoiceLogRepository.Insert(new InvoiceLog()
+                        {
+                            UserId = authenticatedUserId,
+                            InvoiceId = invoice.Id,
+                            TimeStamp = DateTime.UtcNow,
+                            Status = "Success",
+                            IsDeleted = invoice.IsDeleted
+                        }, cancellationToken);
+                    }
+                }
+
+                // generate PDF stream with summary
+                return await _pdfService.WriteAllAsync(invoices, summary, cancellationToken);
+            }
+            catch
+            {
+
+                if (invoices.Any())
+                {
+                    foreach (var invoice in invoices)
+                    {
+                        await _invoiceLogRepository.Insert(new InvoiceLog()
+                        {
+                            UserId = authenticatedUserId,
+                            InvoiceId = invoice.Id,
+                            TimeStamp = DateTime.UtcNow,
+                            Status = "Failure"
+                        }, cancellationToken);
+                    }
+                }
+
+                throw;
+            }
         }
 
         private IReadOnlyDictionary<string, object> GetSummary(
-            IEnumerable<Domain.Entities.Invoice> invoices)
+            IEnumerable<Invoice> invoices)
         {
             return new Dictionary<string, object>
             {
