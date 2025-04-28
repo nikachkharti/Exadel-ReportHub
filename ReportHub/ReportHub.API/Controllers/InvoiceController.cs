@@ -3,14 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.API.Enums;
 using ReportHub.Application.Common.Models;
-using ReportHub.Application.Features.DataExports.Handlers.CsvHandlers;
 using ReportHub.Application.Features.DataExports.Queries;
 using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataExports.Queries.ExcelQueries;
 using ReportHub.Application.Features.DataExports.Queries.PdfQueries;
-using ReportHub.Application.Features.DataImports.Queries;
-using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
-using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
 using ReportHub.Application.Features.InvoiceLogs.Queries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
@@ -21,7 +17,6 @@ namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class InvoiceController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -32,6 +27,7 @@ namespace ReportHub.API.Controllers
         }
 
 
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Getting all invoices from database
         /// </summary>
@@ -47,6 +43,7 @@ namespace ReportHub.API.Controllers
         }
 
 
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Getting invoice from database by Id
         /// </summary>
@@ -78,6 +75,7 @@ namespace ReportHub.API.Controllers
         //}
 
 
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Exports invoices to file type user chose
         /// </summary>
@@ -91,6 +89,10 @@ namespace ReportHub.API.Controllers
             var result = await _mediator.Send(query, cancellationToken);
             return File(result, "application/octet-stream", $"Invoices{query.Extension}");
         }
+
+
+
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Exports specific invoice by id to file type user chose
         /// </summary>
@@ -105,7 +107,6 @@ namespace ReportHub.API.Controllers
             var result = await _mediator.Send(query, cancellationToken);
             return File(result, "application/octet-stream", $"Invoice_{id}{query.Extension}");
         }
-
         /// <summary>
         /// Export invoice logs in a specific date range
         /// </summary>
@@ -134,6 +135,8 @@ namespace ReportHub.API.Controllers
         }
 
 
+
+        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         /// <summary>
         /// Export invoice logs of specific user
         /// </summary>

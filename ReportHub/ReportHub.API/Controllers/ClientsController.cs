@@ -4,14 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
-using ReportHub.Application.Features.CLientUsers.DTOs;
 using ReportHub.Application.Features.CLientUsers.Queries;
 using ReportHub.Application.Features.Items.Commands;
 using System.ComponentModel.DataAnnotations;
 using ReportHub.Application.Common.Models;
 using System.Net;
-using ReportHub.API.Authorization.Attributes;
-using ReportHub.API.Authorization.Permissions;
 using ReportHub.Application.Features.Plans.Queries;
 using ReportHub.Application.Features.Sale.Queries;
 using ReportHub.Application.Features.Clients.DTOs;
@@ -30,8 +27,8 @@ namespace ReportHub.API.Controllers
         /// <param name="sortingParameter">Sorting field</param>
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
-        [Permission(PermissionType.GetAllClients)]
         [HttpGet]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> GetAllClients([FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
             var query = new GetAllClientsQuery(pageNumber, pageSize, sortingParameter, ascending);
@@ -46,8 +43,8 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
-        [Permission(PermissionType.GetOneClient)]
         [HttpGet("{clientId}")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> GetSingleClient([FromRoute][Required] string clientId)
         {
             var query = new GetClientByIdQuery(clientId);
@@ -63,8 +60,8 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
-        [Permission(PermissionType.GetClientItems)]
         [HttpGet("{clientId}/items")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string clientId)
         {
             var query = new GetAllItemsOfClientQuery(clientId);
@@ -79,60 +76,11 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="model">Client model</param>
         /// <returns>IActionResult</returns>
-        [Permission(PermissionType.CreateClient)]
         [HttpPost]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> AddNewClient([FromForm] CreateClientCommand model)
         {
             var result = await mediator.Send(model);
-
-            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
-            return StatusCode(response.HttpStatusCode, response);
-        }
-
-        /// <summary>
-        /// Add user to client with role
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="userId"></param>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        [Permission(PermissionType.AddUserToClient)]
-        [HttpPost("{clientId}/users/{userId}/role")]
-        public async Task<IActionResult> AddUserToClient(string clientId, string userId, [FromBody] AddUserToClientDto model)
-        {
-            var result = await mediator.Send(new AddUserToClientCommand(clientId, userId, model.Role));
-
-            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
-            return StatusCode(response.HttpStatusCode, response);
-        }
-
-        /// <summary>
-        /// Get client users
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [Permission(PermissionType.GetClientUsers)]
-        [HttpGet("{clientId}/users")]
-        public async Task<IActionResult> GetClientUsersByClientId(string clientId, CancellationToken cancellationToken)
-        {
-            var result = await mediator.Send(new GetAllClientUserByClientIdQuery(clientId), cancellationToken);
-            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
-            return StatusCode(response.HttpStatusCode, response);
-        }
-
-        /// <summary>
-        ///  Remove user from client
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="userId"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        [Permission(PermissionType.RemoveUserFromClient)]
-        [HttpDelete("{clientId}/users/{userId}")]
-        public async Task<IActionResult> DeleteUserFromClient(string clientId, string userId, CancellationToken cancellationToken)
-        {
-            var result = await mediator.Send(new DeleteClientUserCommand(clientId, userId), cancellationToken);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);
@@ -143,8 +91,8 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
-        [Permission(PermissionType.DeleteClient)]
         [HttpDelete("{clientId}")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteClient([FromRoute][Required] string clientId)
         {
             var command = new DeleteClientCommand(clientId);
@@ -160,8 +108,8 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId">Client Id</param>
         /// <param name="itemId">Item Id</param>
         /// <returns>IActionResult</returns>
-        [Permission(PermissionType.DeleteItem)]
         [HttpDelete("clients/{clientId}/items/{itemId}")]
+        [Authorize(Roles = "Owner, ClientAdmin")]
         public async Task<IActionResult> DeleteItem([FromRoute][Required] string clientId, [FromRoute][Required] string itemId)
         {
             var query = new DeleteItemOfClientCommand(clientId, itemId);
@@ -171,20 +119,22 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
+
         /// <summary>
         /// Update client
         /// </summary>
         /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [Permission(PermissionType.UpdateClient)]
         [HttpPut("{clientId}")]
+        [Authorize(Roles = "Owner, SuperAdmin")]
         public async Task<IActionResult> UpdateClient(string clientId, [FromForm][Required] ClientForUpdatingDto model)
         {
             var result = await mediator.Send(new UpdateClientCommand(clientId, model.Name, model.Specialization));
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
+
 
         /// <summary>
         /// Get all plans of client
@@ -195,6 +145,7 @@ namespace ReportHub.API.Controllers
         /// <param name="sortingParameter">Sorting field</param>
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
+        [Authorize(Roles = "Owner, ClientAdmin")]
         [HttpGet("{clientId}/plans")]
         public async Task<IActionResult> GetAllPlansOfClient(
             [FromRoute][Required] string clientId,
@@ -209,6 +160,7 @@ namespace ReportHub.API.Controllers
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
+
 
         /// <summary>
         /// Get all sells of client

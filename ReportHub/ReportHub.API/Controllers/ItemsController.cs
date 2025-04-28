@@ -12,7 +12,6 @@ namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class ItemsController(IMediator mediator) : ControllerBase
     {
         /// <summary>
@@ -21,6 +20,7 @@ namespace ReportHub.API.Controllers
         /// <param name="id">Item Id</param>
         /// <returns>IActionResult</returns>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Owner, ClientAdmin, Operator")]
         public async Task<IActionResult> GetSingleItem([FromRoute][Required] string id)
         {
             var query = new GetItemByIdQuery(id);
