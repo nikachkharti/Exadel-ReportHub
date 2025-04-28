@@ -1,4 +1,5 @@
 ﻿using ReportHub.Identity.Application.Interfaces.ServiceInterfaces;
+using ReportHub.Identity.Application.Validators.Exceptions;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
@@ -33,7 +34,7 @@ public class RequestContextService : IRequestContextService
 
     private string GetClaimValue(string name)
     {
-        var value = _principal.FindFirst(ClaimTypes.NameIdentifier)!.Value ?? throw new ArgumentNullException();
+        var value = _principal.FindFirst(ClaimTypes.NameIdentifier)!.Value ?? throw new UnauthorizedException("Invalid token");
 
         return value;
     }

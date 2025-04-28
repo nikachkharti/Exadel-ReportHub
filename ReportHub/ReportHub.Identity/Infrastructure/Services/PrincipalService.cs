@@ -16,9 +16,11 @@ public class PrincipalService : IPrincipalService
         SetClaims(user, identityClaims, client, role);
         SetScopes(identityClaims);
 
+        if(client is not null || client == "System") identityClaims.SetDestinations(_ => [Destinations.AccessToken, "refresh_token"]);
+
         var principal = new ClaimsPrincipal(identityClaims);
 
-        SetDestinations(principal);
+        if(client is null) SetDestinations(principal);
 
         return principal;
     }

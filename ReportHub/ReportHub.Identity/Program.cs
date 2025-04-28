@@ -22,6 +22,7 @@ using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IRequestContextService, RequestContextService>();
 builder.Services.AddScoped<IPrincipalService, PrincipalService>();
 builder.Services.AddScoped<IUserClientRepository, UserClientRepository>();
 builder.Services.AddMediatR(c =>
@@ -45,6 +46,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.DocumentFilter<TokenEndpointDocumentFilter>();
     c.DocumentFilter<RefreshTokenEndpointDocumentFilter>();
+    c.DocumentFilter<SelectClientEndpointDocumentFilter>();
 
 
     c.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme()
@@ -120,7 +122,7 @@ builder.Services
     .AddServer(options =>
     {
         options.SetIssuer(new Uri(authSettings.Issuer));
-        options.SetTokenEndpointUris("auth/login", "auth/refresh-token")
+        options.SetTokenEndpointUris("auth/login", "auth/refresh-token", "auth/select-client")
             .AllowPasswordFlow()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
@@ -144,6 +146,7 @@ builder.Services
                 {
                     c.Claims[ClaimTypes.NameIdentifier] = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     c.Claims["role"] = identity.FindAll("role").Select(r => r.Value).ToArray();
+                    c.Claims["client"] = identity.FindFirst("client")?.Value;
                 }
 
                 return default;

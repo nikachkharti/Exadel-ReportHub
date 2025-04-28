@@ -20,7 +20,7 @@ namespace ReportHub.Identity.Controllers
             return CreatedAtAction(nameof(CreateUser), new { id = result });
         }
 
-        //[Authorize(Roles = "SuperAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+        [Authorize(Roles = "SuperAdmin, Owner, ClientAdmin",AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] GetAllUsersQuery query)
         {
