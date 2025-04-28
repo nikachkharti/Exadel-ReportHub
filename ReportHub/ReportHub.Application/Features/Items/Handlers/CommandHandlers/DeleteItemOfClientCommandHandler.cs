@@ -1,16 +1,20 @@
 ﻿using MediatR;
+using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Items.Commands;
 using ReportHub.Application.Validators.Exceptions;
 
 namespace ReportHub.Application.Features.Items.Handlers.CommandHandlers
 {
-    public class DeleteItemOfClientCommandHandler(IItemRepository itemRepository)
-        : IRequestHandler<DeleteItemOfClientCommand, string>
+    public class DeleteItemOfClientCommandHandler(IItemRepository itemRepository, IRequestContextService requestContext)
+        : BaseFeature(requestContext), IRequestHandler<DeleteItemOfClientCommand, string>
     {
         public async Task<string> Handle(DeleteItemOfClientCommand request, CancellationToken cancellationToken)
         {
             //TODO: [Add] validators.
+
+            EnsureUserHasRoleForThisClient(request.ClientId);
+
             var item = await itemRepository.Get(i => i.Id == request.ItemId, cancellationToken);
 
             if (item is null)

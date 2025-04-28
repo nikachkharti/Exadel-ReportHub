@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using ReportHub.Application.Contracts.CurrencyContracts;
+using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Invoices.Commands;
 using ReportHub.Application.Validators.Exceptions;
@@ -7,14 +8,19 @@ using ReportHub.Domain.Entities;
 
 namespace ReportHub.Application.Features.Invoices.Handlers.CommandHandlers;
 
-public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand, Invoice>
+public class CreateInvoiceCommandHandler : BaseFeature, IRequestHandler<CreateInvoiceCommand, Invoice>
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly ICurrencyRepository _currencyRepository;
     private readonly IExchangeCurrencyService _exchangeCurrencyService;
     private readonly IItemRepository _itemRepository;
     private readonly ICustomerRepository _customerRepository;
-    public CreateInvoiceCommandHandler(IInvoiceRepository invoiceRepository, ICurrencyRepository currencyRepository, IExchangeCurrencyService exchangeCurrencyService, IItemRepository itemRepository, ICustomerRepository customerRepository)
+
+    public CreateInvoiceCommandHandler(IInvoiceRepository invoiceRepository, 
+        ICurrencyRepository currencyRepository, 
+        IExchangeCurrencyService exchangeCurrencyService, 
+        IItemRepository itemRepository, ICustomerRepository customerRepository,
+        IRequestContextService requestContext) : base(requestContext)
     {
         _invoiceRepository = invoiceRepository;
         _currencyRepository = currencyRepository;
@@ -24,6 +30,9 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
     }
     public async Task<Invoice> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
     {
+
+        EnsureUserHasRoleForThisClient(request.ClientId);
+
         var items = new List<Item>();
         foreach(var itemId in request.items)
         {
