@@ -10,15 +10,17 @@ using ReportHub.Application.Features.DataExports.Queries.PdfQueries;
 using ReportHub.Application.Features.DataImports.Queries;
 using ReportHub.Application.Features.DataImports.Queries.CsvQueries;
 using ReportHub.Application.Features.DataImports.Queries.ExcelQueries;
+using ReportHub.Application.Features.InvoiceLogs.Queries;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 
 namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
+    [Authorize(Roles = "SuperAdmin, Admin, ClientAdmin")]
     public class InvoiceController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -78,7 +80,7 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Exports invoices to file type user chose
         /// </summary>
-        /// <param name="fileType"></param>
+        /// <param name="fileType">0-CSV  1-Excel  2-PDF</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("export")]
@@ -103,6 +105,61 @@ namespace ReportHub.API.Controllers
             return File(result, "application/octet-stream", $"Invoice_{id}{query.Extension}");
         }
 
+        /// <summary>
+        /// Export invoice logs in a specific date range
+        /// </summary>
+        /// <param name="startDate">From log create date</param>
+        /// <param name="endDate">To log create date</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortingParameter">Sorting field</param>
+        /// <param name="ascending">Is ascended</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("logs")]
+        public async Task<IActionResult> ExportLogsInDateRange
+            ([FromForm][Required] DateTime startDate,
+            [FromForm][Required] DateTime endDate,
+            [FromQuery] int? pageNumber = 1,
+            [FromQuery] int? pageSize = 10,
+            [FromQuery] string sortingParameter = "",
+            [FromQuery] bool ascending = true,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAllInvoiceLogsInDateRangeQuery(startDate, endDate, pageNumber, pageSize, sortingParameter, ascending, cancellationToken);
+            var result = await _mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
+
+        /// <summary>
+        /// Export invoice logs of specific user
+        /// </summary>
+        /// <param name="userId">User id</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortingParameter">Sorting field</param>
+        /// <param name="ascending">Is ascended</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("logs/user/{userId}")]
+        public async Task<IActionResult> ExportLogsOfUser
+            ([FromRoute] string userId,
+            [FromQuery] int? pageNumber = 1,
+            [FromQuery] int? pageSize = 10,
+            [FromQuery] string sortingParameter = "",
+            [FromQuery] bool ascending = true,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetAllInvoiceLogsOfUserQuery(userId, pageNumber, pageSize, sortingParameter, ascending, cancellationToken);
+            var result = await _mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
+
+        private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
         private ExportBaseQuery GetExportingQueryById(string id, FileExportingType fileType)
         {
             return fileType switch
