@@ -11,7 +11,7 @@ namespace ReportHub.Identity.Controllers
     [ApiController]
     public class UsersController(IMediator mediator) : ControllerBase
     {
-        [Authorize(Roles = "SuperAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
+        [Authorize(Roles = "SuperAdmin, Owner, ClientAdmin", AuthenticationSchemes = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme)]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command)
         {
