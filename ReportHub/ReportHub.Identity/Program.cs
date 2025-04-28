@@ -1,4 +1,5 @@
 using AspNetCore.Identity.Mongo;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -6,16 +7,33 @@ using Microsoft.OpenApi.Models;
 using OpenIddict.Abstractions;
 using OpenIddict.Server;
 using OpenIddict.Validation.AspNetCore;
+using ReportHub.Identity.Application.Interfaces.ServiceInterfaces;
+using ReportHub.Identity.Application.Validators;
 using ReportHub.Identity.Configurations;
-using ReportHub.Identity.Contexts;
-using ReportHub.Identity.Models;
+using ReportHub.Identity.Controllers;
+using ReportHub.Identity.Domain.Entities;
+using ReportHub.Identity.Infrastructure.Contexts;
+using ReportHub.Identity.Infrastructure.Repositories;
+using ReportHub.Identity.Infrastructure.Services;
+using ReportHub.Identity.Middlewares;
 using ReportHub.Identity.Workers;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IRequestContextService, RequestContextService>();
+builder.Services.AddScoped<IPrincipalService, PrincipalService>();
+builder.Services.AddScoped<IUserClientRepository, UserClientRepository>();
+builder.Services.AddMediatR(c =>
+{
+    c.RegisterServicesFromAssembly(typeof(AuthController).Assembly);
+    c.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
+builder.Services.AddValidatorsFromAssemblyContaining(typeof(AuthController));
+builder.Services.AddAutoMapper(typeof(AuthController).Assembly);
+
+builder.Services.AddControllers();
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddSwaggerGen(c =>
@@ -25,6 +43,11 @@ builder.Services.AddSwaggerGen(c =>
         Title = "ReportHub.Identity",
         Version = "v1"
     });
+
+    c.DocumentFilter<TokenEndpointDocumentFilter>();
+    c.DocumentFilter<RefreshTokenEndpointDocumentFilter>();
+    c.DocumentFilter<SelectClientEndpointDocumentFilter>();
+
 
     c.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme()
     {
@@ -66,8 +89,9 @@ if (mongoDbSettings == null)
 
 builder.Services.AddSingleton<IdentityDbContext>();
 
-builder.Services.AddIdentityMongoDbProvider<User, Role, string>(identity =>
+builder.Services.AddIdentityMongoDbProvider<User, Role,string>(identity =>
         {
+            identity.Password.RequiredLength = 6;
             identity.Password.RequiredLength = 6;
             identity.Password.RequireDigit = false;
             identity.Password.RequireLowercase = false;
@@ -98,10 +122,11 @@ builder.Services
     .AddServer(options =>
     {
         options.SetIssuer(new Uri(authSettings.Issuer));
-        options.SetTokenEndpointUris("auth/login", "auth/refresh-token")
+        options.SetTokenEndpointUris("auth/login", "auth/refresh-token", "auth/select-client")
             .AllowPasswordFlow()
             .AllowRefreshTokenFlow()
             .AllowClientCredentialsFlow();
+
 
         options.DisableAccessTokenEncryption();
 
@@ -121,6 +146,7 @@ builder.Services
                 {
                     c.Claims[ClaimTypes.NameIdentifier] = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     c.Claims["role"] = identity.FindAll("role").Select(r => r.Value).ToArray();
+                    c.Claims["client"] = identity.FindFirst("client")?.Value;
                 }
 
                 return default;
@@ -179,7 +205,8 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+//app.UseMiddleware<ContentTypeMiddleware>();
 app.UseHttpsRedirection();
 app.UseRouting();
 

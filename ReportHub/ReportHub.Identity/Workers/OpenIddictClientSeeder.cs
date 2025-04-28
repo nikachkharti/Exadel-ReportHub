@@ -43,11 +43,11 @@ public class OpenIddictClientSeeder: IHostedService
                 OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
                 OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
                 OpenIddictConstants.Permissions.GrantTypes.Password,
-                
+
                 OpenIddictConstants.Permissions.Prefixes.Scope + "report-hub-api-scope",
                 OpenIddictConstants.Permissions.Scopes.Roles,
                 OpenIddictConstants.Permissions.Scopes.Email,
-                OpenIddictConstants.Permissions.Scopes.Profile,
+                OpenIddictConstants.Permissions.Scopes.Profile
             }
         };
         

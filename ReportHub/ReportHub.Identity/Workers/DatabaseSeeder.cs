@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Identity;
+using ReportHub.Identity.Domain.Entities;
+using ReportHub.Identity.Infrastructure.Repositories;
 using ReportHub.Identity.Models;
 
 namespace ReportHub.Identity.Workers;
@@ -32,9 +34,10 @@ public class DatabaseSeeder : IHostedService
 
         var roles = new List<string>
         {
-            "SystemAdmin",
-            "Admin",
-            "User"
+            "SuperAdmin",
+            "Owner",
+            "ClientAdmin",
+            "Operator",
         };
 
         foreach (var role in roles)
@@ -50,9 +53,11 @@ public class DatabaseSeeder : IHostedService
     {
         const string adminEmail = "admin@example.com";
         const string adminPassword = "Admin123$";
-        const string adminRole = "SystemAdmin";
+        const string adminRole = "SuperAdmin";
 
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        var userClientRoleRepository = scope.ServiceProvider.GetRequiredService<IUserClientRepository>();
+
         var user = await userManager.FindByEmailAsync(adminEmail);
         if (user is null)
         {
@@ -62,11 +67,13 @@ public class DatabaseSeeder : IHostedService
                 Email = adminEmail,
                 EmailConfirmed = true
             };
-
+            
             var result = await userManager.CreateAsync(user, adminPassword);
+
             if (result.Succeeded)
             {
-                await userManager.AddToRoleAsync(user, adminRole);
+                await userClientRoleRepository.InsertAsync(new UserClient { UserId = user.Id, Role = adminRole });
+
             }
         }
     }
