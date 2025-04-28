@@ -9,6 +9,7 @@ using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Infrastructure.Services.IdentityServices;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Infrastructure.Services.CurrencyServices;
+using ReportHub.Infrastructure.Workers;
 
 namespace ReportHub.Infrastructure
 {
@@ -22,9 +23,9 @@ namespace ReportHub.Infrastructure
             // Register services
             services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IExcelService, ExcelService>();
+            services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IExchangeRateRepository, ExchangeRateRepository>();
-
             // Register repositories
             services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -35,7 +36,9 @@ namespace ReportHub.Infrastructure
             services.AddScoped<ISaleRepository, SaleRepository>();
             services.AddScoped<ICountryRepository, CountryRepository>();
             services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+            services.AddScoped<IInvoiceLogRepository, InvoiceLogRepository>();
 
+            services.AddScoped<IPermissionRepository, PermissionRepository>();
 
             // Currency api service
             services.AddHttpClient
@@ -44,6 +47,8 @@ namespace ReportHub.Infrastructure
             services.AddMemoryCache();
 
             services.AddScoped<IClientRoleRepository, ClientRoleRepository>();
+
+            services.AddHostedService<DataSeeder>();
 
             return services;
         }

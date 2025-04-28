@@ -1,4 +1,6 @@
-﻿namespace ReportHub.Application.Contracts.FileContracts;
+﻿using ReportHub.Domain.Entities;
+
+namespace ReportHub.Application.Contracts.FileContracts;
 
 public interface IFileWriter
 {
@@ -11,4 +13,5 @@ public interface IFileWriter
     /// <param name="token"></param>
     /// <returns></returns>
     Task<Stream> WriteAllAsync<T>(IEnumerable<T> datas, IReadOnlyDictionary<string, object> statistics,CancellationToken token);
+    Task<Stream> WriteInvoiceAsync(Invoice invoices, IReadOnlyDictionary<string, object> statistics, CancellationToken token);
 }

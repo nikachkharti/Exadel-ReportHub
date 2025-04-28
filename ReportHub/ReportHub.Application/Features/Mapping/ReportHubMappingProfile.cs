@@ -3,6 +3,8 @@ using ReportHub.Application.Features.Clients.Commands;
 using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Features.Customers.DTOs;
+using ReportHub.Application.Features.InvoiceLogs.Commands;
+using ReportHub.Application.Features.InvoiceLogs.DTOs;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Items.Commands;
 using ReportHub.Application.Features.Items.DTOs;
@@ -159,5 +161,21 @@ public class ReportHubMappingProfile : Profile
 
         #endregion
 
+        #region INVOICELOG
+
+        CreateMap<InvoiceLog, InvoiceLogForGettingDto>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.UserId, options => options.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.InvoiceId, options => options.MapFrom(src => src.InvoiceId))
+            .ForMember(dest => dest.TimeStamp, options => options.MapFrom(src => src.TimeStamp))
+            .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status));
+
+        CreateMap<CreateInvoiceLogCommand, InvoiceLog>()
+            .ForMember(dest => dest.UserId, options => options.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.InvoiceId, options => options.MapFrom(src => src.InvoiceId))
+            .ForMember(dest => dest.TimeStamp, options => options.MapFrom(src => src.TimeStamp))
+            .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status));
+
+        #endregion
     }
 }
