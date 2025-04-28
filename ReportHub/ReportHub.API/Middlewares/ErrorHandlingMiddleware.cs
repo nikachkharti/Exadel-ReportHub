@@ -33,6 +33,7 @@ public class ErrorHandlingMiddleware
             InputValidationException validationEx => CreateErrorResponse(validationEx, HttpStatusCode.BadRequest),
             NotFoundException notFoundEx => CreateErrorResponse(notFoundEx, HttpStatusCode.NotFound),
             InternalServerException internalEx => CreateErrorResponse(internalEx, HttpStatusCode.InternalServerError),
+            UnauthorizedException unauthorizedEx => CreateErrorResponse(unauthorizedEx, HttpStatusCode.Unauthorized),   
             _ => CreateErrorResponse(exception, HttpStatusCode.InternalServerError)
         };
 

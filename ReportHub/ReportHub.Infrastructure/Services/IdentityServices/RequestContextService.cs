@@ -18,6 +18,6 @@ public class RequestContextService(IHttpContextAccessor httpContextAccessor) : I
 
     private string GetClaim(string name)
     {
-        return httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type.Equals(name)).Value;
+        return httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type.Equals(name))!.Value;
     }
 }
