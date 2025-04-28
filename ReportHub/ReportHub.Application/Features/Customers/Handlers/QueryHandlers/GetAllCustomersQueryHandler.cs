@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using ReportHub.Application.Common.Helper;
+using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Customers.DTOs;
 using ReportHub.Application.Features.Customers.Queries;
@@ -9,12 +10,14 @@ using System.Linq.Expressions;
 
 namespace ReportHub.Application.Features.Customers.Handlers.QueryHandlers
 {
-    public class GetAllCustomersQueryHandler(ICustomerRepository customerRepository, IMapper mapper)
-        : IRequestHandler<GetAllCustomersQuery, IEnumerable<CustomerForGettingDto>>
+    public class GetAllCustomersQueryHandler(ICustomerRepository customerRepository, IMapper mapper, IRequestContextService requestContext)
+        : BaseFeature(requestContext), IRequestHandler<GetAllCustomersQuery, IEnumerable<CustomerForGettingDto>>
     {
         public async Task<IEnumerable<CustomerForGettingDto>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken)
         {
             var sortExpression = ConfigureSortingExpression(request);
+
+            EnsureUserHasRoleForThisClient(request.ClientId);
 
             var customers = await customerRepository.GetAll
             (

@@ -4,15 +4,17 @@ using Serilog;
 using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Contracts.IdentityContracts;
 
 namespace ReportHub.Application.Features.Invoices.Handlers.QueryHandlers;
 
-public class GetAllInvoicesQueryHandler : IRequestHandler<GetAllInvoicesQuery, IEnumerable<InvoiceForGettingDto>>
+public class GetAllInvoicesQueryHandler : BaseFeature, IRequestHandler<GetAllInvoicesQuery, IEnumerable<InvoiceForGettingDto>>
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IMapper _mapper;
 
-    public GetAllInvoicesQueryHandler(IInvoiceRepository invoiceRepository, IMapper mapper)
+    public GetAllInvoicesQueryHandler(IInvoiceRepository invoiceRepository, IMapper mapper, IRequestContextService requestContext)
+        : base(requestContext)
     {
         _invoiceRepository = invoiceRepository;
         _mapper = mapper;

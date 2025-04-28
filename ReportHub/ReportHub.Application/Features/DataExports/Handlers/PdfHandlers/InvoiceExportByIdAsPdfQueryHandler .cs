@@ -1,19 +1,20 @@
 ﻿using MediatR;
 using ReportHub.Application.Contracts.FileContracts;
+using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.DataExports.Queries.PdfQueries;
+using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Domain.Entities;
 
 namespace ReportHub.Application.Features.DataExports.Handlers.PdfHandlers;
 
-public class InvoiceExportByIdAsPdfQueryHandler : IRequestHandler<InvoiceExportByIdAsPdfQuery, Stream>
+public class InvoiceExportByIdAsPdfQueryHandler : BaseFeature, IRequestHandler<InvoiceExportByIdAsPdfQuery, Stream>
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IPdfService _pdfService;
-
     public InvoiceExportByIdAsPdfQueryHandler(
         IInvoiceRepository invoiceRepository,
-        IPdfService pdfService)
+        IPdfService pdfService, IRequestContextService requestContext) : base(requestContext)
     {
         _invoiceRepository = invoiceRepository;
         _pdfService = pdfService;
@@ -24,6 +25,14 @@ public class InvoiceExportByIdAsPdfQueryHandler : IRequestHandler<InvoiceExportB
         CancellationToken cancellationToken)
     {
         var invoice = await _invoiceRepository.Get(i => request.InvoiceId == i.Id);
+
+        if (invoice is null)
+        {
+            throw new NotFoundException($"Invoice with id {request.InvoiceId} not found");
+        }
+
+        EnsureUserHasRoleForThisClient(invoice.ClientId);
+
         var stats = GetStatistics(invoice);
 
         return await _pdfService.WriteInvoiceAsync(

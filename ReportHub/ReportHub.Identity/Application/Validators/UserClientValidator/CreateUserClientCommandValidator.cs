@@ -10,9 +10,7 @@ public class CreateUserClientCommandValidator : AbstractValidator<CreateUserClie
     {
         RuleFor(x => x.UserId)
             .NotNull()
-            .WithMessage("User is required")
-            .Must(userId => ObjectId.TryParse(userId, out var id))
-            .WithMessage("User id is not valid");
+            .WithMessage("User is required");
 
 
         RuleFor(x => x.ClientId)
