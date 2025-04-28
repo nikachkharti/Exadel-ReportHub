@@ -21,6 +21,7 @@ namespace ReportHub.Infrastructure
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDB"));
 
             // Register services
+            services.AddScoped<IRequestContextService, RequestContextService>();
             services.AddScoped<ICsvService, CsvService>();
             services.AddScoped<IExcelService, ExcelService>();
             services.AddScoped<IPdfService, PdfService>();
