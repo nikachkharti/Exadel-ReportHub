@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReportHub.API.Enums;
 using ReportHub.Application.Common.Models;
@@ -158,8 +159,6 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
-        private ImportBaseQuery GetImportingQuery(FileImportingType fileType, Stream stream, string extension)
         private ExportBaseQuery GetExportingQueryById(string id, FileExportingType fileType)
         {
             return fileType switch
