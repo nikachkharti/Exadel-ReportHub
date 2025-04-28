@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using ReportHub.Application.Features.DataImports.Queries;
 
-namespace ReportHub.Application.Validators.DataImportQueryValidators.CsvQueryValidators;
+namespace ReportHub.Application.Validators.DataImportQueryValidators.CsvQueryValidators.Import;
 
 public class ImportQueryAsCsvQueryBaseValidator<TQuery> : AbstractValidator<TQuery> 
     where TQuery : ImportBaseQuery

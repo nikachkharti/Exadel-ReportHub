@@ -5,6 +5,7 @@ using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using Serilog;
 
 namespace ReportHub.Infrastructure.Services.FileServices
 {
@@ -227,7 +228,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
                             }
                             catch
                             {
-                                // Optional: Log conversion issues if needed
+                                
                             }
                         }
                     }
