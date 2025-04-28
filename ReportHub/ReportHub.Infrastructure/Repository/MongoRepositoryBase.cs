@@ -116,6 +116,18 @@ namespace ReportHub.Infrastructure.Repository
             .ToListAsync(cancellationToken);
         }
 
+        public async Task<IEnumerable<T>> GetAll(FilterDefinition<T> filter, int pageNumber, int pageSize, Expression<Func<T, object>> sortBy, bool ascending = true, CancellationToken cancellationToken = default)
+        {
+            var sortDefinition = ascending
+                ? Builders<T>.Sort.Ascending(sortBy)
+                : Builders<T>.Sort.Descending(sortBy);
+
+            return await _collection.Find(filter)
+                .Sort(sortDefinition)
+                .Skip((pageNumber - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync(cancellationToken);
+        }
 
         public async Task<T> Get(Expression<Func<T, bool>> filter, CancellationToken cancellationToken = default) =>
             await _collection
@@ -225,6 +237,7 @@ namespace ReportHub.Infrastructure.Repository
 
             await _collection.UpdateManyAsync(filterExpression, updateDefinition, options: null, cancellationToken);
         }
+
 
         #endregion
     }
