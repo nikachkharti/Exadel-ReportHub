@@ -75,7 +75,7 @@ namespace ReportHub.API.Controllers
         //}
 
 
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Exports invoices to file type user chose
         /// </summary>
@@ -92,7 +92,7 @@ namespace ReportHub.API.Controllers
 
 
 
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Exports specific invoice by id to file type user chose
         /// </summary>
