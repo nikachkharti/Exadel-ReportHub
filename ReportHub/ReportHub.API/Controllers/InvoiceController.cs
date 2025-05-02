@@ -49,8 +49,6 @@ namespace ReportHub.API.Controllers
             (
                 startDate,
                 endDate,
-                //DateTime.Parse(startDate),
-                //DateTime.Parse(endDate),
                 clientId,
                 customerId,
                 pageNumber,
