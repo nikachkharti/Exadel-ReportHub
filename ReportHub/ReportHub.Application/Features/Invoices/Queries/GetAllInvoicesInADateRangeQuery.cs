@@ -14,5 +14,5 @@ namespace ReportHub.Application.Features.Invoices.Queries
          string SortingParameter,
          bool Ascending = false,
          CancellationToken CancellationToken = default
-     ) : IRequest<IEnumerable<InvoiceForGettingDto>>;
+     ) : IRequest<int>;
 }

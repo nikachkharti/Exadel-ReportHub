@@ -21,7 +21,7 @@ namespace ReportHub.API.Controllers
     {
 
         /// <summary>
-        /// Get invoices in a date range
+        /// Get invoices in a date range, can be filtered by client or customer id
         /// </summary>
         /// <param name="startDate">Start date</param>
         /// <param name="endDate">End date</param>

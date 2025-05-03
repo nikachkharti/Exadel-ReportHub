@@ -49,7 +49,7 @@ namespace ReportHub.Infrastructure
 
             services.AddScoped<IClientRoleRepository, ClientRoleRepository>();
 
-            services.AddHostedService<DataSeeder>();
+            //services.AddHostedService<DataSeeder>();
 
             return services;
         }

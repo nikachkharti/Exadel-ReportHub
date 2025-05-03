@@ -3,7 +3,6 @@ using MediatR;
 using MongoDB.Driver;
 using ReportHub.Application.Common.Helper;
 using ReportHub.Application.Contracts.RepositoryContracts;
-using ReportHub.Application.Features.Invoices.DTOs;
 using ReportHub.Application.Features.Invoices.Queries;
 using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Domain.Entities;
@@ -12,9 +11,9 @@ using System.Linq.Expressions;
 namespace ReportHub.Application.Features.Invoices.Handlers.QueryHandlers
 {
     public class GetAllInvoicesInADateRangeQueryHandler(IInvoiceRepository invoiceRepository, IMapper mapper)
-        : IRequestHandler<GetAllInvoicesInADateRangeQuery, IEnumerable<InvoiceForGettingDto>>
+        : IRequestHandler<GetAllInvoicesInADateRangeQuery, int>
     {
-        public async Task<IEnumerable<InvoiceForGettingDto>> Handle(GetAllInvoicesInADateRangeQuery request, CancellationToken cancellationToken)
+        public async Task<int> Handle(GetAllInvoicesInADateRangeQuery request, CancellationToken cancellationToken)
         {
             if (request.StartDate > request.EndDate)
                 throw new BadRequestException("Start date value can't be greater than end date");
@@ -48,8 +47,8 @@ namespace ReportHub.Application.Features.Invoices.Handlers.QueryHandlers
             );
 
             return invoices.Any()
-                ? mapper.Map<IEnumerable<InvoiceForGettingDto>>(invoices)
-                : Enumerable.Empty<InvoiceForGettingDto>();
+                ? invoices.Count()
+                : 0;
         }
 
 
