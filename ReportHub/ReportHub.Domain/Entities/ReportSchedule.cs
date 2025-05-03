@@ -9,8 +9,16 @@ namespace ReportHub.Domain.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public string CustomerId { get; set; }
-        public string CronExpression { get; set; } // For schedule timing (e.g., "0 9 * * 1" = Every Monday 9 AM)
-        public ReportFormat Format { get; set; }   // CSV or Excel
+
+        /// <summary>
+        /// For schedule timing (e.g., "0 9 * * 1" = Every Monday 9 AM)
+        /// </summary>
+        public string CronExpression { get; set; }
+
+        /// <summary>
+        /// CSV - 0 Excel - 1 PDF - 2
+        /// </summary>
+        public ReportFormat Format { get; set; }
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
     }

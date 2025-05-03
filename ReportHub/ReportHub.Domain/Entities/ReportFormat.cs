@@ -3,6 +3,7 @@
     public enum ReportFormat
     {
         CSV,
-        Excel
+        Excel,
+        PDF
     }
 }
