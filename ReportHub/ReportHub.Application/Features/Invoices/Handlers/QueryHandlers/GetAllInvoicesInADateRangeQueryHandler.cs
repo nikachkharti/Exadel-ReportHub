@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using MongoDB.Driver;
 using ReportHub.Application.Common.Helper;
 using ReportHub.Application.Contracts.RepositoryContracts;
@@ -10,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace ReportHub.Application.Features.Invoices.Handlers.QueryHandlers
 {
-    public class GetAllInvoicesInADateRangeQueryHandler(IInvoiceRepository invoiceRepository, IMapper mapper)
+    public class GetAllInvoicesInADateRangeQueryHandler(IInvoiceRepository invoiceRepository)
         : IRequestHandler<GetAllInvoicesInADateRangeQuery, int>
     {
         public async Task<int> Handle(GetAllInvoicesInADateRangeQuery request, CancellationToken cancellationToken)
