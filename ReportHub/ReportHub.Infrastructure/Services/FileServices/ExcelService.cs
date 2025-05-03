@@ -5,7 +5,6 @@ using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.AspNetCore.Http;
-using Serilog;
 
 namespace ReportHub.Infrastructure.Services.FileServices
 {
@@ -68,22 +67,9 @@ namespace ReportHub.Infrastructure.Services.FileServices
             var summarySheet = workbook.Worksheets.Add("All Invoices");
             await WriteInvoicesSummaryTableAsync(summarySheet, invoices);
 
-            // Create individual invoice sheets
-            int sheetIndex = 1;
-            foreach (var invoice in invoices)
-            {
-                if (token.IsCancellationRequested) break;
-                var invoiceSheet = workbook.Worksheets.Add($"Invoice {sheetIndex}");
-                await WriteInvoiceTableAsync(invoiceSheet, invoice);
-                sheetIndex++;
-            }
-
-            // Add statistics sheet if available
-            if (statistics?.Count > 0)
-            {
-                var statsSheet = workbook.Worksheets.Add("Statistics");
-                WriteStatisticsTable(statsSheet, statistics);
-            }
+            // Add enhanced statistics sheets
+            var statsSheet = workbook.Worksheets.Add("Statistics");
+            await WriteEnhancedStatisticsAsync(statsSheet, invoices, statistics);
 
             workbook.SaveAs(memoryStream);
             memoryStream.Position = 0;
@@ -103,11 +89,9 @@ namespace ReportHub.Infrastructure.Services.FileServices
             await WriteInvoiceTableAsync(worksheet, invoice);
 
             // Stats sheet if available
-            if (statistics?.Count > 0)
-            {
-                var statsSheet = workbook.Worksheets.Add("Statistics");
-                WriteStatisticsTable(statsSheet, statistics);
-            }
+            var statsSheet = workbook.Worksheets.Add("Statistics");
+            var invoices = new List<Invoice> { invoice };
+            await WriteEnhancedStatisticsAsync(statsSheet, invoices, statistics);
 
             workbook.SaveAs(memoryStream);
             memoryStream.Position = 0;
@@ -120,8 +104,8 @@ namespace ReportHub.Infrastructure.Services.FileServices
         {
             // Create header row
             string[] headers = new[] {
-                "Invoice ID", "Client", "Customer", "Issue Date",
-                "Due Date", "Payment Status", "Currency", "Total Amount"
+                "Invoice ID", "Client", "Customer", "Issue Date", "Due Date",
+                "Payment Status", "Currency", "Total Amount", "Days Until Due", "Created By"
             };
 
             for (int i = 0; i < headers.Length; i++)
@@ -136,6 +120,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId);
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
                 decimal totalAmount = items.Sum(i => i.Price);
+                int daysUntilDue = (invoice.DueDate - DateTime.Today).Days;
 
                 // Fill data row
                 sheet.Cell(row, 1).Value = invoice.Id;
@@ -146,13 +131,14 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 sheet.Cell(row, 6).Value = invoice.PaymentStatus;
                 sheet.Cell(row, 7).Value = invoice.Currency;
                 sheet.Cell(row, 8).Value = totalAmount;
+                sheet.Cell(row, 9).Value = daysUntilDue;
 
                 row++;
             }
 
             // Format as table
             var range = sheet.Range(1, 1, row - 1, headers.Length);
-            var table = range.CreateTable();
+            var table = range.CreateTable("AllInvoices");
             sheet.Columns().AdjustToContents();
         }
 
@@ -174,7 +160,8 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 { "Customer", customer?.Name ?? "N/A" },
                 { "Issue Date", invoice.IssueDate.ToString("yyyy-MM-dd") },
                 { "Due Date", invoice.DueDate.ToString("yyyy-MM-dd") },
-                { "Payment Status", invoice.PaymentStatus }
+                { "Payment Status", invoice.PaymentStatus },
+                { "Days Until Due", (invoice.DueDate - DateTime.Today).Days.ToString() }
             };
 
             for (int i = 0; i < headerData.GetLength(0); i++)
@@ -221,26 +208,188 @@ namespace ReportHub.Infrastructure.Services.FileServices
             sheet.Columns().AdjustToContents();
         }
 
-        private static void WriteStatisticsTable(
+        private async Task WriteEnhancedStatisticsAsync(
             IXLWorksheet sheet,
-            IReadOnlyDictionary<string, object> statistics)
+            IEnumerable<Invoice> invoices,
+            IReadOnlyDictionary<string, object> baseStatistics)
         {
-            sheet.Cell(1, 1).Value = "Statistics";
-
+            // 1. General Statistics Table
+            sheet.Cell(1, 1).Value = "General Statistics";
             sheet.Cell(2, 1).Value = "Metric";
             sheet.Cell(2, 2).Value = "Value";
 
+            // Add base statistics first
             int row = 3;
-            foreach (var kv in statistics)
+            foreach (var kv in baseStatistics)
             {
                 sheet.Cell(row, 1).Value = kv.Key;
                 sheet.Cell(row, 2).Value = kv.Value?.ToString() ?? "N/A";
                 row++;
             }
 
-            var range = sheet.Range(2, 1, row - 1, 2);
-            var table = range.CreateTable("StatisticsTable");
+            // Add additional general statistics
+            var now = DateTime.Today;
+            var additionalStats = new Dictionary<string, object>
+            {
+                { "Average Invoice Amount", await CalculateAverageInvoiceAmount(invoices) },
+                { "Invoices Due This Week", invoices.Count(i => (i.DueDate - now).Days <= 7 && (i.DueDate - now).Days >= 0 && i.PaymentStatus != "Paid") },
+                { "Invoices Overdue", invoices.Count(i => i.DueDate < now && i.PaymentStatus != "Paid") },
+                { "Total Outstanding Amount", await CalculateTotalOutstandingAmount(invoices) }
+            };
+
+            foreach (var kv in additionalStats)
+            {
+                sheet.Cell(row, 1).Value = kv.Key;
+                sheet.Cell(row, 2).Value = kv.Value?.ToString() ?? "N/A";
+                row++;
+            }
+
+            var generalStatsRange = sheet.Range(2, 1, row - 1, 2);
+            var generalStatsTable = generalStatsRange.CreateTable("GeneralStatistics");
+
+            // 2. Payment Status Distribution Table
+            row += 2; // Add space
+            sheet.Cell(row, 1).Value = "Payment Status Distribution";
+            row++;
+            sheet.Cell(row, 1).Value = "Status";
+            sheet.Cell(row, 2).Value = "Count";
+            sheet.Cell(row, 3).Value = "Percentage";
+            row++;
+
+            var statusGroups = invoices.GroupBy(i => i.PaymentStatus)
+                                      .Select(g => new { Status = g.Key, Count = g.Count() })
+                                      .OrderByDescending(g => g.Count);
+
+            int totalInvoices = invoices.Count();
+            foreach (var group in statusGroups)
+            {
+                sheet.Cell(row, 1).Value = group.Status;
+                sheet.Cell(row, 2).Value = group.Count;
+                sheet.Cell(row, 3).Value = totalInvoices > 0
+                    ? (double)group.Count / totalInvoices
+                    : 0;
+                sheet.Cell(row, 3).Style.NumberFormat.Format = "0.00%";
+                row++;
+            }
+
+            var statusRange = sheet.Range(row - statusGroups.Count() - 1, 1, row - 1, 3);
+            var statusTable = statusRange.CreateTable("StatusDistribution");
+
+            // 3. Monthly Invoice Summary
+            row += 2; // Add space
+            sheet.Cell(row, 1).Value = "Monthly Invoice Summary";
+            row++;
+            sheet.Cell(row, 1).Value = "Month";
+            sheet.Cell(row, 2).Value = "Count";
+            sheet.Cell(row, 3).Value = "Total Amount";
+            row++;
+
+            var monthlyGroups = invoices.GroupBy(i => new { i.IssueDate.Year, i.IssueDate.Month })
+                                       .Select(async g => new {
+                                           YearMonth = $"{g.Key.Year}-{g.Key.Month:D2}",
+                                           Count = g.Count(),
+                                           TotalAmount = await CalculateTotalForInvoices(g)
+                                       })
+                                       .ToList();
+
+            var monthlyResults = await Task.WhenAll(monthlyGroups);
+            foreach (var month in monthlyResults.OrderBy(m => m.YearMonth))
+            {
+                sheet.Cell(row, 1).Value = month.YearMonth;
+                sheet.Cell(row, 2).Value = month.Count;
+                sheet.Cell(row, 3).Value = month.TotalAmount;
+                sheet.Cell(row, 3).Style.NumberFormat.Format = "#,##0.00";
+                row++;
+            }
+
+            var monthlyRange = sheet.Range(row - monthlyResults.Length - 1, 1, row - 1, 3);
+            var monthlyTable = monthlyRange.CreateTable("MonthlyInvoices");
+
+            // 4. Client Summary
+            if (invoices.Any())
+            {
+                row += 2; // Add space
+                sheet.Cell(row, 1).Value = "Client Summary";
+                row++;
+                sheet.Cell(row, 1).Value = "Client";
+                sheet.Cell(row, 2).Value = "Invoice Count";
+                sheet.Cell(row, 3).Value = "Total Value";
+                row++;
+
+                var clientGroups = invoices.GroupBy(i => i.ClientId)
+                                         .Select(async g => new {
+                                             ClientId = g.Key,
+                                             Client = await GetClientName(g.Key),
+                                             Count = g.Count(),
+                                             TotalAmount = await CalculateTotalForInvoices(g)
+                                         })
+                                         .ToList();
+
+                var clientResults = await Task.WhenAll(clientGroups);
+                foreach (var client in clientResults.OrderByDescending(c => c.TotalAmount))
+                {
+                    sheet.Cell(row, 1).Value = client.Client;
+                    sheet.Cell(row, 2).Value = client.Count;
+                    sheet.Cell(row, 3).Value = client.TotalAmount;
+                    sheet.Cell(row, 3).Style.NumberFormat.Format = "#,##0.00";
+                    row++;
+                }
+
+                var clientRange = sheet.Range(row - clientResults.Length - 1, 1, row - 1, 3);
+                var clientTable = clientRange.CreateTable("ClientSummary");
+            }
+
             sheet.Columns().AdjustToContents();
+        }
+
+        private async Task<string> GetClientName(string clientId)
+        {
+            var client = await _clientRepo.Get(c => c.Id == clientId);
+            return client?.Name ?? "Unknown";
+        }
+
+        private async Task<decimal> CalculateAverageInvoiceAmount(IEnumerable<Invoice> invoices)
+        {
+            if (!invoices.Any())
+                return 0;
+
+            decimal totalAmount = 0;
+            int count = 0;
+
+            foreach (var invoice in invoices)
+            {
+                var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
+                totalAmount += items.Sum(i => i.Price);
+                count++;
+            }
+
+            return count > 0 ? totalAmount / count : 0;
+        }
+
+        private async Task<decimal> CalculateTotalOutstandingAmount(IEnumerable<Invoice> invoices)
+        {
+            decimal total = 0;
+
+            foreach (var invoice in invoices.Where(i => i.PaymentStatus != "Paid"))
+            {
+                var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
+                total += items.Sum(i => i.Price);
+            }
+
+            return total;
+        }
+
+        private async Task<decimal> CalculateTotalForInvoices(IEnumerable<Invoice> invoices)
+        {
+            decimal total = 0;
+
+            foreach (var invoice in invoices)
+            {
+                var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
+                total += items.Sum(i => i.Price);
+            }
+
+            return total;
         }
 
         private async IAsyncEnumerable<T> GetRecordsOneByOne<T>(
@@ -267,18 +416,6 @@ namespace ReportHub.Infrastructure.Services.FileServices
                     if (headers.TryGetValue(prop.Name, out int col))
                     {
                         var cellValue = worksheet.Cell(row, col).Value;
-                        if (!worksheet.Cell(row, col).IsEmpty())
-                        {
-                            try
-                            {
-                                object converted = Convert.ChangeType(cellValue, prop.PropertyType);
-                                prop.SetValue(instance, converted);
-                            }
-                            catch
-                            {
-                                // Silently continue if conversion fails
-                            }
-                        }
                     }
                 }
                 yield return instance;
