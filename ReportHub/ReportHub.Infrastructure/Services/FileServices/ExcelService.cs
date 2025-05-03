@@ -5,6 +5,7 @@ using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ReportHub.Infrastructure.Services.FileServices
 {
@@ -13,17 +14,20 @@ namespace ReportHub.Infrastructure.Services.FileServices
         private readonly IClientRepository _clientRepo;
         private readonly ICustomerRepository _customerRepo;
         private readonly IItemRepository _itemRepo;
+        private readonly IPlanRepository _planRepo; 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public ExcelService(
             IClientRepository clientRepo,
             ICustomerRepository customerRepo,
             IItemRepository itemRepo,
+            IPlanRepository planRepo, 
             IHttpContextAccessor httpContextAccessor)
         {
             _clientRepo = clientRepo;
             _customerRepo = customerRepo;
             _itemRepo = itemRepo;
+            _planRepo = planRepo; 
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -52,7 +56,57 @@ namespace ReportHub.Infrastructure.Services.FileServices
 
         public IAsyncEnumerable<T> ReadAllAsync<T>(Stream stream, CancellationToken cancellationToken) where T : class
         {
-            return GetRecordsOneByOne<T>(stream, cancellationToken);
+            return GetRecordsOneByOneAsync<T>(stream, cancellationToken);
+        }
+
+        // FIX: Implemented the missing method
+        private async IAsyncEnumerable<T> GetRecordsOneByOneAsync<T>(Stream stream,
+            [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
+        {
+            using var workbook = new XLWorkbook(stream);
+            var worksheet = workbook.Worksheets.FirstOrDefault();
+
+            if (worksheet == null)
+                yield break;
+
+            var headers = new List<string>();
+            var properties = typeof(T).GetProperties();
+
+            // Read headers from first row
+            for (int col = 1; col <= worksheet.LastColumnUsed().ColumnNumber(); col++)
+            {
+                var header = worksheet.Cell(1, col).Value.ToString();
+                headers.Add(header);
+            }
+
+            // Process data rows
+            for (int row = 2; row <= worksheet.LastRowUsed().RowNumber(); row++)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    yield break;
+
+                var instance = Activator.CreateInstance<T>();
+
+                for (int col = 1; col <= headers.Count; col++)
+                {
+                    var header = headers[col - 1];
+                    var property = properties.FirstOrDefault(p =>
+                        p.Name.Equals(header, StringComparison.OrdinalIgnoreCase));
+
+                    if (property != null && property.CanWrite)
+                    {
+                        var cell = worksheet.Cell(row, col);
+                        if (!cell.IsEmpty())
+                        {
+                            var value = cell.Value;
+                            var convertedValue = Convert.ChangeType(value.ToString(), property.PropertyType);
+                            property.SetValue(instance, convertedValue);
+                        }
+                    }
+                }
+
+                yield return instance;
+            }
         }
 
         private async Task<Stream> CreateInvoicesExcelAsync(
@@ -70,6 +124,18 @@ namespace ReportHub.Infrastructure.Services.FileServices
             // Add enhanced statistics sheets
             var statsSheet = workbook.Worksheets.Add("Statistics");
             await WriteEnhancedStatisticsAsync(statsSheet, invoices, statistics);
+
+            // Add plans sheet
+            var plansSheet = workbook.Worksheets.Add("Plan Details");
+            await WritePlansTableAsync(plansSheet, token);
+
+            // Add invoice-plan relationship sheet
+            var relationshipSheet = workbook.Worksheets.Add("Invoice-Plan Relationship");
+            await WriteInvoicePlanRelationshipAsync(relationshipSheet, invoices, token);
+
+            // Add report metadata
+            var metadataSheet = workbook.Worksheets.Add("Report Metadata");
+            WriteReportMetadata(metadataSheet);
 
             workbook.SaveAs(memoryStream);
             memoryStream.Position = 0;
@@ -93,9 +159,95 @@ namespace ReportHub.Infrastructure.Services.FileServices
             var invoices = new List<Invoice> { invoice };
             await WriteEnhancedStatisticsAsync(statsSheet, invoices, statistics);
 
+            // Add related plans for this invoice's items
+            var planSheet = workbook.Worksheets.Add("Related Plans");
+            await WriteRelatedPlansForInvoiceAsync(planSheet, invoice, token);
+
+            // Add report metadata
+            var metadataSheet = workbook.Worksheets.Add("Report Metadata");
+            WriteReportMetadata(metadataSheet);
+
             workbook.SaveAs(memoryStream);
             memoryStream.Position = 0;
             return memoryStream;
+        }
+        private async Task WriteRelatedPlansForInvoiceAsync(
+            IXLWorksheet sheet,
+            Invoice invoice,
+            CancellationToken token)
+        {
+            // Create header row
+            string[] headers = new[] {
+                "Plan ID", "Item Name", "Start Date", "End Date", "Status", "Amount"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                sheet.Cell(1, i + 1).Value = headers[i];
+            }
+
+            int row = 2;
+            bool hasData = false;
+            var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id), token);
+
+            foreach (var item in items)
+            {
+                var plans = await _planRepo.GetAll(
+                    p => p.ClientId == invoice.ClientId && p.ItemId == item.Id,
+                    token);
+
+                if (plans.Any())
+                {
+                    hasData = true;
+
+                    foreach (var plan in plans)
+                    {
+                        sheet.Cell(row, 1).Value = plan.Id;
+                        sheet.Cell(row, 2).Value = item.Name;
+                        sheet.Cell(row, 3).Value = plan.StartDate.ToString("yyyy-MM-dd");
+                        sheet.Cell(row, 4).Value = plan.EndDate.ToString("yyyy-MM-dd");
+                        sheet.Cell(row, 5).Value = plan.Status.ToString();
+                        sheet.Cell(row, 6).Value = plan.Amount;
+                        sheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0.00";
+
+                        row++;
+                    }
+                }
+            }
+
+            if (hasData)
+            {
+                var range = sheet.Range(1, 1, row - 1, headers.Length);
+                var table = range.CreateTable("RelatedPlans");
+            }
+            else
+            {
+                sheet.Cell(2, 1).Value = "No related plans found for this invoice";
+            }
+
+            sheet.Columns().AdjustToContents();
+        }
+
+        private void WriteReportMetadata(IXLWorksheet sheet)
+        {
+            // Write report generation information
+            sheet.Cell(1, 1).Value = "Report Metadata";
+            sheet.Cell(2, 1).Value = "Generation Date:";
+            sheet.Cell(2, 2).Value = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            // Write user context information if available
+            var userName = _httpContextAccessor.HttpContext?.User?.Identity?.Name;
+            if (!string.IsNullOrEmpty(userName))
+            {
+                sheet.Cell(3, 1).Value = "Generated By:";
+                sheet.Cell(3, 2).Value = userName;
+            }
+
+            // Format as table
+            var range = sheet.Range(1, 1, 3, 2);
+            range.Style.Font.Bold = true;
+            sheet.Cell(1, 1).Style.Font.FontSize = 14;
+            sheet.Columns().AdjustToContents();
         }
 
         private async Task WriteInvoicesSummaryTableAsync(
@@ -339,13 +491,158 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 var clientTable = clientRange.CreateTable("ClientSummary");
             }
 
+            // 5. Plan Status Distribution 
+            row += 2; // Add space
+            sheet.Cell(row, 1).Value = "Plan Status Distribution";
+            row++;
+            sheet.Cell(row, 1).Value = "Status";
+            sheet.Cell(row, 2).Value = "Count";
+            sheet.Cell(row, 3).Value = "Percentage";
+            row++;
+
+            var plans = await _planRepo.GetAll();
+            var planStatusGroups = plans.GroupBy(p => p.Status)
+                                       .Select(g => new { Status = g.Key.ToString(), Count = g.Count() })
+                                       .OrderByDescending(g => g.Count)
+                                       .ToList();
+
+            int totalPlans = plans.Count();
+            foreach (var group in planStatusGroups)
+            {
+                sheet.Cell(row, 1).Value = group.Status;
+                sheet.Cell(row, 2).Value = group.Count;
+                sheet.Cell(row, 3).Value = totalPlans > 0
+                    ? (double)group.Count / totalPlans
+                    : 0;
+                sheet.Cell(row, 3).Style.NumberFormat.Format = "0.00%";
+                row++;
+            }
+
+            if (planStatusGroups.Any())
+            {
+                var planStatusRange = sheet.Range(row - planStatusGroups.Count - 1, 1, row - 1, 3);
+                var planStatusTable = planStatusRange.CreateTable("PlanStatusDistribution");
+            }
+
             sheet.Columns().AdjustToContents();
         }
 
-        private async Task<string> GetClientName(string clientId)
+        private async Task WritePlansTableAsync(IXLWorksheet sheet, CancellationToken token)
         {
-            var client = await _clientRepo.Get(c => c.Id == clientId);
-            return client?.Name ?? "Unknown";
+            // Create header row for plans
+            string[] headers = new[] {
+                "Plan ID", "Client", "Item", "Amount", "Start Date", "End Date", "Status", "Duration (Days)"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                sheet.Cell(1, i + 1).Value = headers[i];
+            }
+
+            // Get all plans
+            var plans = await _planRepo.GetAll(token);
+
+            int row = 2;
+            foreach (var plan in plans)
+            {
+                var client = await _clientRepo.Get(c => c.Id == plan.ClientId, token);
+                var item = await _itemRepo.Get(i => i.Id == plan.ItemId, token);
+                int duration = (plan.EndDate - plan.StartDate).Days;
+
+                // Fill data row
+                sheet.Cell(row, 1).Value = plan.Id;
+                sheet.Cell(row, 2).Value = client?.Name ?? "N/A";
+                sheet.Cell(row, 3).Value = item?.Name ?? "N/A";
+                sheet.Cell(row, 4).Value = plan.Amount;
+                sheet.Cell(row, 5).Value = plan.StartDate.ToString("yyyy-MM-dd");
+                sheet.Cell(row, 6).Value = plan.EndDate.ToString("yyyy-MM-dd");
+                sheet.Cell(row, 7).Value = plan.Status.ToString();
+                sheet.Cell(row, 8).Value = duration;
+
+                row++;
+            }
+
+            // Format as table if there are plans
+            if (plans.Any())
+            {
+                var range = sheet.Range(1, 1, row - 1, headers.Length);
+                var table = range.CreateTable("AllPlans");
+
+                // Format money columns
+                sheet.Column(4).Style.NumberFormat.Format = "#,##0.00";
+            }
+            else
+            {
+                sheet.Cell(2, 1).Value = "No plans available";
+            }
+
+            sheet.Columns().AdjustToContents();
+        }
+
+        private async Task WriteInvoicePlanRelationshipAsync(
+            IXLWorksheet sheet,
+            IEnumerable<Invoice> invoices,
+            CancellationToken token)
+        {
+            // Create header row
+            string[] headers = new[] {
+                "Invoice ID", "Client", "Item", "Plan ID", "Plan Status", "Plan Start", "Plan End"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                sheet.Cell(1, i + 1).Value = headers[i];
+            }
+
+            int row = 2;
+            bool hasData = false;
+
+            // For each invoice
+            foreach (var invoice in invoices)
+            {
+                var client = await _clientRepo.Get(c => c.Id == invoice.ClientId, token);
+                var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id), token);
+
+                // For each item in the invoice
+                foreach (var item in items)
+                {
+                    // Find plans for this item
+                    var itemPlans = await _planRepo.GetAll(
+                        p => p.ItemId == item.Id && p.ClientId == invoice.ClientId,
+                        token);
+
+                    if (itemPlans.Any())
+                    {
+                        hasData = true;
+
+                        foreach (var plan in itemPlans)
+                        {
+                            sheet.Cell(row, 1).Value = invoice.Id;
+                            sheet.Cell(row, 2).Value = client?.Name ?? "N/A";
+                            sheet.Cell(row, 3).Value = item.Name;
+                            sheet.Cell(row, 4).Value = plan.Id;  // FIX: Removed sheet.Cell(row, 4).Value = plan.sheet
+                            sheet.Cell(row, 5).Value = plan.Status.ToString();
+                            sheet.Cell(row, 6).Value = plan.StartDate.ToString("yyyy-MM-dd");
+                            sheet.Cell(row, 7).Value = plan.EndDate.ToString("yyyy-MM-dd");
+
+                            row++;
+                        }
+                    }
+                }
+            }
+
+            // Format as table if there is data
+            if (hasData)
+            {
+                var range = sheet.Range(1, 1, row - 1, headers.Length);
+                var table = range.CreateTable("InvoicePlanRelationship");
+            }
+            else
+            {
+                sheet.Cell(2, 1).Value = "No invoice-plan relationships found";
+            }
+
+            sheet.Columns().AdjustToContents();
         }
 
         private async Task<decimal> CalculateAverageInvoiceAmount(IEnumerable<Invoice> invoices)
@@ -359,7 +656,8 @@ namespace ReportHub.Infrastructure.Services.FileServices
             foreach (var invoice in invoices)
             {
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                totalAmount += items.Sum(i => i.Price);
+                decimal invoiceTotal = items.Sum(i => i.Price);
+                totalAmount += invoiceTotal;
                 count++;
             }
 
@@ -368,15 +666,25 @@ namespace ReportHub.Infrastructure.Services.FileServices
 
         private async Task<decimal> CalculateTotalOutstandingAmount(IEnumerable<Invoice> invoices)
         {
-            decimal total = 0;
+            decimal outstandingAmount = 0;
 
-            foreach (var invoice in invoices.Where(i => i.PaymentStatus != "Paid"))
+            foreach (var invoice in invoices)
             {
-                var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                total += items.Sum(i => i.Price);
+                if (invoice.PaymentStatus != "Paid")
+                {
+                    var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
+                    decimal invoiceTotal = items.Sum(i => i.Price);
+                    outstandingAmount += invoiceTotal;
+                }
             }
 
-            return total;
+            return outstandingAmount;
+        }
+
+        private async Task<string> GetClientName(string clientId)
+        {
+            var client = await _clientRepo.Get(c => c.Id == clientId);
+            return client?.Name ?? "Unknown Client";
         }
 
         private async Task<decimal> CalculateTotalForInvoices(IEnumerable<Invoice> invoices)
@@ -390,36 +698,6 @@ namespace ReportHub.Infrastructure.Services.FileServices
             }
 
             return total;
-        }
-
-        private async IAsyncEnumerable<T> GetRecordsOneByOne<T>(
-            Stream stream,
-            [EnumeratorCancellation] CancellationToken cancellationToken) where T : class
-        {
-            using var workbook = new XLWorkbook(stream);
-            var worksheet = workbook.Worksheets.FirstOrDefault()
-                ?? throw new InvalidOperationException("No worksheet found in Excel file");
-
-            var properties = typeof(T).GetProperties();
-            var headers = worksheet.Row(1).CellsUsed()
-                .ToDictionary(cell => cell.Value.ToString(), cell => cell.Address.ColumnNumber, StringComparer.OrdinalIgnoreCase);
-
-            int lastRow = worksheet.LastRowUsed().RowNumber();
-            for (int row = 2; row <= lastRow; row++)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    yield break;
-
-                var instance = Activator.CreateInstance<T>();
-                foreach (var prop in properties)
-                {
-                    if (headers.TryGetValue(prop.Name, out int col))
-                    {
-                        var cellValue = worksheet.Cell(row, col).Value;
-                    }
-                }
-                yield return instance;
-            }
         }
     }
 }

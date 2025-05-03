@@ -19,6 +19,7 @@ public class InvoiceExportAsExcelQueryHandler : IRequestHandler<InvoiceExportAsE
     private readonly IInvoiceLogRepository _invoiceLogRepository;
     private readonly IItemRepository _itemRepository;
     private readonly IClientRepository _clientRepository;
+    private readonly IPlanRepository _planRepository; // Added plan repository
     private readonly IUserContextService _userContext;
     private IEnumerable<Invoice> invoices;
 
@@ -28,6 +29,7 @@ public class InvoiceExportAsExcelQueryHandler : IRequestHandler<InvoiceExportAsE
         IUserContextService userContextService,
         IItemRepository itemRepository,
         IClientRepository clientRepository,
+        IPlanRepository planRepository, // Added plan repository
         IExcelService excelService)
     {
         _invoiceRepository = invoiceRepository;
@@ -36,6 +38,7 @@ public class InvoiceExportAsExcelQueryHandler : IRequestHandler<InvoiceExportAsE
         _invoiceLogRepository = invoiceLogRepository;
         _itemRepository = itemRepository;
         _clientRepository = clientRepository;
+        _planRepository = planRepository; // Initialize plan repository
     }
 
     public async Task<Stream> Handle(InvoiceExportAsExcelQuery request, CancellationToken cancellationToken)
@@ -154,6 +157,38 @@ public class InvoiceExportAsExcelQueryHandler : IRequestHandler<InvoiceExportAsE
             summary.Add("Top Client By Count", clientDetails?.Name ?? topClient.Key);
             summary.Add("Top Client Invoice Count", topClient.Count());
         }
+
+        // Plan metrics - new section
+        var plans = await _planRepository.GetAll(cancellationToken);
+        
+        summary.Add("Plan Statistics", "");
+        summary.Add("Total Plans", plans.Count());
+        summary.Add("In Progress Plans", plans.Count(x => x.Status == PlanStatus.InProgress));
+        summary.Add("Planned Plans", plans.Count(x => x.Status == PlanStatus.Planned));
+        summary.Add("Completed Plans", plans.Count(x => x.Status == PlanStatus.Completed));
+        summary.Add("Cancelled Plans", plans.Count(x => x.Status == PlanStatus.Canceled));
+        
+        // Calculate plan value metrics
+        decimal totalPlanValue = plans.Sum(x => x.Amount);
+        summary.Add("Total Plan Value", totalPlanValue.ToString("N2"));
+        
+        // Plans starting this month
+        var currentMonth = DateTime.Today.Month;
+        var currentYear = DateTime.Today.Year;
+        summary.Add("Plans Starting This Month", plans.Count(x => 
+            x.StartDate.Month == currentMonth && 
+            x.StartDate.Year == currentYear));
+            
+        // Plans ending this month
+        summary.Add("Plans Ending This Month", plans.Count(x => 
+            x.EndDate.Month == currentMonth && 
+            x.EndDate.Year == currentYear));
+            
+        // Average plan duration in days
+        var avgDuration = plans.Any() 
+            ? plans.Average(x => (x.EndDate - x.StartDate).TotalDays) 
+            : 0;
+        summary.Add("Average Plan Duration (Days)", Math.Round(avgDuration, 1));
 
         return summary;
     }
