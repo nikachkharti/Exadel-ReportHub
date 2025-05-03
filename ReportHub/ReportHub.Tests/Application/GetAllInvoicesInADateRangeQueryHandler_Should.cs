@@ -3,8 +3,9 @@ using ReportHub.Application.Features.Invoices.Queries;
 using ReportHub.Application.Validators.Exceptions;
 using ReportHub.Infrastructure.Repository;
 using FluentAssertions;
+using ReportHub.Tests.Application.Fixture;
 
-namespace ReportHub.Tests.Application.Fixture
+namespace ReportHub.Tests.Application
 {
     public class GetAllInvoicesInADateRangeQueryHandler_Should : IClassFixture<MongoDbFixture>
     {

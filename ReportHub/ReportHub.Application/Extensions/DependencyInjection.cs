@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using ReportHub.Application.Contracts.Notification;
+using ReportHub.Application.Features.Notification;
 using ReportHub.Application.Validators;
 using ReportHub.Application.Workers;
 namespace ReportHub.Application.Extensions;
@@ -21,6 +23,8 @@ public static class DependencyInjection
         services.AddAutoMapper(applicationAssembly);
 
         services.AddHttpContextAccessor();
+
+        services.AddSingleton<IEmailService, EmailService>();
 
         services.AddHostedService<PlanExpireWorker>();
     }
