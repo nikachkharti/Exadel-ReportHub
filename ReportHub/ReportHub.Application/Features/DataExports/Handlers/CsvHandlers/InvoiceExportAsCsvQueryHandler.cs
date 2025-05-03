@@ -71,7 +71,7 @@ public class InvoiceExportAsCsvQueryHandler : IRequestHandler<InvoiceExportAsCsv
         }
     }
 
-    private IReadOnlyDictionary<string, object> GetSummary(IEnumerable<Domain.Entities.Invoice> invoices)
+    private IReadOnlyDictionary<string, object> GetSummary(IEnumerable<Invoice> invoices)
     {
         return new Dictionary<string, object>
         {

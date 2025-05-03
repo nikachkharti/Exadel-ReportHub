@@ -63,21 +63,26 @@ namespace ReportHub.Infrastructure.Services.FileServices
         {
             var memoryStream = new MemoryStream();
             using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Invoices");
 
-            int row = 1;
+            // Add main invoice summary sheet
+            var summarySheet = workbook.Worksheets.Add("All Invoices");
+            await WriteInvoicesSummaryTableAsync(summarySheet, invoices);
 
+            // Create individual invoice sheets
+            int sheetIndex = 1;
             foreach (var invoice in invoices)
             {
                 if (token.IsCancellationRequested) break;
-                row = await WriteInvoiceSectionAsync(worksheet, invoice, row);
-                row += 2; // Space between invoices
+                var invoiceSheet = workbook.Worksheets.Add($"Invoice {sheetIndex}");
+                await WriteInvoiceTableAsync(invoiceSheet, invoice);
+                sheetIndex++;
             }
 
+            // Add statistics sheet if available
             if (statistics?.Count > 0)
             {
                 var statsSheet = workbook.Worksheets.Add("Statistics");
-                WriteStatistics(statsSheet, statistics);
+                WriteStatisticsTable(statsSheet, statistics);
             }
 
             workbook.SaveAs(memoryStream);
@@ -92,14 +97,16 @@ namespace ReportHub.Infrastructure.Services.FileServices
         {
             var memoryStream = new MemoryStream();
             using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Invoice");
 
-            await WriteInvoiceSectionAsync(worksheet, invoice, startRow: 1);
+            // Main invoice sheet
+            var worksheet = workbook.Worksheets.Add("Invoice Details");
+            await WriteInvoiceTableAsync(worksheet, invoice);
 
+            // Stats sheet if available
             if (statistics?.Count > 0)
             {
                 var statsSheet = workbook.Worksheets.Add("Statistics");
-                WriteStatistics(statsSheet, statistics);
+                WriteStatisticsTable(statsSheet, statistics);
             }
 
             workbook.SaveAs(memoryStream);
@@ -107,91 +114,132 @@ namespace ReportHub.Infrastructure.Services.FileServices
             return memoryStream;
         }
 
-        private async Task<int> WriteInvoiceSectionAsync(
+        private async Task WriteInvoicesSummaryTableAsync(
             IXLWorksheet sheet,
-            Invoice invoice,
-            int startRow)
+            IEnumerable<Invoice> invoices)
+        {
+            // Create header row
+            string[] headers = new[] {
+                "Invoice ID", "Client", "Customer", "Issue Date",
+                "Due Date", "Payment Status", "Currency", "Total Amount"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                sheet.Cell(1, i + 1).Value = headers[i];
+            }
+
+            int row = 2;
+            foreach (var invoice in invoices)
+            {
+                var client = await _clientRepo.Get(c => c.Id == invoice.ClientId);
+                var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId);
+                var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
+                decimal totalAmount = items.Sum(i => i.Price);
+
+                // Fill data row
+                sheet.Cell(row, 1).Value = invoice.Id;
+                sheet.Cell(row, 2).Value = client?.Name ?? "N/A";
+                sheet.Cell(row, 3).Value = customer?.Name ?? "N/A";
+                sheet.Cell(row, 4).Value = invoice.IssueDate.ToString("yyyy-MM-dd");
+                sheet.Cell(row, 5).Value = invoice.DueDate.ToString("yyyy-MM-dd");
+                sheet.Cell(row, 6).Value = invoice.PaymentStatus;
+                sheet.Cell(row, 7).Value = invoice.Currency;
+                sheet.Cell(row, 8).Value = totalAmount;
+
+                row++;
+            }
+
+            // Format as table
+            var range = sheet.Range(1, 1, row - 1, headers.Length);
+            var table = range.CreateTable();
+            sheet.Columns().AdjustToContents();
+        }
+
+        private async Task WriteInvoiceTableAsync(
+            IXLWorksheet sheet,
+            Invoice invoice)
         {
             var client = await _clientRepo.Get(c => c.Id == invoice.ClientId);
             var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId);
             var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
 
-            // Invoice Title
-            sheet.Cell(startRow, 1).Value = $"Invoice #{invoice.Id}";
-            sheet.Cell(startRow, 1).Style.Font.SetBold().Font.SetFontSize(16);
-            sheet.Range(startRow, 1, startRow, 4).Merge().Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
-            startRow += 2;
+            // Table 1: Invoice Header Information
+            sheet.Cell(1, 1).Value = "Invoice Information";
 
-            // Invoice Details
-            var details = new (string Label, string Value)[]
+            string[,] headerData = new string[,]
             {
-                ("Customer", customer?.Name ?? "N/A"),
-                ("Client", client?.Name ?? "N/A"),
-                ("Issue Date", invoice.IssueDate.ToString("dd MMM yyyy")),
-                ("Due Date", invoice.DueDate.ToString("dd MMM yyyy")),
-                ("Payment Status", invoice.PaymentStatus)
+                { "Invoice ID", invoice.Id },
+                { "Client", client?.Name ?? "N/A" },
+                { "Customer", customer?.Name ?? "N/A" },
+                { "Issue Date", invoice.IssueDate.ToString("yyyy-MM-dd") },
+                { "Due Date", invoice.DueDate.ToString("yyyy-MM-dd") },
+                { "Payment Status", invoice.PaymentStatus }
             };
 
-            foreach (var (label, value) in details)
+            for (int i = 0; i < headerData.GetLength(0); i++)
             {
-                sheet.Cell(startRow, 1).Value = label;
-                sheet.Cell(startRow, 1).Style.Font.SetBold();
-                sheet.Cell(startRow, 2).Value = value;
-                startRow++;
+                sheet.Cell(i + 2, 1).Value = headerData[i, 0];
+                sheet.Cell(i + 2, 2).Value = headerData[i, 1];
             }
 
-            startRow++;
+            // Table 2: Invoice Items
+            int itemStartRow = headerData.GetLength(0) + 4;
+            sheet.Cell(itemStartRow, 1).Value = "Invoice Items";
 
-            // Items Table
-            var itemsHeader = new[] { "Item Name", "Quantity", "Price", "Total" };
-            for (int col = 0; col < itemsHeader.Length; col++)
+            string[] itemHeaders = new[] { "Item Name", "Quantity", "Price", "Total" };
+            for (int i = 0; i < itemHeaders.Length; i++)
             {
-                sheet.Cell(startRow, col + 1).Value = itemsHeader[col];
-                sheet.Cell(startRow, col + 1).Style.Fill.SetBackgroundColor(XLColor.LightGray);
-                sheet.Cell(startRow, col + 1).Style.Font.SetBold();
-                sheet.Cell(startRow, col + 1).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                sheet.Cell(itemStartRow + 1, i + 1).Value = itemHeaders[i];
             }
-            startRow++;
 
-            decimal totalAmount = 0m;
+            int itemRow = itemStartRow + 2;
+            decimal totalAmount = 0;
             foreach (var item in items)
             {
-                sheet.Cell(startRow, 1).Value = item.Name;
-                sheet.Cell(startRow, 2).Value = 1;
-                sheet.Cell(startRow, 3).Value = $"{item.Price:N2} {invoice.Currency}";
-                sheet.Cell(startRow, 4).Value = $"{item.Price:N2} {invoice.Currency}";
+                sheet.Cell(itemRow, 1).Value = item.Name;
+                sheet.Cell(itemRow, 2).Value = 1;
+                sheet.Cell(itemRow, 3).Value = item.Price;
+                sheet.Cell(itemRow, 4).Value = item.Price;
+
                 totalAmount += item.Price;
-                startRow++;
+                itemRow++;
             }
 
-            // Total
-            sheet.Cell(startRow, 1).Value = "Total Amount:";
-            sheet.Cell(startRow, 1).Style.Font.SetBold();
-            sheet.Range(startRow, 1, startRow, 3).Merge().Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right);
-            sheet.Cell(startRow, 4).Value = $"{totalAmount:N2} {invoice.Currency}";
-            sheet.Cell(startRow, 4).Style.Font.SetBold();
-            sheet.Cell(startRow, 4).Style.Fill.SetBackgroundColor(XLColor.CornflowerBlue);
-            startRow++;
+            // Total row
+            sheet.Cell(itemRow + 1, 3).Value = "Total Amount:";
+            sheet.Cell(itemRow + 1, 4).Value = totalAmount;
+            sheet.Cell(itemRow + 2, 4).Value = $"({invoice.Currency})";
+
+            // Format as tables
+            var headerRange = sheet.Range(2, 1, headerData.GetLength(0) + 1, 2);
+            var headerTable = headerRange.CreateTable("InvoiceInfo");
+
+            var itemsRange = sheet.Range(itemStartRow + 1, 1, itemRow - 1, itemHeaders.Length);
+            var itemsTable = itemsRange.CreateTable("InvoiceItems");
 
             sheet.Columns().AdjustToContents();
-
-            return startRow;
         }
 
-        private static void WriteStatistics(
+        private static void WriteStatisticsTable(
             IXLWorksheet sheet,
             IReadOnlyDictionary<string, object> statistics)
         {
-            sheet.Cell(1, 1).Value = "Statistic";
-            sheet.Cell(1, 2).Value = "Value";
-            sheet.Row(1).Style.Font.SetBold();
-            int row = 2;
+            sheet.Cell(1, 1).Value = "Statistics";
+
+            sheet.Cell(2, 1).Value = "Metric";
+            sheet.Cell(2, 2).Value = "Value";
+
+            int row = 3;
             foreach (var kv in statistics)
             {
                 sheet.Cell(row, 1).Value = kv.Key;
                 sheet.Cell(row, 2).Value = kv.Value?.ToString() ?? "N/A";
                 row++;
             }
+
+            var range = sheet.Range(2, 1, row - 1, 2);
+            var table = range.CreateTable("StatisticsTable");
             sheet.Columns().AdjustToContents();
         }
 
@@ -228,7 +276,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
                             }
                             catch
                             {
-                                
+                                // Silently continue if conversion fails
                             }
                         }
                     }
