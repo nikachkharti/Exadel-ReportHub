@@ -14,5 +14,7 @@ namespace ReportHub.Domain.Entities
         public string CountryId { get; set; }
         [BsonRepresentation(BsonType.ObjectId)]
         public string ClientId { get; set; }
+        public bool AutoReportEnabled { get; set; }
+        public DateTime? AutoReportTime { get; set; }
     }
 }

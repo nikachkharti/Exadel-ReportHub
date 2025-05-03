@@ -13,13 +13,14 @@ public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedServi
             var scope = serviceProvider.CreateScope();
 
             await SeedClientsAsync(scope, cancellationToken);
+            await SeedCustomersAsync(scope, cancellationToken);
             await SeedCountriesAndCurrenciesAsync(scope, cancellationToken);
             await SeedItemsAsync(scope, cancellationToken);
             await SeedInvoiesAsync(scope, cancellationToken);
             await SeedPlansAsync(scope, cancellationToken);
             await SeedSalesAsync(scope, cancellationToken);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Log.Error($"Data seeding failed: {ex.Message}");
         }
