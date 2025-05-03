@@ -24,6 +24,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
 
+        services.AddSingleton<ISmtpClientWrapper, SmtpClientWrapper>();
         services.AddSingleton<IEmailService, EmailService>();
 
         services.AddHostedService<PlanExpireWorker>();

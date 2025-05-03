@@ -2,11 +2,10 @@
 using MimeKit.Text;
 using MimeKit;
 using ReportHub.Application.Contracts.Notification;
-using MailKit.Net.Smtp;
 
 namespace ReportHub.Application.Features.Notification
 {
-    public class EmailService(IConfiguration configuration) : IEmailService
+    public class EmailService(IConfiguration configuration, ISmtpClientWrapper smtpClient) : IEmailService
     {
         public async Task Send(string to, string subject, string body)
         {
@@ -16,18 +15,17 @@ namespace ReportHub.Application.Features.Notification
             email.Subject = subject;
             email.Body = new TextPart(TextFormat.Html) { Text = body };
 
-            using var smtp = new SmtpClient();
-            await smtp.ConnectAsync(
+            await smtpClient.ConnectAsync(
                 configuration["EmailSettings:SmtpServer"],
                 int.Parse(configuration["EmailSettings:Port"]),
                 bool.Parse(configuration["EmailSettings:UseSsl"])
             );
-            await smtp.AuthenticateAsync(
+            await smtpClient.AuthenticateAsync(
                 configuration["EmailSettings:Username"],
                 configuration["EmailSettings:Password"]
             );
-            await smtp.SendAsync(email);
-            await smtp.DisconnectAsync(true);
+            await smtpClient.SendAsync(email);
+            await smtpClient.DisconnectAsync(true);
         }
     }
 }
