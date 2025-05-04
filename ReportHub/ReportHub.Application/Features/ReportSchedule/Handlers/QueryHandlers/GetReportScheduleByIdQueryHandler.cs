@@ -8,7 +8,7 @@ using ReportHub.Application.Validators.Exceptions;
 namespace ReportHub.Application.Features.ReportSchedule.Handlers.QueryHandlers
 {
     public class GetReportScheduleByIdQueryHandler
-        (IReportScheduleRepository reportScheduleRepository, ICustomerRepository customerRepository, IMapper mapper)
+        (IReportScheduleRepository reportScheduleRepository, IMapper mapper)
         : IRequestHandler<GetReportScheduleByIdQuery, ReportScheduleForGettingDto>
     {
         public async Task<ReportScheduleForGettingDto> Handle(GetReportScheduleByIdQuery request, CancellationToken cancellationToken)
