@@ -11,4 +11,5 @@ public class Currency : SoftDeletion
     public string Code { get; set; }
     [BsonRepresentation(BsonType.ObjectId)]
     public string CountryId { get; set; }
+    public bool EcbSupport {  get; set; } = false;
 }
