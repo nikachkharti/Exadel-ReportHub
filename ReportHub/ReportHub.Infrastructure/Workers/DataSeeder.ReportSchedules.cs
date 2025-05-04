@@ -37,7 +37,8 @@ namespace ReportHub.Infrastructure.Workers
                     Id = "68172ddef0120544a40098dc",
                     CustomerId = "67fa2d8114e2389cd8064458", // Bill Butcher
                     IsDeleted = false,
-                    CronExpression = "0 0 9 ? * MON", //Every Monday at 9:00 AM
+                    //CronExpression = "0 0 9 ? * MON", //Every Monday at 9:00 AM
+                    CronExpression = "0/10 * * * * ?", //Every 10 second
                     IsActive = false,
                     Format = ReportFormat.CSV
                 },
