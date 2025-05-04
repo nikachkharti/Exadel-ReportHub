@@ -25,6 +25,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
 
+        //Quartz
         services.AddQuartz(q =>
         {
             q.UseJobFactory<MicrosoftDependencyInjectionJobFactory>();
@@ -47,8 +48,5 @@ public static class DependencyInjection
 
         services.AddSingleton<ISmtpClientWrapper, SmtpClientWrapper>();
         services.AddSingleton<IEmailService, EmailService>();
-
-
-        //services.AddHostedService<PlanExpireWorker>();
     }
 }
