@@ -26,7 +26,7 @@ public class GetInvoicesByIdQueryHandler : BaseFeature, IRequestHandler<GetInvoi
 
         var invoce = await _invoiceRepository.Get(i => i.Id == request.Id);
 
-        if(invoce is null)
+        if (invoce is null)
         {
             throw new NotFoundException($"There is no ivoice with id {request.Id}");
         }

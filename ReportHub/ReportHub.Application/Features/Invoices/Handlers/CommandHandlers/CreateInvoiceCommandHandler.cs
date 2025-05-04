@@ -51,6 +51,12 @@ public class CreateInvoiceCommandHandler : BaseFeature, IRequestHandler<CreateIn
 
         var customer = await _customerRepository.Get(c => c.Id == request.CustomerId);
         var customerCurrency = await _currencyRepository.Get(c => c.CountryId == customer.CountryId);
+        if (customerCurrency != null)
+            throw new NotFoundException("Customer currency not found.");
+
+        if (!customerCurrency.EcbSupport)
+            throw new BadRequestException("Currency is not supported.");
+
         var totalAmount = 0m;
         foreach (var item in items)
         {
