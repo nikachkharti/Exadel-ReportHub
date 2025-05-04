@@ -3,34 +3,36 @@ using ReportHub.Application.Contracts.RepositoryContracts;
 
 namespace ReportHub.Application.Workers
 {
-    public class DynamicReportScheduleJob(IReportScheduleRepository reportScheduleRepository) : IJob
+    public class DynamicReportScheduleJob(
+        IReportScheduleRepository reportScheduleRepository,
+        ISchedulerFactory schedulerFactory) : IJob
     {
         public async Task Execute(IJobExecutionContext context)
         {
-            var reportSchedules = await reportScheduleRepository.GetAll(/*r => r.IsActive*/);
+            var scheduler = await schedulerFactory.GetScheduler();
+            var reportSchedules = await reportScheduleRepository.GetAll();
 
-            if (reportSchedules.Any())
+            foreach (var schedule in reportSchedules/*.Where(s => s.IsActive)*/)
             {
-                foreach (var schedule in reportSchedules)
-                {
-                    // each schedule has this data format,
-                    // I want to execute background job independently for each
-                    // schedule and send notification on email. Each of these jobs should be trigerred independently
-                    // based on their own cron expression. you can miss actual implementation of email sending service just focus on jobs
+                var jobKey = new JobKey($"ExecuteReportJob_{schedule.CustomerId}_{schedule.Id}");
 
-                    /*
-                     {
-                          "_id": {
-                            "$oid": "68172ddef0120544a40098dc"
-                          },
-                          "IsDeleted": false,
-                          "CustomerId": "67fa2d8114e2389cd8064458",
-                          "CronExpression": "0 0 9 ? * MON",
-                          "Format": 0,
-                          "IsActive": false
-                        }
-                     */
-                }
+                if (await scheduler.CheckExists(jobKey))
+                    continue;
+
+                var jobDetail = JobBuilder.Create<ExecuteReportJob>()
+                    .WithIdentity(jobKey)
+                    .UsingJobData("CustomerId", schedule.CustomerId)
+                    .UsingJobData("ReportId", schedule.Id.ToString())
+                    .StoreDurably()
+                    .Build();
+
+                var trigger = TriggerBuilder.Create()
+                    .WithIdentity($"Trigger_{schedule.CustomerId}_{schedule.Id}")
+                    .WithCronSchedule(schedule.CronExpression)
+                    .ForJob(jobDetail)
+                    .Build();
+
+                await scheduler.ScheduleJob(jobDetail, trigger);
             }
         }
     }

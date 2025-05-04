@@ -31,25 +31,29 @@ public static class DependencyInjection
         {
             q.UseJobFactory<MicrosoftDependencyInjectionJobFactory>();
 
-            var planExpireJobKey = new JobKey("PlanExpireJob");
+            // Schedule the recurring job to scan all dynamic report schedules
             var dynamicReportScheduleJobKey = new JobKey("DynamicReportScheduleJob");
+            var planExpireJobKey = new JobKey("PlanExpireJob");
 
-            q.AddJob<PlanExpireJob>(opts => opts.WithIdentity(planExpireJobKey));
             q.AddJob<DynamicReportScheduleJob>(opts => opts.WithIdentity(dynamicReportScheduleJobKey));
+            q.AddTrigger(opts => opts
+                .ForJob(dynamicReportScheduleJobKey)
+                .WithIdentity("DynamicReportScheduleTrigger")
+                .StartNow()
+            );
 
+            q.AddJob<PlanExpireJob>(opts => opts.WithIdentity(planExpireJobKey)); // optional
             q.AddTrigger(opts => opts
                 .ForJob(planExpireJobKey)
                 .WithIdentity("PlanExpireTrigger")
                 .WithCronSchedule("0 0 * * * ?") // Every hour
             );
 
-            q.AddTrigger(opts => opts
-                .ForJob(dynamicReportScheduleJobKey)
-                .WithIdentity("DynamicReportScheduleJob")
-                .StartNow() //When app starts
-            );
+            // Register the job to allow dynamic creation (no trigger here)
+            q.AddJob<ExecuteReportJob>(opts => opts.StoreDurably());
         });
 
+        // Quartz Hosted Service
         services.AddQuartzHostedService(options =>
         {
             options.WaitForJobsToComplete = true;
