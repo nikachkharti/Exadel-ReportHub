@@ -18,6 +18,7 @@ public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedServi
             await SeedInvoiesAsync(scope, cancellationToken);
             await SeedPlansAsync(scope, cancellationToken);
             await SeedSalesAsync(scope, cancellationToken);
+            await AddEcbSupport(scope, cancellationToken);
         }
         catch(Exception ex)
         {

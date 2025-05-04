@@ -199,5 +199,14 @@ namespace ReportHub.API.Controllers
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
+
+        [HttpGet("revenue")]
+        [Authorize]
+        public async Task<IActionResult> GetRevenue([FromQuery] GetRevenueInRangeQuery query)
+        {
+            var result = await mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
     }
 }
