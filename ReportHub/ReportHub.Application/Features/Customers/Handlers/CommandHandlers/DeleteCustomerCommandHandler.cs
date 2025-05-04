@@ -7,7 +7,7 @@ using ReportHub.Application.Validators.Exceptions;
 
 namespace ReportHub.Application.Features.Customers.Handlers.CommandHandlers
 {
-    public class DeleteCustomerCommandHandler(ICustomerRepository customerRepository, IMapper mapper, IRequestContextService requestContext)
+    public class DeleteCustomerCommandHandler(ICustomerRepository customerRepository, IRequestContextService requestContext)
         : BaseFeature(requestContext), IRequestHandler<DeleteCustomerCommand, string>
     {
         public async Task<string> Handle(DeleteCustomerCommand request, CancellationToken cancellationToken)

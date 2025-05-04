@@ -19,7 +19,6 @@ namespace ReportHub.Domain.Entities
         /// CSV - 0 Excel - 1 PDF - 2
         /// </summary>
         public ReportFormat Format { get; set; }
-        public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
     }
 }
