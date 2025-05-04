@@ -22,8 +22,8 @@ namespace ReportHub.Application.Workers
 
             if (customer != null)
             {
-                Log.Information($"[ExecuteReportJob] Email sending process started for {customer.Email}");
                 await emailService.Send(to: customer.Email, "TEST", "TEST");
+                Log.Information($"[ExecuteReportJob] Email sending process completed for {customer.Email}");
             }
 
             await Task.CompletedTask;
