@@ -12,6 +12,13 @@ public partial class DataSeeder(IServiceProvider serviceProvider) : IJob
         {
             using var scope = serviceProvider.CreateScope();
 
+            await SeedClientsAsync(scope, cancellationToken);
+            await SeedCountriesAndCurrenciesAsync(scope, cancellationToken);
+            await SeedItemsAsync(scope, cancellationToken);
+            await SeedInvoiesAsync(scope, cancellationToken);
+            await SeedPlansAsync(scope, cancellationToken);
+            await SeedSalesAsync(scope, cancellationToken);
+            await AddEcbSupport(scope, cancellationToken);
             await SeedClientsAsync(scope, context.CancellationToken);
             await SeedCustomersAsync(scope, context.CancellationToken);
             await SeedItemsAsync(scope, context.CancellationToken);
