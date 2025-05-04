@@ -5,6 +5,7 @@ using Quartz.Simpl;
 using ReportHub.Application.Contracts.Notification;
 using ReportHub.Application.Features.Notification;
 using ReportHub.Application.Validators;
+using ReportHub.Application.Workers;
 namespace ReportHub.Application.Extensions;
 
 public static class DependencyInjection
@@ -31,13 +32,21 @@ public static class DependencyInjection
             q.UseJobFactory<MicrosoftDependencyInjectionJobFactory>();
 
             var planExpireJobKey = new JobKey("PlanExpireJob");
+            var dynamicReportScheduleJobKey = new JobKey("DynamicReportScheduleJob");
 
             q.AddJob<PlanExpireJob>(opts => opts.WithIdentity(planExpireJobKey));
+            q.AddJob<DynamicReportScheduleJob>(opts => opts.WithIdentity(dynamicReportScheduleJobKey));
 
             q.AddTrigger(opts => opts
                 .ForJob(planExpireJobKey)
                 .WithIdentity("PlanExpireTrigger")
                 .WithCronSchedule("0 0 * * * ?") // Every hour
+            );
+
+            q.AddTrigger(opts => opts
+                .ForJob(dynamicReportScheduleJobKey)
+                .WithIdentity("DynamicReportScheduleJob")
+                .StartNow() //When app starts
             );
         });
 
@@ -46,6 +55,8 @@ public static class DependencyInjection
             options.WaitForJobsToComplete = true;
         });
 
+
+        //Custom Services
         services.AddSingleton<ISmtpClientWrapper, SmtpClientWrapper>();
         services.AddSingleton<IEmailService, EmailService>();
     }
