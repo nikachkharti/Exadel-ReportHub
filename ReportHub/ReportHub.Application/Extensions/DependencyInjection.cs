@@ -61,7 +61,7 @@ public static class DependencyInjection
 
 
         //Custom Services
-        services.AddSingleton<ISmtpClientWrapper, SmtpClientWrapper>();
-        services.AddSingleton<IEmailService, EmailService>();
+        services.AddTransient<ISmtpClientWrapper, SmtpClientWrapper>();
+        services.AddTransient<IEmailService, EmailService>();
     }
 }
