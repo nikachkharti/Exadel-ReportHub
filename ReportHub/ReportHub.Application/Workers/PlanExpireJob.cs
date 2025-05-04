@@ -3,15 +3,8 @@ using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Domain.Entities;
 using Serilog;
 
-public class PlanExpireJob : IJob
+public class PlanExpireJob(IPlanRepository planRepository) : IJob
 {
-    private readonly IPlanRepository _planRepository;
-
-    public PlanExpireJob(IPlanRepository planRepository)
-    {
-        _planRepository = planRepository;
-    }
-
     public async Task Execute(IJobExecutionContext context)
     {
         try
@@ -20,7 +13,7 @@ public class PlanExpireJob : IJob
 
             var now = DateTime.UtcNow;
 
-            var expiredPlans = await _planRepository.GetAll(
+            var expiredPlans = await planRepository.GetAll(
                 p => p.Status == PlanStatus.InProgress && p.EndDate <= now,
                 context.CancellationToken
             );
@@ -29,7 +22,7 @@ public class PlanExpireJob : IJob
             {
                 foreach (var plan in expiredPlans)
                 {
-                    await _planRepository.UpdateSingleField(
+                    await planRepository.UpdateSingleField(
                         p => p.Status == PlanStatus.InProgress && p.EndDate <= now,
                         p => p.Status,
                         PlanStatus.Canceled,
@@ -42,7 +35,7 @@ public class PlanExpireJob : IJob
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "Error occurred in PlanExpireJob.");
+            Log.Error(ex, $"Plan expire job failed: {ex.Message}");
         }
     }
 }
