@@ -10,6 +10,7 @@ using ReportHub.Infrastructure.Services.IdentityServices;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Infrastructure.Services.CurrencyServices;
 using ReportHub.Infrastructure.Workers;
+using Quartz;
 
 namespace ReportHub.Infrastructure
 {
@@ -50,7 +51,24 @@ namespace ReportHub.Infrastructure
 
             services.AddScoped<IClientRoleRepository, ClientRoleRepository>();
 
-            services.AddHostedService<DataSeeder>();
+            //Quartz
+            services.AddQuartz(q =>
+            {
+                var dataSeedJobKey = new JobKey("dataSeedJobKey");
+
+                q.AddJob<DataSeeder>(opts => opts.WithIdentity(dataSeedJobKey));
+
+                q.AddTrigger(opts => opts
+                    .ForJob(dataSeedJobKey)
+                    .WithIdentity("DataSeederTrigger")
+                    .StartNow()
+                    .WithSimpleSchedule(x => x.WithRepeatCount(0)) // Runs once
+                );
+            });
+
+            services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
+
 
             return services;
         }
