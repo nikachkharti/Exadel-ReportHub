@@ -10,6 +10,8 @@ using ReportHub.Application.Features.Items.Commands;
 using ReportHub.Application.Features.Items.DTOs;
 using ReportHub.Application.Features.Plans.Commands;
 using ReportHub.Application.Features.Plans.DTOs;
+using ReportHub.Application.Features.ReportSchedule.Commands;
+using ReportHub.Application.Features.ReportSchedule.DTOs;
 using ReportHub.Application.Features.Sale.Commands;
 using ReportHub.Application.Features.Sale.DTOs;
 using ReportHub.Domain.Entities;
@@ -175,6 +177,30 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.InvoiceId, options => options.MapFrom(src => src.InvoiceId))
             .ForMember(dest => dest.TimeStamp, options => options.MapFrom(src => src.TimeStamp))
             .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status));
+
+        #endregion
+
+
+        #region REPORTSCHEDULE
+
+        CreateMap<Domain.Entities.ReportSchedule, ReportScheduleForGettingDto>()
+            .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CustomerId, options => options.MapFrom(src => src.CustomerId))
+            .ForMember(dest => dest.CronExpression, options => options.MapFrom(src => src.CronExpression))
+            .ForMember(dest => dest.Format, options => options.MapFrom(src => src.Format))
+            .ForMember(dest => dest.IsActive, options => options.MapFrom(src => src.IsActive));
+
+        CreateMap<CreateReportScheduleCommand, Domain.Entities.ReportSchedule>()
+            .ForMember(dest => dest.CustomerId, options => options.MapFrom(src => src.CustomerId))
+            .ForMember(dest => dest.CronExpression, options => options.MapFrom(src => src.CronExpression))
+            .ForMember(dest => dest.Format, options => options.MapFrom(src => src.Format))
+            .ForMember(dest => dest.IsActive, options => options.MapFrom(src => src.IsActive));
+
+        CreateMap<UpdateReportScheduleCommand, Domain.Entities.ReportSchedule>()
+            .ForMember(dest => dest.CustomerId, options => options.MapFrom(src => src.CustomerId))
+            .ForMember(dest => dest.CronExpression, options => options.MapFrom(src => src.CronExpression))
+            .ForMember(dest => dest.Format, options => options.MapFrom(src => src.Format))
+            .ForMember(dest => dest.IsActive, options => options.MapFrom(src => src.IsActive));
 
         #endregion
     }

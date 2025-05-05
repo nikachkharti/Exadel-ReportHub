@@ -4,6 +4,12 @@ using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.DataExports.Queries.CsvQueries;
 using ReportHub.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ReportHub.Application.Features.DataExports.Handlers.CsvHandlers;
 
@@ -13,18 +19,29 @@ public class InvoiceExportAsCsvQueryHandler : IRequestHandler<InvoiceExportAsCsv
     private readonly IInvoiceLogRepository _invoiceLogRepository;
     private readonly IUserContextService _userContext;
     private readonly ICsvService _csvService;
+    private readonly IItemRepository _itemRepository;
+    private readonly IClientRepository _clientRepository;
+    private readonly IPlanRepository _planRepository;
     private IEnumerable<Invoice> invoices;
+
     public InvoiceExportAsCsvQueryHandler(
-            IInvoiceRepository invoiceRepository,
-            ICsvService csvService,
-            IInvoiceLogRepository invoiceLogRepository,
-            IUserContextService userContext)
+        IInvoiceRepository invoiceRepository,
+        IInvoiceLogRepository invoiceLogRepository,
+        IUserContextService userContext,
+        IItemRepository itemRepository,
+        IClientRepository clientRepository,
+        IPlanRepository planRepository,
+        ICsvService csvService)
     {
         _invoiceRepository = invoiceRepository;
         _invoiceLogRepository = invoiceLogRepository;
         _csvService = csvService;
         _userContext = userContext;
+        _itemRepository = itemRepository;
+        _clientRepository = clientRepository;
+        _planRepository = planRepository;
     }
+
     public async Task<Stream> Handle(InvoiceExportAsCsvQuery request, CancellationToken cancellationToken)
     {
         var authenticatedUserId = _userContext.GetUserId();
@@ -32,7 +49,7 @@ public class InvoiceExportAsCsvQueryHandler : IRequestHandler<InvoiceExportAsCsv
         try
         {
             invoices = await _invoiceRepository.GetAll(cancellationToken);
-            var summary = GetSummary(invoices);
+            var summary = await GetEnhancedSummary(invoices, cancellationToken);
 
             if (invoices.Any())
             {
@@ -71,15 +88,102 @@ public class InvoiceExportAsCsvQueryHandler : IRequestHandler<InvoiceExportAsCsv
         }
     }
 
-    private IReadOnlyDictionary<string, object> GetSummary(IEnumerable<Domain.Entities.Invoice> invoices)
+    private async Task<IReadOnlyDictionary<string, object>> GetEnhancedSummary(
+        IEnumerable<Invoice> invoices,
+        CancellationToken cancellationToken)
     {
-        return new Dictionary<string, object>
+        var summary = new Dictionary<string, object>
         {
-            { "All Statistics", ""},
-            { "TotalInvoices", invoices.Count() },
-            { "Paid" , invoices.Where(x => x.PaymentStatus.Equals("Paid")).Count() },
-            { "Pending", invoices.Where(x => x.PaymentStatus.Equals("Pending")).Count() },
-            { "Overdue", invoices.Where(x => x.PaymentStatus.Equals("Overdue")).Count() }
+            { "Invoice Summary", "" },
+            { "Total Invoices", invoices.Count() },
+            { "Paid", invoices.Count(x => x.PaymentStatus.Equals("Paid")) },
+            { "Pending", invoices.Count(x => x.PaymentStatus.Equals("Pending")) },
+            { "Overdue", invoices.Count(x => x.PaymentStatus.Equals("Overdue")) },
+            { "Time-Based Metrics", "" },
+            { "Created Today", invoices.Count(x => x.IssueDate.Date == DateTime.Today) },
+            { "Due This Week", invoices.Count(x =>
+                (x.DueDate - DateTime.Today).TotalDays <= 7 &&
+                (x.DueDate - DateTime.Today).TotalDays >= 0 &&
+                x.PaymentStatus != "Paid") },
+            { "Overdue By >30 Days", invoices.Count(x =>
+                (DateTime.Today - x.DueDate).TotalDays > 30 &&
+                x.PaymentStatus != "Paid") }
         };
+
+        // Financial metrics
+        decimal totalValue = 0;
+        decimal paidValue = 0;
+        decimal pendingValue = 0;
+        decimal overdueValue = 0;
+
+        foreach (var invoice in invoices)
+        {
+            var items = await _itemRepository.GetAll(i => invoice.ItemIds.Contains(i.Id), cancellationToken);
+            decimal invoiceTotal = items.Sum(i => i.Price);
+
+            totalValue += invoiceTotal;
+
+            switch (invoice.PaymentStatus)
+            {
+                case "Paid":
+                    paidValue += invoiceTotal;
+                    break;
+                case "Pending":
+                    pendingValue += invoiceTotal;
+                    break;
+                case "Overdue":
+                    overdueValue += invoiceTotal;
+                    break;
+            }
+        }
+
+        summary.Add("Financial Metrics", "");
+        summary.Add("Total Invoice Value", totalValue.ToString("N2"));
+        summary.Add("Paid Value", paidValue.ToString("N2"));
+        summary.Add("Pending Value", pendingValue.ToString("N2"));
+        summary.Add("Overdue Value", overdueValue.ToString("N2"));
+
+        // Client metrics
+        var clientGroups = invoices.GroupBy(x => x.ClientId).ToList();
+        summary.Add("Client Metrics", "");
+        summary.Add("Total Clients", clientGroups.Count);
+
+        if (clientGroups.Any())
+        {
+            var topClient = clientGroups.OrderByDescending(g => g.Count()).First();
+            var clientDetails = await _clientRepository.Get(c => c.Id == topClient.Key, cancellationToken);
+            summary.Add("Top Client By Count", clientDetails?.Name ?? topClient.Key);
+            summary.Add("Top Client Invoice Count", topClient.Count());
+        }
+
+        // Plan metrics
+        var plans = await _planRepository.GetAll(cancellationToken);
+
+        summary.Add("Plan Statistics", "");
+        summary.Add("Total Plans", plans.Count());
+        summary.Add("In Progress Plans", plans.Count(x => x.Status == PlanStatus.InProgress));
+        summary.Add("Planned Plans", plans.Count(x => x.Status == PlanStatus.Planned));
+        summary.Add("Completed Plans", plans.Count(x => x.Status == PlanStatus.Completed));
+        summary.Add("Cancelled Plans", plans.Count(x => x.Status == PlanStatus.Canceled));
+
+        decimal totalPlanValue = plans.Sum(x => x.Amount);
+        summary.Add("Total Plan Value", totalPlanValue.ToString("N2"));
+
+        var currentMonth = DateTime.Today.Month;
+        var currentYear = DateTime.Today.Year;
+        summary.Add("Plans Starting This Month", plans.Count(x =>
+            x.StartDate.Month == currentMonth &&
+            x.StartDate.Year == currentYear));
+
+        summary.Add("Plans Ending This Month", plans.Count(x =>
+            x.EndDate.Month == currentMonth &&
+            x.EndDate.Year == currentYear));
+
+        var avgDuration = plans.Any()
+            ? plans.Average(x => (x.EndDate - x.StartDate).TotalDays)
+            : 0;
+        summary.Add("Average Plan Duration (Days)", Math.Round(avgDuration, 1));
+
+        return summary;
     }
 }

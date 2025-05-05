@@ -17,22 +17,59 @@ namespace ReportHub.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class InvoiceController : ControllerBase
+    public class InvoiceController(IMediator _mediator) : ControllerBase
     {
-        private readonly IMediator _mediator;
 
-        public InvoiceController(IMediator mediator)
+        /// <summary>
+        /// Get invoices in a date range, can be filtered by client or customer id
+        /// </summary>
+        /// <param name="startDate">Start date</param>
+        /// <param name="endDate">End date</param>
+        /// <param name="clientId">Client id</param>
+        /// <param name="customerId">Customer id</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortingParameter">Sorting field</param>
+        /// <param name="ascending">Is ascended</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>IActionResult</returns>
+        [HttpGet("date")]
+        public async Task<IActionResult> GetAllInvoicesInADateRange(
+            [FromQuery][Required] DateTime startDate,
+            [FromQuery][Required] DateTime endDate,
+            [FromQuery] string clientId = "",
+            [FromQuery] string customerId = "",
+            [FromQuery] int? pageNumber = 1,
+            [FromQuery] int? pageSize = 10,
+            [FromQuery] string sortingParameter = "",
+            [FromQuery] bool ascending = true,
+            CancellationToken cancellationToken = default)
         {
-            _mediator = mediator;
+            var query = new GetAllInvoicesInADateRangeQuery
+            (
+                startDate,
+                endDate,
+                clientId,
+                customerId,
+                pageNumber,
+                pageSize,
+                sortingParameter,
+                ascending,
+                cancellationToken
+            );
+
+            var result = await _mediator.Send(query, cancellationToken);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
         }
 
 
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Getting all invoices from database
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> GetAllInvoices()
         {
             var query = new GetAllInvoicesQuery();
@@ -43,12 +80,12 @@ namespace ReportHub.API.Controllers
         }
 
 
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Getting invoice from database by Id
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet("{id}")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<ActionResult<InvoiceForGettingDto>> GetById([FromRoute] string id)
         {
             var result = await _mediator.Send(new GetInvoicesByIdQuery(id));
@@ -75,7 +112,6 @@ namespace ReportHub.API.Controllers
         //}
 
 
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Exports invoices to file type user chose
         /// </summary>
@@ -83,6 +119,7 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("export")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> Export([FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
             var query = GetExportingQuery(fileType);
@@ -92,7 +129,6 @@ namespace ReportHub.API.Controllers
 
 
 
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         /// <summary>
         /// Exports specific invoice by id to file type user chose
         /// </summary>
@@ -101,12 +137,15 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>File result</returns>
         [HttpGet("{id}/export")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> ExportById([FromRoute] string id, [FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
             var query = GetExportingQueryById(id, fileType);
             var result = await _mediator.Send(query, cancellationToken);
             return File(result, "application/octet-stream", $"Invoice_{id}{query.Extension}");
         }
+
+
         /// <summary>
         /// Export invoice logs in a specific date range
         /// </summary>
@@ -120,8 +159,8 @@ namespace ReportHub.API.Controllers
         /// <returns>IActionResult</returns>
         [HttpGet("logs")]
         public async Task<IActionResult> ExportLogsInDateRange
-            ([FromForm][Required] DateTime startDate,
-            [FromForm][Required] DateTime endDate,
+            ([FromQuery][Required] DateTime startDate,
+            [FromQuery][Required] DateTime endDate,
             [FromQuery] int? pageNumber = 1,
             [FromQuery] int? pageSize = 10,
             [FromQuery] string sortingParameter = "",
@@ -136,7 +175,6 @@ namespace ReportHub.API.Controllers
 
 
 
-        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         /// <summary>
         /// Export invoice logs of specific user
         /// </summary>
@@ -148,6 +186,7 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>IActionResult</returns>
         [HttpGet("logs/user/{userId}")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> ExportLogsOfUser
             ([FromRoute] string userId,
             [FromQuery] int? pageNumber = 1,
@@ -158,6 +197,16 @@ namespace ReportHub.API.Controllers
         {
             var query = new GetAllInvoiceLogsOfUserQuery(userId, pageNumber, pageSize, sortingParameter, ascending, cancellationToken);
             var result = await _mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
+        [Authorize]
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetStatistics([FromQuery] GetStatistcsQuery query)
+        {
+            var result = await _mediator.Send(query);
+
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }

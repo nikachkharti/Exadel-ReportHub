@@ -18,6 +18,6 @@ public class CountryController(ICountryRepository countryRepository, ICurrencyRe
     [HttpGet("currencies")]
     public async Task<IActionResult> Get()
     {
-        return Ok(await currencyRepository.GetAll());
+        return Ok(await currencyRepository.GetAll(c => c.EcbSupport));
     }
 }

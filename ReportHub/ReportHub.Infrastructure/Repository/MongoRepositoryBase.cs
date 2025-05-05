@@ -19,6 +19,7 @@ namespace ReportHub.Infrastructure.Repository
             _mongoDatabase = client.GetDatabase(settings.DatabaseName);
             _collection = _mongoDatabase.GetCollection<T>(collectionName);
             EnsureIsDeletedFieldExistsAsync().Wait();
+            EnsureEcbSupportFieldExistAsync().Wait();
         }
         private readonly IMongoDatabase _mongoDatabase;
 
@@ -33,6 +34,14 @@ namespace ReportHub.Infrastructure.Repository
                 var filter = Builders<BsonDocument>.Filter.Exists("IsDeleted", false);
                 await col.UpdateManyAsync(filter, update);
             }
+        }
+
+        public async Task EnsureEcbSupportFieldExistAsync()
+        {
+            var col = _mongoDatabase.GetCollection<BsonDocument>("Currency");
+            var update = Builders<BsonDocument>.Update.Set("EcbSupport", false);
+            var filter = Builders<BsonDocument>.Filter.Exists("EcbSupport", false);
+            await col.UpdateManyAsync(filter, update);
         }
 
         #region GET

@@ -41,6 +41,7 @@ public class ExchangeCurrencyService : IExchangeCurrencyService
         var response = await something.GetAsync(uri);
         response.EnsureSuccessStatusCode();
 
+        
         string json = await response.Content.ReadAsStringAsync();
         var data = JsonDocument.Parse(json);
 

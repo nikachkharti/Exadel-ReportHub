@@ -1,32 +1,30 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Quartz;
 using Serilog;
 
 namespace ReportHub.Infrastructure.Workers;
 
-public partial class DataSeeder(IServiceProvider serviceProvider) : IHostedService
+public partial class DataSeeder(IServiceProvider serviceProvider) : IJob
 {
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task Execute(IJobExecutionContext context)
     {
         try
         {
-            var scope = serviceProvider.CreateScope();
+            using var scope = serviceProvider.CreateScope();
 
-            await SeedClientsAsync(scope, cancellationToken);
-            await SeedCountriesAndCurrenciesAsync(scope, cancellationToken);
-            await SeedItemsAsync(scope, cancellationToken);
-            await SeedInvoiesAsync(scope, cancellationToken);
-            await SeedPlansAsync(scope, cancellationToken);
-            await SeedSalesAsync(scope, cancellationToken);
+            await AddEcbSupport(scope, context.CancellationToken);
+            await SeedClientsAsync(scope, context.CancellationToken);
+            await SeedCustomersAsync(scope, context.CancellationToken);
+            await SeedItemsAsync(scope, context.CancellationToken);
+            await SeedInvoiesAsync(scope, context.CancellationToken);
+            await SeedPlansAsync(scope, context.CancellationToken);
+            await SeedSalesAsync(scope, context.CancellationToken);
+            await SeedReportSchedulesAsync(scope, context.CancellationToken);
+            await SeedCountriesAndCurrenciesAsync(scope, context.CancellationToken);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            Log.Error($"Data seeding failed: {ex.Message}");
+            Log.Error(ex, $"Data seeding job failed: {ex.Message}");
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }

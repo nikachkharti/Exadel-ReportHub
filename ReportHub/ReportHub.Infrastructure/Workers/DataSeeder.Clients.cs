@@ -13,7 +13,7 @@ public partial class DataSeeder
         var existingClients = await clientRepository.GetAll(pageNumber: 1, pageSize: 1);
 
         if (existingClients.Any()) return;
-        
+
         var clients = GetClients();
 
         await clientRepository.InsertMultiple(clients, cancellationToken);
