@@ -22,6 +22,7 @@ namespace ReportHub.Application.Workers
 
             if (customer != null)
             {
+                //TODO: Real report !!!
                 await emailService.Send(to: customer.Email, "TEST", "TEST");
                 Log.Information($"[ExecuteReportJob] Email sending process completed for {customer.Email}");
             }
