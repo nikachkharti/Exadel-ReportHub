@@ -18,5 +18,3 @@ public class GetStatisticsQueryValidator : AbstractValidator<GetStatistcsQuery>
             .WithMessage("Currency must be in 3 length code");
     }
 }
-{
-}
