@@ -27,7 +27,7 @@ namespace ReportHub.Infrastructure.Workers
                     Id = "68172ddef0120544a40098db",
                     CustomerId = "67fa2d8114e2389cd8064457", // John Doe
                     IsDeleted = false,
-                    CronExpression = "0 0/15 * * * ?", //Every 15 minutes
+                    CronExpression = "0 0 9 ? * MON", //Every Monday at 9:00 AM
                     //CronExpression = "0/15 * * * * ?", //Every 15 second
                     IsActive = false,
                     Format = ReportFormat.CSV
