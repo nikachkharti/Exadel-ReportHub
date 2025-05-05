@@ -201,6 +201,16 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
+        [Authorize]
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetStatistics([FromQuery] GetStatistcsQuery query)
+        {
+            var result = await _mediator.Send(query);
+
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
         private ExportBaseQuery GetExportingQueryById(string id, FileExportingType fileType)
         {
             return fileType switch
