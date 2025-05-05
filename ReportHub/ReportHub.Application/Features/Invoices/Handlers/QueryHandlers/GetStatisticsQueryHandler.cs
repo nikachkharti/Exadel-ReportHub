@@ -43,7 +43,7 @@ public class GetStatisticsQueryHandler : IRequestHandler<GetStatistcsQuery, Stat
             throw new BadRequestException($"Currency [{request.Currency}] is not supported by the European Central Bank for conversion");
         }
 
-        if(invoices is null || invoices.Any())
+        if(invoices is null || !invoices.Any())
         {
             throw new NotFoundException($"No invoice found with status {request.PaymentStatus}");
         }
