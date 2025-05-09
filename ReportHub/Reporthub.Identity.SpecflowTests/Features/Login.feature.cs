@@ -20,8 +20,8 @@ namespace Reporthub.Identity.SpecflowTests.Features
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [NUnit.Framework.TestFixtureAttribute()]
-    [NUnit.Framework.DescriptionAttribute("Login")]
-    public partial class LoginFeature
+    [NUnit.Framework.DescriptionAttribute("Full Login Flow")]
+    public partial class FullLoginFlowFeature
     {
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
@@ -35,7 +35,8 @@ namespace Reporthub.Identity.SpecflowTests.Features
         public virtual void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "Login", null, ProgrammingLanguage.CSharp, featureTags);
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "Full Login Flow", "  As a user\r\n  I want to log in and switch context\r\n  So that I can access client" +
+                    "-specific data", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -74,16 +75,13 @@ namespace Reporthub.Identity.SpecflowTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Login with different credentials")]
-        [NUnit.Framework.TestCaseAttribute("admin@example.com", "Admin123$", null)]
-        public void LoginWithDifferentCredentials(string username, string password, string[] exampleTags)
+        [NUnit.Framework.DescriptionAttribute("Login with valid credentials")]
+        public void LoginWithValidCredentials()
         {
-            string[] tagsOfScenario = exampleTags;
+            string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("username", username);
-            argumentsOfScenario.Add("password", password);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Login with different credentials", null, tagsOfScenario, argumentsOfScenario, featureTags);
-#line 3
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Login with valid credentials", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 6
   this.ScenarioInitialize(scenarioInfo);
 #line hidden
             if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
@@ -93,14 +91,75 @@ namespace Reporthub.Identity.SpecflowTests.Features
             else
             {
                 this.ScenarioStart();
-#line 4
-    testRunner.Given("the user is on the login page", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line 7
+    testRunner.Given("I have credentials \"admin@example.com\" and \"Admin123$\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 5
-    testRunner.When(string.Format("the user enters username \"{0}\" and password \"{1}\"", username, password), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line 8
+    testRunner.When("I send a login request", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-#line 6
-    testRunner.Then("the user should be logged in successfully", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line 9
+    testRunner.Then("I receive an access token", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Retrieve the list of clients after login")]
+        public void RetrieveTheListOfClientsAfterLogin()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Retrieve the list of clients after login", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 11
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 12
+    testRunner.Given("I have valid credentials and I have received an access token", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 13
+    testRunner.When("I request the list of my clients", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 14
+    testRunner.Then("I receive a list of clients", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Switch context for a client")]
+        public void SwitchContextForAClient()
+        {
+            string[] tagsOfScenario = ((string[])(null));
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Switch context for a client", null, tagsOfScenario, argumentsOfScenario, featureTags);
+#line 16
+  this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            if ((TagHelper.ContainsIgnoreTag(tagsOfScenario) || TagHelper.ContainsIgnoreTag(featureTags)))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 17
+    testRunner.Given("I have valid credentials, I have received an access token, and I have a client ID" +
+                        "", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 18
+    testRunner.When("I send a switch-context request", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+#line hidden
+#line 19
+    testRunner.Then("I receive a token scoped to that client", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
