@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Testing;
+using NUnit.Framework;
 using ReportHub.Identity.Application.Features.UserClients.DTOs;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using System.Threading.Tasks;
-using TechTalk.SpecFlow;
 using Xunit;
 
 namespace Reporthub.Identity.SpecflowTests.StepDefinitions
@@ -60,14 +59,14 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
 
             var body = await response.Content.ReadAsStringAsync();
 
-            Assert.That(response.IsSuccessStatusCode);
+            response.IsSuccessStatusCode.Should().BeTrue();
 
             var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             var accessToken = json.RootElement.GetProperty("access_token").GetString();
             var refreshToken = json.RootElement.GetProperty("refresh_token").GetString();
 
-            Assert.That(accessToken is not null);
-            Assert.That(refreshToken is not null);
+            accessToken.Should().NotBeNullOrEmpty();
+            refreshToken.Should().NotBeNullOrEmpty();
 
             _context["access_token"] = accessToken!;
             _context["refresh_token"] = refreshToken!;
@@ -76,7 +75,6 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
         [Given(@"I have valid credentials and I have received an access token")]
         public void GivenIHaveValidCredentialsAndToken()
         {
-            // Assumes previous login step ran and token is in context
             Assert.That(_context.ContainsKey("access_token"));
         }
 
@@ -94,7 +92,8 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
         public async Task ThenIReceiveClientListAsync()
         {
             var response = (HttpResponseMessage)_context["response"]!;
-            Assert.That(response.IsSuccessStatusCode);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
 
             var body = await response.Content.ReadAsStringAsync();
 
@@ -104,9 +103,10 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
             };
 
             var clients = JsonSerializer.Deserialize<IList<UserClientForGettingDto>>(body, option);
-            
-            Assert.That(clients is not null,"No clients get");
-            Assert.That(clients!.Any(), "No clients get");
+
+            clients.Should().NotBeNull("Should");
+
+            clients.Should().HaveCountGreaterThan(0);
 
             // Take the first client id for next step
             _clientId = clients.Last().Id;
@@ -117,8 +117,8 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
         public void GivenIHaveValidCredentialsWithClient()
         {
             // Ensure all prior steps have been executed successfully
-            Assert.That(_context.ContainsKey("access_token"));
-            Assert.That(_context.ContainsKey("client_id"));
+            _context.ContainsKey("access_token").Should().BeTrue();
+            _context.ContainsKey("client_id").Should().BeTrue();
 
             _httpClient.DefaultRequestHeaders.Authorization =
                new AuthenticationHeaderValue("Bearer", _context["access_token"].ToString());
@@ -148,12 +148,13 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
         public async Task ThenReceiveScopedToken()
         {
             var response = (HttpResponseMessage)_context["response"]!;
-            Assert.That(response.IsSuccessStatusCode);
+            
+            response.IsSuccessStatusCode.Should().BeTrue();
 
             var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             var clientToken = json.RootElement.GetProperty("access_token").GetString();
 
-            Assert.That(clientToken is not null);
+            clientToken.Should().NotBeNullOrEmpty();
         }
     }
 }
