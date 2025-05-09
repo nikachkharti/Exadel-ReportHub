@@ -1,4 +1,5 @@
 using ReportHub.Web.Components;
+using ReportHub.Web.Extensions;
 
 namespace ReportHub.Web
 {
@@ -8,8 +9,10 @@ namespace ReportHub.Web
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
+            builder.AddRazorComponents();
+            builder.AddRefit();
+            builder.AddServices();
+
 
             var app = builder.Build();
 

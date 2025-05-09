@@ -28,7 +28,7 @@ namespace ReportHub.API.Controllers
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
         [HttpGet]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> GetAllClients([FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
             var query = new GetAllClientsQuery(pageNumber, pageSize, sortingParameter, ascending);
