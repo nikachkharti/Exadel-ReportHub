@@ -15,9 +15,15 @@ else
         <table class="table-auto w-full border border-gray-300">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="border px-4 py-2 text-left">ID</th>
-                    <th class="border px-4 py-2 text-left">Name</th>
-                    <th class="border px-4 py-2 text-left">Specialization</th>
+                    <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Id))">
+                        ID @SortIndicator(nameof(ClientForGettingDto.Id))
+                    </th>
+                    <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Name))">
+                        Name @SortIndicator(nameof(ClientForGettingDto.Name))
+                    </th>
+                    <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Specialization))">
+                        Specialization @SortIndicator(nameof(ClientForGettingDto.Specialization))
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -50,7 +56,7 @@ else
         <button type="button"
                 class="px-4 py-2 btn btn-primary text-white rounded disabled:opacity-50"
                 @onclick="NextPage"
-                disabled="@(clients == null || !clients.Any())">
+                disabled="@(clients == null || clients.Count() < _pageSize)">
             Next
         </button>
     </div>
@@ -59,7 +65,10 @@ else
 @code {
     private IEnumerable<ClientForGettingDto> clients;
     private int _page = 1;
-    private int _pageSize = 10;
+    private int _pageSize = 5;
+
+    private string _sortBy = nameof(ClientForGettingDto.Name);
+    private bool _ascending = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -68,7 +77,7 @@ else
 
     private async Task LoadClientsAsync()
     {
-        clients = await ClientService.GetClientsAsync(_page, _pageSize);
+        clients = await ClientService.GetClientsAsync(_page, _pageSize, _sortBy, _ascending);
     }
 
     private async Task NextPage()
@@ -84,5 +93,28 @@ else
             _page--;
             await LoadClientsAsync();
         }
+    }
+
+    private async Task SortBy(string column)
+    {
+        if (_sortBy == column)
+        {
+            _ascending = !_ascending; // toggle sort direction
+        }
+        else
+        {
+            _sortBy = column;
+            _ascending = true; // default ascending
+        }
+
+        _page = 1; // reset to first page on sort change
+        await LoadClientsAsync();
+    }
+
+    private MarkupString SortIndicator(string column)
+    {
+        if (_sortBy != column) return new MarkupString("");
+        var symbol = _ascending ? "↑" : "↓";
+        return new MarkupString($"<span>{symbol}</span>");
     }
 }
