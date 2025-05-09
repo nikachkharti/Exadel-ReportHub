@@ -6,4 +6,4 @@
         string Name,
         string Specialization
     );
-}   
+}

@@ -7,9 +7,9 @@ namespace ReportHub.Web.Services.Refit
     {
         [Get("/api/clients")]
         Task<EndpointResponse> GetAllClientsAsync(
-            [AliasAs("pageNumber")] int? pageNumber = 1,
-            [AliasAs("pageSize")] int? pageSize = 10,
-            [AliasAs("sortingParameter")] string sortingParameter = "",
-            [AliasAs("ascending")] bool ascending = true);
+            int? pageNumber = 1,
+            int? pageSize = 10,
+            string sortingParameter = "",
+            bool ascending = true);
     }
 }

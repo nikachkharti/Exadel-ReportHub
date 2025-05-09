@@ -1,4 +1,4 @@
-﻿using ReportHub.Web.Helper;
+﻿using Newtonsoft.Json;
 using ReportHub.Web.Models.Clients.DTOs;
 using ReportHub.Web.Services.Refit;
 
@@ -15,7 +15,7 @@ namespace ReportHub.Web.Services.Client
                 return Enumerable.Empty<ClientForGettingDto>();
             }
 
-            return response.Result.FromJson<IEnumerable<ClientForGettingDto>>();
+            return JsonConvert.DeserializeObject<IEnumerable<ClientForGettingDto>>(response.Result.ToString());
         }
     }
 }
