@@ -12,60 +12,70 @@ else
 {
     if (clients.Any())
     {
-        <table class="table-auto w-full border border-gray-300">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Id))">
-                        ID @SortIndicator(nameof(ClientForGettingDto.Id))
-                    </th>
-                    <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Name))">
-                        Name @SortIndicator(nameof(ClientForGettingDto.Name))
-                    </th>
-                    <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Specialization))">
-                        Specialization @SortIndicator(nameof(ClientForGettingDto.Specialization))
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var client in clients)
-                {
+        <div class="row">
+            <table class="table table-bordered table-striped">
+                <thead class="bg-gray-100">
                     <tr>
-                        <td class="border px-4 py-2">@client.Id</td>
-                        <td class="border px-4 py-2">@client.Name</td>
-                        <td class="border px-4 py-2">@client.Specialization</td>
+                        <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Id))">
+                            ID @SortIndicator(nameof(ClientForGettingDto.Id))
+                        </th>
+                        <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Name))">
+                            Name @SortIndicator(nameof(ClientForGettingDto.Name))
+                        </th>
+                        <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Specialization))">
+                            Specialization @SortIndicator(nameof(ClientForGettingDto.Specialization))
+                        </th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var client in clients)
+                    {
+                        <tr>
+                            <td class="border px-4 py-2">@client.Id</td>
+                            <td class="border px-4 py-2">@client.Name</td>
+                            <td class="border px-4 py-2">@client.Specialization</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
     }
     else
     {
         <p>No clients found on this page.</p>
     }
 
-    <div class="mt-4 flex gap-2">
-        <button type="button"
-                class="px-4 py-2 btn btn-primary text-white rounded disabled:opacity-50"
-                @onclick="PreviousPage"
-                disabled="@(_page == 1)">
-            Previous
-        </button>
 
-        <span>Page @_page</span>
+    <div class="row mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-start">
 
-        <button type="button"
-                class="px-4 py-2 btn btn-primary text-white rounded disabled:opacity-50"
-                @onclick="NextPage"
-                disabled="@(clients == null || clients.Count() < _pageSize)">
-            Next
-        </button>
+                <li class="page-item @( _page == 1 ? "disabled" : "" )">
+                    <button class="page-link" @onclick="PreviousPage">Previous</button>
+                </li>
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page @_page
+                    </span>
+                </li>
+
+                <li class="page-item @(clients == null || clients.Count() < _pageSize ? "disabled" : "")">
+                    <button class="page-link" @onclick="NextPage">Next</button>
+                </li>
+
+            </ul>
+        </nav>
     </div>
+
+
 }
 
 @code {
     private IEnumerable<ClientForGettingDto> clients;
     private int _page = 1;
-    private int _pageSize = 5;
+    private int _pageSize = 10;
 
     private string _sortBy = nameof(ClientForGettingDto.Name);
     private bool _ascending = true;
