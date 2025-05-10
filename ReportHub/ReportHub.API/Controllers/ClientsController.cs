@@ -61,7 +61,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
         [HttpGet("{clientId}/items")]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string clientId)
         {
             var query = new GetAllItemsOfClientQuery(clientId);
