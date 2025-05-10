@@ -59,12 +59,22 @@ namespace ReportHub.API.Controllers
         /// Get all items of client
         /// </summary>
         /// <param name="clientId">Client Id</param>
+        /// <param name="pageNumber">Page number</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="sortingParameter">Sorting field</param>
+        /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
         [HttpGet("{clientId}/items")]
         //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
-        public async Task<IActionResult> GetAllItemsOfClient([FromRoute][Required] string clientId)
+        public async Task<IActionResult> GetAllItemsOfClient(
+                [FromRoute][Required] string clientId,
+                [FromQuery] int? pageNumber = 1,
+                [FromQuery] int? pageSize = 10,
+                [FromQuery] string sortingParameter = "",
+                [FromQuery] bool ascending = true
+            )
         {
-            var query = new GetAllItemsOfClientQuery(clientId);
+            var query = new GetAllItemsOfClientQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));

@@ -41,16 +41,43 @@ else
                         {
                             <p>Loading items...</p>
                         }
-                        else if (items != null)
+                        else if (items != null && items.Any())
                         {
-                            <ul class="list-group">
-                                @foreach (var item in items)
-                                {
-                                    <li class="list-group-item">
-                                        <a class="nav-link" href="#">@item.Name</a>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th @onclick="() => ChangeSorting(nameof(ItemForGettingDto.Name))">
+                                            Name @SortIcon(nameof(ItemForGettingDto.Name))
+                                        </th>
+                                        <th @onclick="() => ChangeSorting(nameof(ItemForGettingDto.Id))">
+                                            ID @SortIcon(nameof(ItemForGettingDto.Id))
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in items)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>@item.Id</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item @( _itemPage == 1 ? "disabled" : "")">
+                                        <button class="page-link" @onclick="PreviousPage">Previous</button>
                                     </li>
-                                }
-                            </ul>
+                                    <li class="page-item">
+                                        <span class="page-link">@_itemPage</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <button class="page-link" @onclick="NextPage">Next</button>
+                                    </li>
+                                </ul>
+                            </nav>
                         }
                         else
                         {
@@ -60,48 +87,87 @@ else
                 </div>
             </div>
         </div>
-
     </div>
 }
-
 
 @code {
     private bool isItemsOpen = false;
     private bool isItemsLoading = false;
     private List<ItemForGettingDto> items;
 
+    private int _itemPage = 1;
+    private int _itemPageSize = 10;
+    private string _itemSortBy = nameof(ItemForGettingDto.Id);
+    private bool _itemSortByAscending = true;
+
     private async Task ToggleItemsAccordion()
     {
         isItemsOpen = !isItemsOpen;
 
-        if (isItemsOpen && items == null && SelectedClientState.SelectedClient is not null)
+        if (isItemsOpen && items == null)
         {
-            isItemsLoading = true;
-
-            try
-            {
-                var clientId = SelectedClientState.SelectedClient.Id;
-                var response = await ClientService.GetItemsOfClientAsync(clientId);
-
-                if (response.Any())
-                {
-                    items = new();
-                    items.AddRange(response);
-                }
-                else
-                {
-                    isItemsLoading = false;
-                }
-
-            }
-            catch (Exception)
-            {
-                // Handle error, e.g., log or show message
-            }
-            finally
-            {
-                isItemsLoading = false;
-            }
+            await LoadItemsAsync();
         }
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        isItemsLoading = true;
+
+        try
+        {
+            var clientId = SelectedClientState.SelectedClient.Id;
+            var response = await ClientService.GetItemsOfClientAsync(clientId, _itemPage, _itemPageSize, _itemSortBy, _itemSortByAscending);
+            items = new();
+            items.AddRange(response);
+        }
+        catch (Exception)
+        {
+            // Optionally handle/log the error
+        }
+        finally
+        {
+            isItemsLoading = false;
+        }
+    }
+
+    private async Task ChangeSorting(string sortBy)
+    {
+        if (_itemSortBy == sortBy)
+        {
+            _itemSortByAscending = !_itemSortByAscending;
+        }
+        else
+        {
+            _itemSortBy = sortBy;
+            _itemSortByAscending = true;
+        }
+
+        await LoadItemsAsync();
+    }
+
+    private async Task NextPage()
+    {
+        _itemPage++;
+        await LoadItemsAsync();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (_itemPage > 1)
+        {
+            _itemPage--;
+            await LoadItemsAsync();
+        }
+    }
+
+    private MarkupString SortIcon(string column)
+    {
+        if (_itemSortBy != column) return new MarkupString("");
+        return _itemSortByAscending
+            ? new MarkupString("&#9650;") // ▲
+            : new MarkupString("&#9660;"); // ▼
     }
 }

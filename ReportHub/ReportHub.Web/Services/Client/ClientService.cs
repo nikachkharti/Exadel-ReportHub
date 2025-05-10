@@ -21,7 +21,7 @@ namespace ReportHub.Web.Services.Client
 
         public async Task<IEnumerable<ItemForGettingDto>> GetItemsOfClientAsync(string clientId, int? page = 1, int? size = 10, string sortBy = "", bool ascending = true)
         {
-            var resposne = await clientApi.GetItemsOfClientAsync(clientId);
+            var resposne = await clientApi.GetItemsOfClientAsync(clientId, page, size, sortBy, ascending);
 
             if (!resposne.IsSuccess)
             {
