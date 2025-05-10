@@ -20,5 +20,14 @@ namespace ReportHub.Web.Services.Refit
             int? pageSize = 10,
             string sortingParameter = "",
             bool ascending = true);
+
+
+        [Get("/api/clients/{clientId}/plans")]
+        Task<EndpointResponse> GetPlansOfClientAsync(
+            string clientId,
+            int? pageNumber = 1,
+            int? pageSize = 10,
+            string sortingParameter = "",
+            bool ascending = true);
     }
 }

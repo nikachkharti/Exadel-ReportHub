@@ -1,4 +1,4 @@
-﻿using ReportHub.Web.Models.Clients.DTOs;
+﻿using ReportHub.Web.Models.Clients;
 
 namespace ReportHub.Web.Components.Shared
 {

@@ -66,13 +66,14 @@ namespace ReportHub.API.Controllers
         /// <returns>IActionResult</returns>
         [HttpGet("{clientId}/items")]
         //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
-        public async Task<IActionResult> GetAllItemsOfClient(
-                [FromRoute][Required] string clientId,
-                [FromQuery] int? pageNumber = 1,
-                [FromQuery] int? pageSize = 10,
-                [FromQuery] string sortingParameter = "",
-                [FromQuery] bool ascending = true
-            )
+        public async Task<IActionResult> GetAllItemsOfClient
+        (
+           [FromRoute][Required] string clientId,
+           [FromQuery] int? pageNumber = 1,
+           [FromQuery] int? pageSize = 10,
+           [FromQuery] string sortingParameter = "",
+           [FromQuery] bool ascending = true
+        )
         {
             var query = new GetAllItemsOfClientQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
@@ -155,7 +156,7 @@ namespace ReportHub.API.Controllers
         /// <param name="sortingParameter">Sorting field</param>
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
-        [Authorize(Roles = "Owner, ClientAdmin")]
+        //[Authorize(Roles = "Owner, ClientAdmin")]
         [HttpGet("{clientId}/plans")]
         public async Task<IActionResult> GetAllPlansOfClient(
             [FromRoute][Required] string clientId,

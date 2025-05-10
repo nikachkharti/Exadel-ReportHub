@@ -1,4 +1,4 @@
-﻿namespace ReportHub.Web.Models.Clients.DTOs
+﻿namespace ReportHub.Web.Models.Clients
 {
     public record ClientForGettingDto
     (
