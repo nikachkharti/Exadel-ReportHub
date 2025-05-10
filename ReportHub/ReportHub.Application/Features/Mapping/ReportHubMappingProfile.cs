@@ -78,15 +78,14 @@ public class ReportHubMappingProfile : Profile
 
         #region ITEM
 
-        CreateMap<Domain.Entities.Item, ItemForGettingDto>()
+        CreateMap<Item, ItemForGettingDto>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Description, options => options.MapFrom(src => src.Description))
             .ForMember(dest => dest.Price, options => options.MapFrom(src => src.Price))
             .ForMember(dest => dest.Currency, options => options.MapFrom(src => src.Currency));
 
-        CreateMap<CreateItemCommand, Domain.Entities.Item>()
-            .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
+        CreateMap<CreateItemCommand, Item>()
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Description, options => options.MapFrom(src => src.Description))
             .ForMember(dest => dest.Price, options => options.MapFrom(src => src.Price))

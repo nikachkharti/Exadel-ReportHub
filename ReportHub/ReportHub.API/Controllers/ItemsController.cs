@@ -30,7 +30,6 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
         /// <summary>
         /// Create new item
         /// </summary>
@@ -46,6 +45,5 @@ namespace ReportHub.API.Controllers
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);
         }
-
     }
 }

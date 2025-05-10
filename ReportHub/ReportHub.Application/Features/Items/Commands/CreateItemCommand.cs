@@ -2,5 +2,5 @@
 
 namespace ReportHub.Application.Features.Items.Commands
 {
-    public record CreateItemCommand(string ClientId, string Name, string Description, decimal Price, string Currency) : IRequest<string>;
+    public record CreateItemCommand(string Name, string Description, decimal Price, string Currency) : IRequest<string>;
 }
