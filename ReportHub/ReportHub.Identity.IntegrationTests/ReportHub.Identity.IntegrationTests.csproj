@@ -22,10 +22,10 @@
 
   <ItemGroup>
     <Folder Include="Drivers\" />
-    <Folder Include="Support\" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ReportHub.API\ReportHub.API.csproj" />
     <ProjectReference Include="..\ReportHub.Identity\ReportHub.Identity.csproj" />
   </ItemGroup>
 

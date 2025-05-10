@@ -78,7 +78,7 @@ namespace ReportHub.API.Controllers
         /// <returns>IActionResult</returns>
         [HttpPost]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> AddNewClient([FromForm] CreateClientCommand model)
+        public async Task<IActionResult> AddNewClient([FromBody] CreateClientCommand model)
         {
             var result = await mediator.Send(model);
 

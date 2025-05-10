@@ -3,6 +3,7 @@ using NUnit.Framework;
 using ReportHub.Identity.Application.Features.UserClients.DTOs;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using TechTalk.SpecFlow.CommonModels;
 using Xunit;
 
 namespace Reporthub.Identity.SpecflowTests.StepDefinitions
@@ -18,10 +19,14 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
 
         public LoginSteps(CustomWebApplicationFactory factory, FeatureContext context)
         {
-            _httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
+            _httpClient = new HttpClient
             {
                 BaseAddress = new Uri("https://localhost:7171"),
-            });
+            };
+
+            var response = _httpClient.GetAsync("/.well-known/openid-configuration").Result;
+
+            string body = response.Content.ReadAsStringAsync().Result;
             _context = context;
         }
 
@@ -59,6 +64,8 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
 
             var body = await response.Content.ReadAsStringAsync();
 
+            Console.WriteLine(body);
+
             response.IsSuccessStatusCode.Should().BeTrue();
 
             var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -67,7 +74,7 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
 
             accessToken.Should().NotBeNullOrEmpty();
             refreshToken.Should().NotBeNullOrEmpty();
-
+            Console.WriteLine(accessToken);
             _context["access_token"] = accessToken!;
             _context["refresh_token"] = refreshToken!;
         }
@@ -92,7 +99,7 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
         public async Task ThenIReceiveClientListAsync()
         {
             var response = (HttpResponseMessage)_context["response"]!;
-            
+
             response.IsSuccessStatusCode.Should().BeTrue();
 
             var body = await response.Content.ReadAsStringAsync();
@@ -148,7 +155,7 @@ namespace Reporthub.Identity.SpecflowTests.StepDefinitions
         public async Task ThenReceiveScopedToken()
         {
             var response = (HttpResponseMessage)_context["response"]!;
-            
+
             response.IsSuccessStatusCode.Should().BeTrue();
 
             var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
