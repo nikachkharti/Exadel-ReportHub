@@ -5,7 +5,6 @@ namespace ReportHub.Application.Features.Customers.Queries
 {
     public record GetAllCustomersQuery
     (
-        string ClientId,
         int? PageNumber,
         int? PageSize,
         string SortingParameter,

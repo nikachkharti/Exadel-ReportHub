@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
+using ReportHub.Application.Contracts.IdentityContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Features.Customers.Commands;
 using ReportHub.Application.Validators.Exceptions;
@@ -7,14 +8,15 @@ using ReportHub.Domain.Entities;
 
 namespace ReportHub.Application.Features.Customers.Handlers.CommandHandlers
 {
-    public class UpdateCustomerCommandHandler(ICustomerRepository customerRepository, IMapper mapper)
+    public class UpdateCustomerCommandHandler(ICustomerRepository customerRepository, IMapper mapper, IRequestContextService requestContext)
         : IRequestHandler<UpdateCustomerCommand, string>
     {
         public async Task<string> Handle(UpdateCustomerCommand request, CancellationToken cancellationToken)
         {
-            //TODO: [Add] validators.
+            var clientId = requestContext.GetClientId();
 
-            var existingCustomer = await customerRepository.Get(c => c.Id == request.Id, cancellationToken);
+            var existingCustomer = await customerRepository.Get(c => 
+                                c.ClientId == clientId && c.Id == request.Id, cancellationToken);
 
             if (existingCustomer is null)
             {

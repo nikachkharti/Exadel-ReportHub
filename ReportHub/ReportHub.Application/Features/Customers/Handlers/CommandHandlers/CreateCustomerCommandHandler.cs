@@ -8,16 +8,18 @@ using ReportHub.Domain.Entities;
 namespace ReportHub.Application.Features.Customers.Handlers.CommandHandlers
 {
     public class CreateCustomerCommandHandler(ICustomerRepository customerRepository, IMapper mapper, IRequestContextService requestContext)
-        : BaseFeature(requestContext), IRequestHandler<CreateCustomerCommand, string>
+        : IRequestHandler<CreateCustomerCommand, string>
     {
         public async Task<string> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
         {
-            //TODO: [Add] validators.
-            EnsureUserHasRoleForThisClient(request.ClientId);
+            var clientId = requestContext.GetClientId();
 
             var customer = mapper.Map<Customer>(request);
 
+            customer.ClientId = clientId;
+
             await customerRepository.Insert(customer);
+
             return customer.Id;
         }
     }

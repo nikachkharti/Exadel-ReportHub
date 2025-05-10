@@ -12,14 +12,13 @@ using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Route("api/clients/{clientId}/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class CustomersController(IMediator mediator) : ControllerBase
     {
         /// <summary>
         /// Get all customers
         /// </summary>
-        /// <param name="clientId"></param>
         /// <param name="pageNumber"></param>
         /// <param name="pageSize"></param>
         /// <param name="sortingParameter"></param>
@@ -27,9 +26,9 @@ namespace ReportHub.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Authorize(Roles = "Owner, ClientAdmin, Operator")]
-        public async Task<IActionResult> GetAllCustomers(string clientId, [FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
+        public async Task<IActionResult> GetAllCustomers([FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
-            var query = new GetAllCustomersQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
+            var query = new GetAllCustomersQuery(pageNumber, pageSize, sortingParameter, ascending);
             var result = await mediator.Send(query);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
@@ -40,12 +39,11 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Get customer by id
         /// </summary>
-        /// <param name="clientId"></param>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("{id}")]
         [Authorize(Roles = "Owner, ClientAdmin, Operator")]
-        public async Task<IActionResult> GetSingleCustomer(string clientId, [FromRoute][Required] string id)
+        public async Task<IActionResult> GetSingleCustomer([FromRoute][Required] string id)
         {
             var query = new GetCustomerByIdQuery(id);
             var result = await mediator.Send(query);
@@ -57,14 +55,13 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Add new customer
         /// </summary>
-        /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
         [Authorize(Roles = "Owner, ClientAdmin, Operator")]
-        public async Task<IActionResult> AddNewCustomer(string clientId, [FromBody] CustomerForCreatingDto model)
+        public async Task<IActionResult> AddNewCustomer([FromBody] CustomerForCreatingDto model)
         {
-            var result = await mediator.Send(new CreateCustomerCommand(model.Name, model.Email, model.CountryId, clientId));
+            var result = await mediator.Send(new CreateCustomerCommand(model.Name, model.Email, model.CountryId));
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
             return StatusCode(response.HttpStatusCode, response);
         }
@@ -73,12 +70,11 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Delete customer
         /// </summary>
-        /// <param name="clientId"></param>
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Owner")]
-        public async Task<IActionResult> DeleteCustomer(string clientId, [FromRoute][Required] string id)
+        public async Task<IActionResult> DeleteCustomer([FromRoute][Required] string id)
         {
             var command = new DeleteCustomerCommand(id);
             var result = await mediator.Send(command);
@@ -90,12 +86,11 @@ namespace ReportHub.API.Controllers
         /// <summary>
         /// Update customer
         /// </summary>
-        /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
         [Authorize(Roles = "Owner,ClientAdmin")]
-        public async Task<IActionResult> UpdateCustomer(string clientId, [FromBody] UpdateCustomerCommand model)
+        public async Task<IActionResult> UpdateCustomer([FromBody] UpdateCustomerCommand model)
         {
             var result = await mediator.Send(model);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));

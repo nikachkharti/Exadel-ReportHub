@@ -11,17 +11,17 @@ using System.Linq.Expressions;
 namespace ReportHub.Application.Features.Customers.Handlers.QueryHandlers
 {
     public class GetAllCustomersQueryHandler(ICustomerRepository customerRepository, IMapper mapper, IRequestContextService requestContext)
-        : BaseFeature(requestContext), IRequestHandler<GetAllCustomersQuery, IEnumerable<CustomerForGettingDto>>
+        : IRequestHandler<GetAllCustomersQuery, IEnumerable<CustomerForGettingDto>>
     {
         public async Task<IEnumerable<CustomerForGettingDto>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken)
         {
             var sortExpression = ConfigureSortingExpression(request);
 
-            EnsureUserHasRoleForThisClient(request.ClientId);
+            var clientId = requestContext.GetClientId();
 
             var customers = await customerRepository.GetAll
             (
-                c => c.ClientId == request.ClientId,
+                c => c.ClientId == clientId,
                 request.PageNumber ?? 1,
                 request.PageSize ?? 10,
                 sortBy: sortExpression,

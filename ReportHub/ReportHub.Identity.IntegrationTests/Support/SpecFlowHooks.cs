@@ -6,87 +6,12 @@ using Xunit;
 namespace ReportHub.IntegrationTests.Support
 {
     [Binding]
-    public sealed class SpecFlowHooks : IClassFixture<CustomWebApplicationFactory>
+    public sealed class SpecFlowHooks
     {
-
-        // For additional details on SpecFlow hooks see http://go.specflow.org/doc-hooks
-        //private  FeatureContext _featureContext;
-        //private  HttpClient httpClient;
-        //public SpecFlowHooks(FeatureContext featureContext, CustomWebApplicationFactory factory)
-        //{
-        //    httpClient = factory.CreateClient(new WebApplicationFactoryClientOptions
-        //    {
-        //        BaseAddress = new Uri("https://localhost:7171"),
-        //    });
-
-        //    _featureContext = featureContext;
-        //}
-
         [BeforeFeature("ClientCRUD")]
         public static async Task BeforeFeatureAsync(FeatureContext featureContext)
         {
-            var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri("https://localhost:7171"),
-            };
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "/auth/login")
-            {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["grant_type"] = "password",
-                    ["client_id"] = "report-hub",
-                    ["client_secret"] = "client_secret_key",
-                    ["scope"] = "report-hub-api-scope roles offline_access",
-                    ["username"] = "admin@example.com",
-                    ["password"] = "Admin123$"
-                })
-            };
-
-            var response = await httpClient.SendAsync(request);
-
-            var body = await response.Content.ReadAsStringAsync();
-
-            var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            var accessToken = json.RootElement.GetProperty("access_token").GetString();
-            var refreshToken = json.RootElement.GetProperty("refresh_token").GetString();
-
-            httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", accessToken);
-
-            response = await httpClient.GetAsync("/my-clients");
-
-            body = await response.Content.ReadAsStringAsync();
-
-            var option = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
-            var clients = JsonSerializer.Deserialize<IList<UserClientForGettingDto>>(body, option);
-
-            var clientId = clients.First(x => x.ClientId is null).Id;
-
-            request = new HttpRequestMessage(HttpMethod.Post, "/auth/select-client")
-            {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["grant_type"] = "refresh_token",
-                    ["client_id"] = "report-hub",
-                    ["client_secret"] = "client_secret_key",
-                    ["scope"] = "report-hub-api-scope roles offline_access",
-                    ["refresh_token"] = refreshToken,
-                    ["userClientId"] = clientId
-                })
-            };
-
-            response = await httpClient.SendAsync(request);
-
-            body = await response.Content.ReadAsStringAsync();
-
-            json = JsonDocument.Parse(body);
-            var clientToken = json.RootElement.GetProperty("access_token").GetString();
-
+            string? clientToken = await Login("SuperAdmin");
 
             featureContext["access_token"] = clientToken;
         }
@@ -94,49 +19,34 @@ namespace ReportHub.IntegrationTests.Support
         [BeforeScenario("CreateClientFailure")]
         public static async Task BeforeCreateClientFailureScenario(ScenarioContext context)
         {
-            var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri("https://localhost:7171"),
-            };
+            var clientToken = await Login("Owner");
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "/auth/login")
-            {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["grant_type"] = "password",
-                    ["client_id"] = "report-hub",
-                    ["client_secret"] = "client_secret_key",
-                    ["scope"] = "report-hub-api-scope roles offline_access",
-                    ["username"] = "admin@example.com",
-                    ["password"] = "Admin123$"
-                })
-            };
+            context["access_token"] = clientToken;
+        }
 
-            var response = await httpClient.SendAsync(request);
+        private static async Task<string?> Login(string role)
+        {
+            HttpClient httpClient = GetClient();
+            JsonDocument json = await GetLoginResponseDocument(httpClient);
 
-            var body = await response.Content.ReadAsStringAsync();
-
-            var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             var accessToken = json.RootElement.GetProperty("access_token").GetString();
             var refreshToken = json.RootElement.GetProperty("refresh_token").GetString();
 
             httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", accessToken);
 
-            response = await httpClient.GetAsync("/my-clients");
+            var clientId = await GetUserClientId(role, httpClient);
 
-            body = await response.Content.ReadAsStringAsync();
+            json = await GetActualTokenDocument(httpClient, json, refreshToken, clientId);
 
-            var option = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
+            var clientToken = json.RootElement.GetProperty("access_token").GetString();
 
-            var clients = JsonSerializer.Deserialize<IList<UserClientForGettingDto>>(body, option);
+            return clientToken;
+        }
 
-            var clientId = clients.First(x => x.Role.Equals("Owner")).Id;
-
-            request = new HttpRequestMessage(HttpMethod.Post, "/auth/select-client")
+        private static async Task<JsonDocument> GetActualTokenDocument(HttpClient httpClient, JsonDocument json, string? refreshToken, string clientId)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/auth/select-client")
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
@@ -149,15 +59,67 @@ namespace ReportHub.IntegrationTests.Support
                 })
             };
 
-            response = await httpClient.SendAsync(request);
+            var response = await httpClient.SendAsync(request);
 
-            body = await response.Content.ReadAsStringAsync();
+            var body = await response.Content.ReadAsStringAsync();
 
             json = JsonDocument.Parse(body);
-            var clientToken = json.RootElement.GetProperty("access_token").GetString();
+            return json;
+        }
 
+        private static async Task<JsonDocument> GetLoginResponseDocument(HttpClient httpClient)
+        {
+            HttpRequestMessage request = GetRequestMessage();
 
-            context["access_token"] = clientToken;
+            var response = await httpClient.SendAsync(request);
+
+            var body = await response.Content.ReadAsStringAsync();
+
+            var json = JsonDocument.Parse(body);
+
+            return json;
+        }
+
+        private static async Task<string> GetUserClientId(string role, HttpClient httpClient)
+        {
+            var response = await httpClient.GetAsync("/my-clients");
+
+            var body = await response.Content.ReadAsStringAsync();
+
+            var option = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            var clients = JsonSerializer.Deserialize<IList<UserClientForGettingDto>>(body, option);
+
+            var clientId = clients.First(x => x.Role.Equals(role)).Id;
+
+            return clientId;
+        }
+
+        private static HttpRequestMessage GetRequestMessage()
+        {
+            return new HttpRequestMessage(HttpMethod.Post, "/auth/login")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["grant_type"] = "password",
+                    ["client_id"] = "report-hub",
+                    ["client_secret"] = "client_secret_key",
+                    ["scope"] = "report-hub-api-scope roles offline_access",
+                    ["username"] = "admin@example.com",
+                    ["password"] = "Admin123$"
+                })
+            };
+        }
+
+        private static HttpClient GetClient()
+        {
+            return new HttpClient
+            {
+                BaseAddress = new Uri("https://localhost:7171"),
+            };
         }
     }
 }

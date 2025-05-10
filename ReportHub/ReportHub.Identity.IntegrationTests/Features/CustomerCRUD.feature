@@ -1,17 +1,17 @@
-﻿@ClientCRUD
-Feature: Client CRUD
+﻿@CRUD
+Feature: Customer CRUD
   To manage clients in the system
   As an authorized user
   I want to create, read, update, and delete clients
 
   Scenario: Create a new client
-    Given I am authorized as super admin
+    Given I am authorized as owner
     When I create a client with name "Acme Corp" and specialization "Logistics"
     Then the client should be created successfully
   
-  @CreateClientFailure
+  @CreateCustomerFailure
   Scenario: Create client should fail
-	Given I am authorized as owner
+	Given I am authorized as super admin
 	When I create a client with name "Acme Corp" and specialization "Logistics" as owner
 	Then the response should be forbidden status code
 

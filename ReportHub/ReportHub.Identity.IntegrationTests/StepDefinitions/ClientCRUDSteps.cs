@@ -7,7 +7,7 @@ using Xunit;
 
 namespace ReportHub.IntegrationTests.StepDefinitions;
 [Binding]
-public class ClientCRUDSteps : IClassFixture<CustomWebApplicationFactoryForAPI>
+public class ClientCRUDSteps 
 {
     private readonly HttpClient _client;
     private readonly FeatureContext _featureContext;
@@ -23,7 +23,7 @@ public class ClientCRUDSteps : IClassFixture<CustomWebApplicationFactoryForAPI>
         _scenarioContext = scenarioContext;
     }
 
-    [Given("I am authorized with a \"SuperAdmin\" role")]
+    [Given("I am authorized as super admin")]
     public void GivenIAuthorizedWithValidSuperAdminRole()
     {
         var token = _featureContext["access_token"].ToString();

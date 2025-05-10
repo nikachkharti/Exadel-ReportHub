@@ -9,7 +9,7 @@ using Xunit;
 namespace ReportHub.IntegrationTests.StepDefinitions
 {
     [Binding]
-    public class LoginSteps : IClassFixture<CustomWebApplicationFactory>
+    public class LoginSteps
     {
         private readonly HttpClient _httpClient;
         private readonly FeatureContext _context;
@@ -17,7 +17,7 @@ namespace ReportHub.IntegrationTests.StepDefinitions
         private string _password;
         private string _clientId;
 
-        public LoginSteps(CustomWebApplicationFactory factory, FeatureContext context)
+        public LoginSteps(FeatureContext context)
         {
             _httpClient = new HttpClient
             {
