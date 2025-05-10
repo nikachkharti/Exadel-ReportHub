@@ -12,6 +12,7 @@ namespace ReportHub.Web
             builder.AddRazorComponents();
             builder.AddRefit();
             builder.AddServices();
+            builder.AddSharedStates();
 
 
             var app = builder.Build();

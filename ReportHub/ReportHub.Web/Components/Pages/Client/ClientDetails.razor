@@ -1,0 +1,26 @@
+﻿@page "/client-details"
+@inject SelectedClientState SelectedClientState
+@rendermode InteractiveServer
+
+<h3>Client Details</h3>
+
+@if (SelectedClientState.SelectedClient == null)
+{
+    <p>No client selected.</p>
+}
+else
+{
+    var client = SelectedClientState.SelectedClient;
+
+    <div class="card">
+        <div class="card-header">
+            @client.Id
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">@client.Name</h5>
+            <p class="card-text">@client.Specialization</p>
+            <a href="/clients" class="btn btn-primary">Back</a>
+        </div>
+
+    </div>
+}

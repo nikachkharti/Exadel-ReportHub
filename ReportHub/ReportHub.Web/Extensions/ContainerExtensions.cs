@@ -1,4 +1,5 @@
 ﻿using Refit;
+using ReportHub.Web.Components.Shared;
 using ReportHub.Web.Services.Client;
 using ReportHub.Web.Services.Refit;
 
@@ -23,6 +24,11 @@ namespace ReportHub.Web.Extensions
         public static void AddServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<IClientService, ClientService>();
+        }
+
+        public static void AddSharedStates(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddScoped<SelectedClientState>();
         }
     }
 }

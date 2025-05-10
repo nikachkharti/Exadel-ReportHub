@@ -34,6 +34,12 @@ else
                             <td class="border px-4 py-2">@client.Id</td>
                             <td class="border px-4 py-2">@client.Name</td>
                             <td class="border px-4 py-2">@client.Specialization</td>
+                            <td class="border px-4 py-2">
+                                <button class="text-blue-600 hover:underline bg-transparent border-0 p-0"
+                                        @onclick="() => NavigateToDetails(client)">
+                                    @client.Name
+                                </button>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -73,6 +79,10 @@ else
 }
 
 @code {
+    [Inject] SelectedClientState SelectedClientState { get; set; }
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+
     private IEnumerable<ClientForGettingDto> clients;
     private int _page = 1;
     private int _pageSize = 10;
@@ -126,5 +136,12 @@ else
         if (_sortBy != column) return new MarkupString("");
         var symbol = _ascending ? "↑" : "↓";
         return new MarkupString($"<span>{symbol}</span>");
+    }
+
+
+    private void NavigateToDetails(ClientForGettingDto client)
+    {
+        SelectedClientState.SelectedClient = client;
+        NavigationManager.NavigateTo("/client-details");
     }
 }
