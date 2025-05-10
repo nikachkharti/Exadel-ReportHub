@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Identity", "Repor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Tests", "ReportHub.Tests\ReportHub.Tests.csproj", "{39A47619-8B80-4587-8E42-F9C4F1BEE071}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Identity.IntegrationTests", "ReportHub.Identity.IntegrationTests\ReportHub.Identity.IntegrationTests.csproj", "{49504CBA-C795-4154-AD1D-890C25930348}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.IntegrationTests", "ReportHub.Identity.IntegrationTests\ReportHub.IntegrationTests.csproj", "{49504CBA-C795-4154-AD1D-890C25930348}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

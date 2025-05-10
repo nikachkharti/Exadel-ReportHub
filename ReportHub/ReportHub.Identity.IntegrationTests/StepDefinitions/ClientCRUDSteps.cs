@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Xunit;
 
-namespace ReportHub.Identity.IntegrationTests.StepDefinitions;
+namespace ReportHub.IntegrationTests.StepDefinitions;
 [Binding]
 public class ClientCRUDSteps : IClassFixture<CustomWebApplicationFactoryForAPI>
 {
@@ -115,7 +115,7 @@ public class ClientCRUDSteps : IClassFixture<CustomWebApplicationFactoryForAPI>
             PropertyNameCaseInsensitive = true
         };
 
-        var client = JsonSerializer.Deserialize<ClientForGettingDto>(json.RootElement.GetProperty("result"), conf);
+        var client = json.RootElement.GetProperty("result").Deserialize<ClientForGettingDto>(conf);
 
         Assert.That(client.Name.Equals("Acme Corp"));
     }
@@ -150,7 +150,7 @@ public class ClientCRUDSteps : IClassFixture<CustomWebApplicationFactoryForAPI>
             PropertyNameCaseInsensitive = true
         };
 
-        var client = JsonSerializer.Deserialize<ClientForGettingDto>(json.RootElement.GetProperty("result"), conf);
+        var client = json.RootElement.GetProperty("result").Deserialize<ClientForGettingDto>(conf);
 
         client.Should().NotBeNull();
         client.IsDeleted.Should().BeTrue();

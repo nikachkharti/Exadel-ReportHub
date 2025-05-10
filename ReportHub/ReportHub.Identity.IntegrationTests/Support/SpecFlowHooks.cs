@@ -1,10 +1,9 @@
-﻿using Reporthub.Identity.SpecflowTests;
-using ReportHub.Identity.Application.Features.UserClients.DTOs;
+﻿using ReportHub.Identity.Application.Features.UserClients.DTOs;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using Xunit;
 
-namespace ReportHub.Identity.IntegrationTests.Support
+namespace ReportHub.IntegrationTests.Support
 {
     [Binding]
     public sealed class SpecFlowHooks : IClassFixture<CustomWebApplicationFactory>

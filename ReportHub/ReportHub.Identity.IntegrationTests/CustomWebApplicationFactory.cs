@@ -12,7 +12,7 @@ using Polly;
 using System.Net;
 using System.Security.Claims;
 
-namespace Reporthub.Identity.SpecflowTests;
+namespace ReportHub.IntegrationTests;
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {

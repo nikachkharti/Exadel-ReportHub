@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace ReportHub.Identity.IntegrationTests.Features
+namespace ReportHub.IntegrationTests.Features
 {
     using TechTalk.SpecFlow;
     using System;

@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace ReportHub.Identity.IntegrationTests.Features
+namespace ReportHub.IntegrationTests.Features
 {
     using TechTalk.SpecFlow;
     using System;
@@ -107,14 +107,14 @@ namespace ReportHub.Identity.IntegrationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Create new should fail")]
+        [NUnit.Framework.DescriptionAttribute("Create client should fail")]
         [NUnit.Framework.CategoryAttribute("CreateClientFailure")]
-        public void CreateNewShouldFail()
+        public void CreateClientShouldFail()
         {
             string[] tagsOfScenario = new string[] {
                     "CreateClientFailure"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create new should fail", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create client should fail", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 13
   this.ScenarioInitialize(scenarioInfo);
 #line hidden

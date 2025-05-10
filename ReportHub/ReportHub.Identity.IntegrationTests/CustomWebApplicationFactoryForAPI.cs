@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ReportHub.Identity.IntegrationTests;
+namespace ReportHub.IntegrationTests;
 
 public class CustomWebApplicationFactoryForAPI : WebApplicationFactory<API.Program>
 {

@@ -1,4 +1,4 @@
-﻿namespace ReportHub.Identity.IntegrationTests.Support;
+﻿namespace ReportHub.IntegrationTests.Support;
 
 public class CustomContext
 {

@@ -6,7 +6,7 @@ using System.Text.Json;
 using TechTalk.SpecFlow.CommonModels;
 using Xunit;
 
-namespace Reporthub.Identity.SpecflowTests.StepDefinitions
+namespace ReportHub.IntegrationTests.StepDefinitions
 {
     [Binding]
     public class LoginSteps : IClassFixture<CustomWebApplicationFactory>
