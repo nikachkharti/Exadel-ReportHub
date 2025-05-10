@@ -5,15 +5,15 @@ Feature: Client CRUD
   I want to create, read, update, and delete clients
 
   Scenario: Create a new client
-    Given I am authorized as super admin
+    Given I am authorized as super admin for client crud
     When I create a client with name "Acme Corp" and specialization "Logistics"
     Then the client should be created successfully
   
   @CreateClientFailure
   Scenario: Create client should fail
-	Given I am authorized as owner
+	Given I am authorized as owner for client crud
 	When I create a client with name "Acme Corp" and specialization "Logistics" as owner
-	Then the response should be forbidden status code
+	Then the response should be forbidden status code while client creation
 
   Scenario: Get a client by ID
     Given I have created a client

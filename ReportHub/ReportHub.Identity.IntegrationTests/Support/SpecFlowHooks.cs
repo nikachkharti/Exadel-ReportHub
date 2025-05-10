@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Xunit;
 
-namespace ReportHub.IntegrationTests.Support
+namespace ReportHub.Identity.IntegrationTests.Support
 {
     [Binding]
     public sealed class SpecFlowHooks
@@ -16,10 +16,25 @@ namespace ReportHub.IntegrationTests.Support
             featureContext["access_token"] = clientToken;
         }
 
+        [BeforeFeature("CRUD")]
+        public static async Task BeforeFeatureCRUDAsync(FeatureContext featureContext)
+        {
+            string? clientToken = await Login("Owner");
+            featureContext["access_token"] = clientToken;
+        }
+
         [BeforeScenario("CreateClientFailure")]
         public static async Task BeforeCreateClientFailureScenario(ScenarioContext context)
         {
             var clientToken = await Login("Owner");
+
+            context["access_token"] = clientToken;
+        }
+
+        [BeforeScenario("CRUDFailure")]
+        public static async Task BeforeCRUDFailureScenario(ScenarioContext context)
+        {
+            var clientToken = await Login("SuperAdmin");
 
             context["access_token"] = clientToken;
         }

@@ -5,7 +5,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Xunit;
 
-namespace ReportHub.IntegrationTests.StepDefinitions;
+namespace ReportHub.Identity.IntegrationTests.StepDefinitions;
 [Binding]
 public class ClientCRUDSteps 
 {
@@ -23,8 +23,8 @@ public class ClientCRUDSteps
         _scenarioContext = scenarioContext;
     }
 
-    [Given("I am authorized as super admin")]
-    public void GivenIAuthorizedWithValidSuperAdminRole()
+    [Given("I am authorized as super admin for client crud")]
+    public void GivenIAuthorizedAsSuperAdminForClientCRUD()
     {
         var token = _featureContext["access_token"].ToString();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -58,15 +58,15 @@ public class ClientCRUDSteps
         _featureContext["clientId"] = clientId!;
     }
 
-    [Given("I am authorized as owner")]
-    public void GivenIAuthorizedWithOwnerRole()
+    [Given("I am authorized as owner for client crud")]
+    public void GivenIAuthorizedAsOwnerForClientCRUD()
     {
         var token = _scenarioContext["access_token"].ToString();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
     [When(@"I create a client with name ""(.*)"" and specialization ""(.*)"" as owner")]
-    public async Task WhenICreateClientWithOwnerRole(string name, string specialization)
+    public async Task WhenICreateClientAsOwner(string name, string specialization)
     {
         var command = new
         {
@@ -79,8 +79,8 @@ public class ClientCRUDSteps
         _scenarioContext["response"] = response;
     }
 
-    [Then("the response should be forbidden status code")]
-    public async Task ThenTheResponseShouldBeForbiddenStatusCode()
+    [Then("the response should be forbidden status code while client creation")]
+    public void ThenTheResponseShouldBeForbiddenStatusCodeWhileClientCreation()
     {
         var response = (HttpResponseMessage)_scenarioContext["response"];
 
@@ -88,14 +88,14 @@ public class ClientCRUDSteps
     }
 
     [Given("I have created a client")]
-    public void GivenCreatedClient()
+    public void GivenICreatedClient()
     {
         var token = _featureContext["access_token"].ToString();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
     [When(@"I request the client by ID")]
-    public async Task WhenRequestClientById()
+    public async Task WhenIRequestClientById()
     {
         var clientId = _featureContext["clientId"].ToString();
         var response = await _client.GetAsync($"api/Clients/{clientId}");
@@ -136,7 +136,7 @@ public class ClientCRUDSteps
     }
 
     [Then("The client IsDeleted property should be true")]
-    public async Task ThenClientShouldNotExist()
+    public async Task ThenClientIsDeletedPropertyShouldBeTrue()
     {
         var clientId = _featureContext["clientId"].ToString();
         var response = await _client.GetAsync($"api/Clients/{clientId}");

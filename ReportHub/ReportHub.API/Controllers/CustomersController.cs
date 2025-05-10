@@ -12,7 +12,7 @@ using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class CustomersController(IMediator mediator) : ControllerBase
     {

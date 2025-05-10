@@ -10,7 +10,7 @@
 // ------------------------------------------------------------------------------
 #region Designer generated code
 #pragma warning disable
-namespace ReportHub.IntegrationTests.Features
+namespace ReportHub.Identity.IntegrationTests.Features
 {
     using TechTalk.SpecFlow;
     using System;
@@ -94,7 +94,7 @@ namespace ReportHub.IntegrationTests.Features
             {
                 this.ScenarioStart();
 #line 8
-    testRunner.Given("I am authorized with a \"SuperAdmin\" role", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+    testRunner.Given("I am authorized as super admin for client crud", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 9
     testRunner.When("I create a client with name \"Acme Corp\" and specialization \"Logistics\"", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
@@ -126,13 +126,13 @@ namespace ReportHub.IntegrationTests.Features
             {
                 this.ScenarioStart();
 #line 14
- testRunner.Given("I am authorized as owner", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("I am authorized as owner for client crud", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 15
  testRunner.When("I create a client with name \"Acme Corp\" and specialization \"Logistics\" as owner", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 16
- testRunner.Then("the response should be forbidden status code", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.Then("the response should be forbidden status code while client creation", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

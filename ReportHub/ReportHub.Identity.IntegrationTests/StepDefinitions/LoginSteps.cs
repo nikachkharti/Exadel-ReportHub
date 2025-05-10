@@ -6,7 +6,7 @@ using System.Text.Json;
 using TechTalk.SpecFlow.CommonModels;
 using Xunit;
 
-namespace ReportHub.IntegrationTests.StepDefinitions
+namespace ReportHub.Identity.IntegrationTests.StepDefinitions
 {
     [Binding]
     public class LoginSteps
