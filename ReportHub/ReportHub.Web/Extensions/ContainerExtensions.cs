@@ -28,7 +28,7 @@ namespace ReportHub.Web.Extensions
 
         public static void AddSharedStates(this WebApplicationBuilder builder)
         {
-            builder.Services.AddScoped<SelectedClientState>();
+            builder.Services.AddSingleton<SelectedClientState>();
         }
     }
 }
