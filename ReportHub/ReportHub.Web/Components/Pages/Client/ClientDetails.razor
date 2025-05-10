@@ -1,5 +1,4 @@
 ﻿@page "/client-details"
-@using ReportHub.Web.Models.Items
 @inject SelectedClientState SelectedClientState
 @inject IClientService ClientService
 @rendermode InteractiveServer
@@ -26,6 +25,7 @@ else
         </div>
 
         <div class="accordion">
+
             @* ITEMS *@
             <div class="accordion-item">
                 <h2 class="accordion-header">
@@ -87,11 +87,159 @@ else
                     </div>
                 </div>
             </div>
+
+            <!-- PLANS -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button @(!isPlansOpen ? "collapsed" : "")"
+                            @onclick="TogglePlansAccordion"
+                            type="button"
+                            aria-expanded="@isPlansOpen">
+                        Plans
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse @(isPlansOpen ? "show" : "")">
+                    <div class="accordion-body">
+                        @if (isPlansLoading)
+                        {
+                            <p>Loading plans...</p>
+                        }
+                        else if (plans != null && plans.Any())
+                        {
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th @onclick="() => ChangePlanSorting(nameof(PlanForGettingDto.Id))">
+                                            ID @SortPlanIcon(nameof(PlanForGettingDto.Id))
+                                        </th>
+                                        <th @onclick="() => ChangePlanSorting(nameof(PlanForGettingDto.Status))">
+                                            Status @SortPlanIcon(nameof(PlanForGettingDto.Status))
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var plan in plans)
+                                    {
+                                        <tr>
+                                            <td>@plan.Id</td>
+                                            <td>@plan.Status</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                            <nav>
+                                <ul class="pagination">
+                                    <li class="page-item @( _planPage == 1 ? "disabled" : "")">
+                                        <button class="page-link" @onclick="PreviousPlanPage">Previous</button>
+                                    </li>
+                                    <li class="page-item">
+                                        <span class="page-link">@_planPage</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <button class="page-link" @onclick="NextPlanPage">Next</button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        }
+                        else
+                        {
+                            <p>No plans found.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 }
 
 @code {
+
+    // Plans Section
+    private bool isPlansOpen = false;
+    private bool isPlansLoading = false;
+    private List<PlanForGettingDto> plans;
+
+    private int _planPage = 1;
+    private int _planPageSize = 10;
+    private string _planSortBy = nameof(PlanForGettingDto.Id);
+    private bool _planSortByAscending = true;
+
+    private async Task TogglePlansAccordion()
+    {
+        isPlansOpen = !isPlansOpen;
+
+        if (isPlansOpen && plans == null)
+        {
+            await LoadPlansAsync();
+        }
+    }
+
+    private async Task LoadPlansAsync()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        isPlansLoading = true;
+
+        try
+        {
+            var clientId = SelectedClientState.SelectedClient.Id;
+            var response = await ClientService.GetPlansOfClientAsync(clientId, _planPage, _planPageSize, _planSortBy, _planSortByAscending);
+            plans = new();
+            plans.AddRange(response);
+        }
+        catch (Exception)
+        {
+            // Handle or log exception
+        }
+        finally
+        {
+            isPlansLoading = false;
+        }
+    }
+
+    private async Task ChangePlanSorting(string sortBy)
+    {
+        if (_planSortBy == sortBy)
+        {
+            _planSortByAscending = !_planSortByAscending;
+        }
+        else
+        {
+            _planSortBy = sortBy;
+            _planSortByAscending = true;
+        }
+
+        await LoadPlansAsync();
+    }
+
+    private async Task NextPlanPage()
+    {
+        _planPage++;
+        await LoadPlansAsync();
+    }
+
+    private async Task PreviousPlanPage()
+    {
+        if (_planPage > 1)
+        {
+            _planPage--;
+            await LoadPlansAsync();
+        }
+    }
+
+    private MarkupString SortPlanIcon(string column)
+    {
+        if (_planSortBy != column) return new MarkupString("");
+        return _planSortByAscending
+            ? new MarkupString("&#9650;")
+            : new MarkupString("&#9660;");
+    }
+
+
+
+    //Item section
     private bool isItemsOpen = false;
     private bool isItemsLoading = false;
     private List<ItemForGettingDto> items;
