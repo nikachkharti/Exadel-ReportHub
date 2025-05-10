@@ -65,25 +65,25 @@ else
                                     }
                                 </tbody>
                             </table>
-
-                            <nav>
-                                <ul class="pagination">
-                                    <li class="page-item @( _itemPage == 1 ? "disabled" : "")">
-                                        <button class="page-link" @onclick="PreviousPage">Previous</button>
-                                    </li>
-                                    <li class="page-item">
-                                        <span class="page-link">@_itemPage</span>
-                                    </li>
-                                    <li class="page-item">
-                                        <button class="page-link" @onclick="NextPage">Next</button>
-                                    </li>
-                                </ul>
-                            </nav>
                         }
                         else
                         {
                             <p>No items found.</p>
                         }
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item @( _itemPage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PreviousPage">Previous</button>
+                                </li>
+                                <li class="page-item">
+                                    <span class="page-link">@_itemPage</span>
+                                </li>
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="NextPage">Next</button>
+                                </li>
+                            </ul>
+                        </nav>
+
                     </div>
                 </div>
             </div>
@@ -127,34 +127,182 @@ else
                                     }
                                 </tbody>
                             </table>
-
-                            <nav>
-                                <ul class="pagination">
-                                    <li class="page-item @( _planPage == 1 ? "disabled" : "")">
-                                        <button class="page-link" @onclick="PreviousPlanPage">Previous</button>
-                                    </li>
-                                    <li class="page-item">
-                                        <span class="page-link">@_planPage</span>
-                                    </li>
-                                    <li class="page-item">
-                                        <button class="page-link" @onclick="NextPlanPage">Next</button>
-                                    </li>
-                                </ul>
-                            </nav>
                         }
                         else
                         {
                             <p>No plans found.</p>
                         }
+
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item @( _planPage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PreviousPlanPage">Previous</button>
+                                </li>
+                                <li class="page-item">
+                                    <span class="page-link">@_planPage</span>
+                                </li>
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="NextPlanPage">Next</button>
+                                </li>
+                            </ul>
+                        </nav>
+
                     </div>
                 </div>
             </div>
+
+            <!-- SALES -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button @(!isSalesOpen ? "collapsed" : "")"
+                            @onclick="ToggleSalesAccordion"
+                            type="button"
+                            aria-expanded="@isSalesOpen">
+                        Sales
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse @(isSalesOpen ? "show" : "")">
+                    <div class="accordion-body">
+                        @if (isSalesLoading)
+                        {
+                            <p>Loading sales...</p>
+                        }
+                        else if (sales != null && sales.Any())
+                        {
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th @onclick="() => ChangeSaleSorting(nameof(SaleForGettingDto.SaleDate))">
+                                            Sale Date @SortSaleIcon(nameof(SaleForGettingDto.SaleDate))
+                                        </th>
+                                        <th @onclick="() => ChangeSaleSorting(nameof(SaleForGettingDto.Amount))">
+                                            Amount @SortSaleIcon(nameof(SaleForGettingDto.Amount))
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sale in sales)
+                                    {
+                                        <tr>
+                                            <td>@sale.SaleDate.ToString("yyyy-MM-dd")</td>
+                                            <td>@sale.Amount</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p>No sales found.</p>
+                        }
+
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item @( _salePage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PreviousSalePage">Previous</button>
+                                </li>
+                                <li class="page-item">
+                                    <span class="page-link">@_salePage</span>
+                                </li>
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="NextSalePage">Next</button>
+                                </li>
+                            </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+
 
         </div>
     </div>
 }
 
 @code {
+
+    // SALES section
+    private bool isSalesOpen = false;
+    private bool isSalesLoading = false;
+    private List<SaleForGettingDto> sales;
+
+    private int _salePage = 1;
+    private int _salePageSize = 10;
+    private string _saleSortBy = nameof(SaleForGettingDto.SaleDate);
+    private bool _saleSortByAscending = false;
+
+    private async Task ToggleSalesAccordion()
+    {
+        isSalesOpen = !isSalesOpen;
+
+        if (isSalesOpen && sales == null)
+        {
+            await LoadSalesAsync();
+        }
+    }
+
+    private async Task LoadSalesAsync()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        isSalesLoading = true;
+
+        try
+        {
+            var clientId = SelectedClientState.SelectedClient.Id;
+            var response = await ClientService.GetSalesOfClientAsync(clientId, _salePage, _salePageSize, _saleSortBy, _saleSortByAscending);
+            sales = new();
+            sales.AddRange(response);
+        }
+        catch (Exception)
+        {
+            // Optionally log error
+        }
+        finally
+        {
+            isSalesLoading = false;
+        }
+    }
+
+    private async Task ChangeSaleSorting(string sortBy)
+    {
+        if (_saleSortBy == sortBy)
+        {
+            _saleSortByAscending = !_saleSortByAscending;
+        }
+        else
+        {
+            _saleSortBy = sortBy;
+            _saleSortByAscending = true;
+        }
+
+        await LoadSalesAsync();
+    }
+
+    private async Task NextSalePage()
+    {
+        _salePage++;
+        await LoadSalesAsync();
+    }
+
+    private async Task PreviousSalePage()
+    {
+        if (_salePage > 1)
+        {
+            _salePage--;
+            await LoadSalesAsync();
+        }
+    }
+
+    private MarkupString SortSaleIcon(string column)
+    {
+        if (_saleSortBy != column) return new MarkupString("");
+        return _saleSortByAscending
+            ? new MarkupString("&#9650;")
+            : new MarkupString("&#9660;");
+    }
+
+
 
     // Plans Section
     private bool isPlansOpen = false;

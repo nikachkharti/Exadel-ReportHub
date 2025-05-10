@@ -12,7 +12,6 @@ namespace ReportHub.Web.Services.Refit
             string sortingParameter = "",
             bool ascending = true);
 
-
         [Get("/api/clients/{clientId}/items")]
         Task<EndpointResponse> GetItemsOfClientAsync(
             string clientId,
@@ -21,9 +20,16 @@ namespace ReportHub.Web.Services.Refit
             string sortingParameter = "",
             bool ascending = true);
 
-
         [Get("/api/clients/{clientId}/plans")]
         Task<EndpointResponse> GetPlansOfClientAsync(
+            string clientId,
+            int? pageNumber = 1,
+            int? pageSize = 10,
+            string sortingParameter = "",
+            bool ascending = true);
+
+        [Get("/api/clients/{clientId}/sales")]
+        Task<EndpointResponse> GetSalesOfClientAsync(
             string clientId,
             int? pageNumber = 1,
             int? pageSize = 10,

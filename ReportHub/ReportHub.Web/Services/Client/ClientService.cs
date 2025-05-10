@@ -2,6 +2,7 @@
 using ReportHub.Web.Models.Clients;
 using ReportHub.Web.Models.Items;
 using ReportHub.Web.Models.Plans;
+using ReportHub.Web.Models.Sales;
 using ReportHub.Web.Services.Refit;
 
 namespace ReportHub.Web.Services.Client
@@ -42,6 +43,18 @@ namespace ReportHub.Web.Services.Client
             }
 
             return JsonConvert.DeserializeObject<IEnumerable<PlanForGettingDto>>(resposne.Result.ToString());
+        }
+
+        public async Task<IEnumerable<SaleForGettingDto>> GetSalesOfClientAsync(string clientId, int? page = 1, int? size = 10, string sortBy = "", bool ascending = true)
+        {
+            var resposne = await clientApi.GetSalesOfClientAsync(clientId, page, size, sortBy, ascending);
+
+            if (!resposne.IsSuccess)
+            {
+                return Enumerable.Empty<SaleForGettingDto>();
+            }
+
+            return JsonConvert.DeserializeObject<IEnumerable<SaleForGettingDto>>(resposne.Result.ToString());
         }
     }
 }
