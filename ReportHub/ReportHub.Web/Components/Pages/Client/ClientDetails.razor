@@ -82,8 +82,17 @@ else
             {
                 var clientId = SelectedClientState.SelectedClient.Id;
                 var response = await ClientService.GetItemsOfClientAsync(clientId);
-                items = new();
-                items.AddRange(response);
+
+                if (response.Any())
+                {
+                    items = new();
+                    items.AddRange(response);
+                }
+                else
+                {
+                    isItemsLoading = false;
+                }
+
             }
             catch (Exception)
             {
