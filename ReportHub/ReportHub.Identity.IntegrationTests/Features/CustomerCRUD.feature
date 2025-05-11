@@ -2,7 +2,7 @@
 Feature: Customer CRUD
   To manage customer in the system
   As an authorized user
-  I want to create, read, update, and delete clients
+  I want to create, read, update, and delete customers
 
 Scenario Outline: Create a customer with detailed information
 	Given I am authorized as owner

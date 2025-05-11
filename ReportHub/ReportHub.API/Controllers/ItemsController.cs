@@ -36,6 +36,7 @@ namespace ReportHub.API.Controllers
         /// <param name="command">Create item command</param>
         /// <returns>IActionResult</returns>
         /// <returns>IActionResult</returns>
+        [Authorize(Roles = "Owner, ClientAdmin, Operator")]
         [HttpPost]
         public async Task<IActionResult> CreateItem([FromBody] CreateItemCommand command)
         {
@@ -43,6 +44,17 @@ namespace ReportHub.API.Controllers
             var result = await mediator.Send(command);
 
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.Created));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
+        [Authorize(Roles = "Owner, ClientAdmin, Operator")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await mediator.Send(new DeleteItemCommand(id));
+
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
+
             return StatusCode(response.HttpStatusCode, response);
         }
     }
