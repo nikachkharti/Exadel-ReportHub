@@ -44,7 +44,9 @@ namespace ReportHub.Web.Services.Client
                 return Enumerable.Empty<PlanForGettingDto>();
             }
 
-            return JsonConvert.DeserializeObject<IEnumerable<PlanForGettingDto>>(resposne.Result.ToString());
+            return
+                JsonConvert.DeserializeObject<IEnumerable<PlanForGettingDto>>(resposne.Result.ToString())
+                .Where(x => x.IsDeleted == false);
         }
 
         public async Task<IEnumerable<SaleForGettingDto>> GetSalesOfClientAsync(string clientId, int? page = 1, int? size = 10, string sortBy = "", bool ascending = true)
@@ -56,7 +58,9 @@ namespace ReportHub.Web.Services.Client
                 return Enumerable.Empty<SaleForGettingDto>();
             }
 
-            return JsonConvert.DeserializeObject<IEnumerable<SaleForGettingDto>>(resposne.Result.ToString());
+            return
+                JsonConvert.DeserializeObject<IEnumerable<SaleForGettingDto>>(resposne.Result.ToString())
+                .Where(x => x.IsDeleted == false);
         }
 
         public async Task<bool> DeleteItemOfClientAsync(string clientId, string itemId)

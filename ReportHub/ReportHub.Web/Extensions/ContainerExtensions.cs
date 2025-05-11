@@ -1,6 +1,7 @@
 ﻿using Refit;
 using ReportHub.Web.Components.Shared;
 using ReportHub.Web.Services.Client;
+using ReportHub.Web.Services.Plan;
 using ReportHub.Web.Services.Refit;
 
 namespace ReportHub.Web.Extensions
@@ -19,11 +20,15 @@ namespace ReportHub.Web.Extensions
 
             builder.Services.AddRefitClient<IClientApi>()
                 .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddress));
+
+            builder.Services.AddRefitClient<IPlanApi>()
+                .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddress));
         }
 
         public static void AddServices(this WebApplicationBuilder builder)
         {
             builder.Services.AddScoped<IClientService, ClientService>();
+            builder.Services.AddScoped<IPlanService, PlanService>();
         }
 
         public static void AddSharedStates(this WebApplicationBuilder builder)

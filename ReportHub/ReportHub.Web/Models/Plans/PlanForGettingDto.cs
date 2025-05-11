@@ -8,6 +8,7 @@
         decimal Amount,
         DateTime StartDate,
         DateTime EndDate,
-        PlanStatus Status
+        PlanStatus Status,
+        bool IsDeleted
     );
 }
