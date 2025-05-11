@@ -1,6 +1,7 @@
 ﻿@page "/clients"
 @using ReportHub.Web.Models.Clients
 @inject IClientService ClientService
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 
 
@@ -117,6 +118,12 @@ else
     }
 
 
+    @* SUCCESSFUL SALE TOAST *@
+    @if (clientCreatedSuccessfully)
+    {
+        JS.InvokeVoidAsync("showAlert", "Client created successfully");
+    }
+
 }
 
 @code {
@@ -131,6 +138,7 @@ else
     private bool isNewClientModalVisible = false;
     private string name;
     private string specialization;
+    private bool clientCreatedSuccessfully = false;
 
 
     private void ShowNewClientModal()
@@ -152,11 +160,11 @@ else
         {
             await ClientService.AddNewClientAsync(command);
             isNewClientModalVisible = false;
+            clientCreatedSuccessfully = true;
             await LoadClientsAsync();
         }
         catch (Exception)
         {
-
             throw;
         }
     }
