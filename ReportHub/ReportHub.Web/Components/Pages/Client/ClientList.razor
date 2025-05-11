@@ -37,6 +37,7 @@ else
                         <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Specialization))">
                             Specialization @SortIndicator(nameof(ClientForGettingDto.Specialization))
                         </th>
+                        <th>Edit</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,6 +51,10 @@ else
                                 <button class="btn btn-primary"
                                         @onclick="() => NavigateToDetails(client)">
                                     Details
+                                </button>
+                                <button class="btn btn-danger"
+                                        @onclick="() => ShowClientDeleteModal(client)">
+                                    Delete
                                 </button>
                             </td>
                         </tr>
@@ -118,6 +123,28 @@ else
         </div>
     }
 
+    @* CLIENT DELETE MODAL *@
+    @if (isClientDeleteModalVisible)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Client</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CloseClientDeleteModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this client?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseClientDeleteModal">Cancel</button>
+                        <button class="btn btn-danger" @onclick="ConfirmClientDelete">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
 
     @* SUCCESSFUL SALE TOAST *@
     @if (clientCreatedSuccessfully)
@@ -125,6 +152,12 @@ else
         JS.InvokeVoidAsync("showAlert", "Client created successfully");
     }
 
+    @* SUCCESSFUL CLIENT DELETE TOAST *@
+    @if (clientDeletedSuccessFully)
+    {
+        JS.InvokeVoidAsync("showAlert", "Client deleted successfully");
+        clientDeletedSuccessFully = false;
+    }
 }
 
 @code {
@@ -141,12 +174,44 @@ else
     private string specialization;
     private bool clientCreatedSuccessfully = false;
 
+    private ClientForGettingDto clientToDelete;
+    private bool isClientDeleteModalVisible = false;
+    private bool clientDeletedSuccessFully = false;
+
+
+    private void ShowClientDeleteModal(ClientForGettingDto client)
+    {
+        clientToDelete = client;
+        isClientDeleteModalVisible = true;
+    }
+
+    private void CloseClientDeleteModal()
+    {
+        isClientDeleteModalVisible = false;
+        clientToDelete = null;
+    }
+
+    private async Task ConfirmClientDelete()
+    {
+        if (clientToDelete is not null)
+        {
+            await ClientService.DeleteClientAsync(clientToDelete.Id);
+            clientDeletedSuccessFully = true;
+
+            // Optional: Refresh client list
+            await LoadClientsAsync();
+
+            // Close modal
+            CloseClientDeleteModal();
+        }
+    }
+
+
 
     private void ShowNewClientModal()
     {
         isNewClientModalVisible = true;
     }
-
 
     private void CloseNewClientModal()
     {

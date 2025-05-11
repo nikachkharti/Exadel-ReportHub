@@ -102,7 +102,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
         [HttpDelete("{clientId}")]
-        [Authorize(Roles = "SuperAdmin")]
+        //[Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteClient([FromRoute][Required] string clientId)
         {
             var command = new DeleteClientCommand(clientId);

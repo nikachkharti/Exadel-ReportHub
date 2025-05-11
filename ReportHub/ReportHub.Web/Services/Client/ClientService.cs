@@ -101,5 +101,18 @@ namespace ReportHub.Web.Services.Client
                 return false;
             }
         }
+
+        public async Task<bool> DeleteClientAsync(string clientId)
+        {
+            try
+            {
+                await clientApi.DeleteClientAsync(clientId);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
