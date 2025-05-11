@@ -20,9 +20,9 @@ namespace ReportHub.Identity.IntegrationTests.Features
     [System.CodeDom.Compiler.GeneratedCodeAttribute("TechTalk.SpecFlow", "3.9.0.0")]
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [NUnit.Framework.TestFixtureAttribute()]
-    [NUnit.Framework.DescriptionAttribute("Customer CRUD")]
+    [NUnit.Framework.DescriptionAttribute("item CRUD")]
     [NUnit.Framework.CategoryAttribute("CRUD")]
-    public partial class CustomerCRUDFeature
+    public partial class ItemCRUDFeature
     {
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
@@ -30,15 +30,15 @@ namespace ReportHub.Identity.IntegrationTests.Features
         private static string[] featureTags = new string[] {
                 "CRUD"};
         
-#line 1 "CustomerCRUD.feature"
+#line 1 "ItemCRUD.feature"
 #line hidden
         
         [NUnit.Framework.OneTimeSetUpAttribute()]
         public virtual void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "Customer CRUD", "  To manage customer in the system\r\n  As an authorized user\r\n  I want to create, " +
-                    "read, update, and delete customers", ProgrammingLanguage.CSharp, featureTags);
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "item CRUD", "  To manage item in the system\r\n  As an authorized user\r\n  I want to create, read" +
+                    ", update, and delete items", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -77,16 +77,17 @@ namespace ReportHub.Identity.IntegrationTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Create a customer with detailed information")]
-        [NUnit.Framework.TestCaseAttribute("test", "test@gmail.com", "680398332b140001219385be", null)]
-        public void CreateACustomerWithDetailedInformation(string name, string email, string countryId, string[] exampleTags)
+        [NUnit.Framework.DescriptionAttribute("Create a item with detailed information")]
+        [NUnit.Framework.TestCaseAttribute("test", "testing item", "1000", "USD", null)]
+        public void CreateAItemWithDetailedInformation(string name, string description, string price, string currency, string[] exampleTags)
         {
             string[] tagsOfScenario = exampleTags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             argumentsOfScenario.Add("name", name);
-            argumentsOfScenario.Add("email", email);
-            argumentsOfScenario.Add("countryId", countryId);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create a customer with detailed information", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            argumentsOfScenario.Add("description", description);
+            argumentsOfScenario.Add("price", price);
+            argumentsOfScenario.Add("currency", currency);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create a item with detailed information", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 7
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -98,23 +99,24 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 8
- testRunner.Given("I am authorized as owner", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("I am authorized as owner for item crud", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 9
- testRunner.When(string.Format("I create a customer with name \"{0}\", email \"{1}\", and country ID \"{2}\"", name, email, countryId), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When(string.Format("I create a item with name \"{0}\", description \"{1}\", price \"{2}\", and currency \"{3" +
+                            "}\"", name, description, price, currency), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 10
- testRunner.Then("the customer should be created successfully", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.Then("the item should be created successfully", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Create customer should fail")]
+        [NUnit.Framework.DescriptionAttribute("Create item should fail")]
         [NUnit.Framework.CategoryAttribute("CRUDFailure")]
-        [NUnit.Framework.TestCaseAttribute("test", "test@gmail.com", "680398332b140001219385be", null)]
-        public void CreateCustomerShouldFail(string name, string email, string countryId, string[] exampleTags)
+        [NUnit.Framework.TestCaseAttribute("test", "testing item", "1000", "USD", null)]
+        public void CreateItemShouldFail(string name, string description, string price, string currency, string[] exampleTags)
         {
             string[] @__tags = new string[] {
                     "CRUDFailure"};
@@ -125,9 +127,10 @@ this.ScenarioInitialize(scenarioInfo);
             string[] tagsOfScenario = @__tags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             argumentsOfScenario.Add("name", name);
-            argumentsOfScenario.Add("email", email);
-            argumentsOfScenario.Add("countryId", countryId);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create customer should fail", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            argumentsOfScenario.Add("description", description);
+            argumentsOfScenario.Add("price", price);
+            argumentsOfScenario.Add("currency", currency);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Create item should fail", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 18
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -139,26 +142,26 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 19
- testRunner.Given("I am authorized as super admin", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("I am authorized as super admin for item crud", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 20
- testRunner.When(string.Format("I create a customer with name \"{0}\", email \"{1}\", and country ID \"{2}\" as super a" +
-                            "dmin", name, email, countryId), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When(string.Format("I create a item with name \"{0}\", description \"{1}\", price \"{2}\", and currency \"{3" +
+                            "}\" as super admin", name, description, price, currency), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 21
- testRunner.Then("the response should be forbidden status code", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.Then("the response should be forbidden status code for item creation", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Get a customer by ID")]
-        public void GetACustomerByID()
+        [NUnit.Framework.DescriptionAttribute("Get a item by ID")]
+        public void GetAItemByID()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get a customer by ID", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get a item by ID", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 27
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -170,25 +173,25 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 28
- testRunner.Given("I have created a customer", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("I have created a item", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 29
- testRunner.When("I request the customer by ID", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When("I request the item by ID", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 30
- testRunner.Then("the response should contain the customer", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.Then("the response should contain the item", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Delete a customer")]
-        public void DeleteACustomer()
+        [NUnit.Framework.DescriptionAttribute("Delete a item")]
+        public void DeleteAItem()
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Delete a customer", null, tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Delete a item", null, tagsOfScenario, argumentsOfScenario, featureTags);
 #line 32
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -200,13 +203,13 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 33
- testRunner.Given("I have created a customer and got by id", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("I have created a item and got by id", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 34
- testRunner.When("I delete the customer", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
+ testRunner.When("I delete the item", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
 #line 35
- testRunner.Then("The customer IsDeleted property should be true", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+ testRunner.Then("The item IsDeleted property should be true", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

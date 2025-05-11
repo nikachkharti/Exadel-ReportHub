@@ -56,7 +56,7 @@ public class CustomerCRUDSteps
     }
 
     [Given("I am authorized as super admin")]
-    public void GivenIAuthorizedWithOwnerRole()
+    public void GivenIAuthorizedAsSuperAdmin()
     {
         var token = _scenarioContext["access_token"].ToString();
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
