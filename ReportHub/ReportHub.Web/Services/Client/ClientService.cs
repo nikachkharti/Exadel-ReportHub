@@ -88,5 +88,18 @@ namespace ReportHub.Web.Services.Client
                 return false;
             }
         }
+
+        public async Task<bool> AddNewClientAsync(CreateClientCommand createClientModel)
+        {
+            try
+            {
+                await clientApi.AddNewClientAsync(createClientModel);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

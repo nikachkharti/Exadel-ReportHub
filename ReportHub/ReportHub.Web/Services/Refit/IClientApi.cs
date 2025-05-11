@@ -1,5 +1,6 @@
 ﻿using Refit;
 using ReportHub.Web.Models;
+using ReportHub.Web.Models.Clients;
 using ReportHub.Web.Models.Items;
 
 namespace ReportHub.Web.Services.Refit
@@ -42,5 +43,8 @@ namespace ReportHub.Web.Services.Refit
 
         [Post("/api/clients/sell")]
         Task<EndpointResponse> SellItemAsync([Body] SellItemCommand command);
+
+        [Post("/api/clients")]
+        Task<EndpointResponse> AddNewClientAsync([Body] CreateClientCommand command);
     }
 }

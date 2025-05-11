@@ -562,7 +562,7 @@ else
 
         try
         {
-            await ClientService.SellItemOfClientAsync(command); // This assumes SellItemAsync method exists
+            await ClientService.SellItemOfClientAsync(command);
             isSellItemModalVisible = false;
             await LoadSalesAsync(); // Refresh sales
             saleSuccess = true;
