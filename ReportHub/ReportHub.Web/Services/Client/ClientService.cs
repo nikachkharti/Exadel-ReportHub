@@ -75,5 +75,18 @@ namespace ReportHub.Web.Services.Client
                 return false;
             }
         }
+
+        public async Task<bool> SellItemOfClientAsync(SellItemCommand sellItem)
+        {
+            try
+            {
+                await clientApi.SellItemAsync(sellItem);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

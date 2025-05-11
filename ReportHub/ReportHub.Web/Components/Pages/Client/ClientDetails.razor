@@ -2,6 +2,7 @@
 @inject SelectedClientState SelectedClientState
 @inject IClientService ClientService
 @inject IPlanService PlanService
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 
 <h3>Client Details</h3>
@@ -54,6 +55,7 @@ else
                                         <th @onclick="() => ChangeSorting(nameof(ItemForGettingDto.Id))">
                                             ID @SortIcon(nameof(ItemForGettingDto.Id))
                                         </th>
+                                        <th>Edit</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -64,6 +66,9 @@ else
                                             <td>@item.Id</td>
                                             <td>
                                                 <button class="btn btn-danger btn-sm" @onclick="() => ShowDeleteModal(item)">Delete</button>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-success btn-sm" @onclick="() => ShowSellItemModal(item)">Sell</button>
                                             </td>
                                         </tr>
                                     }
@@ -119,6 +124,7 @@ else
                                         <th @onclick="() => ChangePlanSorting(nameof(PlanForGettingDto.Status))">
                                             Status @SortPlanIcon(nameof(PlanForGettingDto.Status))
                                         </th>
+                                        <th>Edit</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -179,6 +185,9 @@ else
                             <table class="table">
                                 <thead>
                                     <tr>
+                                        <th @onclick="() => ChangeSaleSorting(nameof(SaleForGettingDto.ItemId))">
+                                            Item Id @SortSaleIcon(nameof(SaleForGettingDto.ItemId))
+                                        </th>
                                         <th @onclick="() => ChangeSaleSorting(nameof(SaleForGettingDto.SaleDate))">
                                             Sale Date @SortSaleIcon(nameof(SaleForGettingDto.SaleDate))
                                         </th>
@@ -191,6 +200,7 @@ else
                                     @foreach (var sale in sales)
                                     {
                                         <tr>
+                                            <td>@sale.ItemId</td>
                                             <td>@sale.SaleDate.ToString("yyyy-MM-dd")</td>
                                             <td>@sale.Amount</td>
                                         </tr>
@@ -272,6 +282,44 @@ else
     </div>
 }
 
+
+@* SELL ITEM MODAL *@
+@if (isSellItemModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sell Item</h5>
+                    <button type="button" class="btn-close" @onclick="CloseSellItemModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-control" @bind="sellAmount" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sale Date</label>
+                        <input type="datetime" class="form-control" @bind="sellDateString" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseSellItemModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="SubmitSellItem">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@* SUCCESSFUL SALE TOAST *@
+@if (saleSuccess)
+{
+    JS.InvokeVoidAsync("showAlert", "Sale completed successfully!");
+    saleSuccess = false;
+}
 
 
 
@@ -480,6 +528,52 @@ else
     private bool _itemSortByAscending = true;
     private bool isDeleteModalVisible = false;
     private ItemForGettingDto itemToDelete;
+    private bool isSellItemModalVisible = false;
+    private ItemForGettingDto itemToSell;
+    private decimal sellAmount;
+    private string sellDateString = DateTime.Today.ToString("yyyy-MM-dd");
+    bool saleSuccess = false;
+
+
+    private void ShowSellItemModal(ItemForGettingDto item)
+    {
+        itemToSell = item;
+        sellAmount = 0;
+        sellDateString = DateTime.Today.ToString("yyyy-MM-dd");
+        isSellItemModalVisible = true;
+    }
+
+    private void CloseSellItemModal()
+    {
+        isSellItemModalVisible = false;
+    }
+
+    private async Task SubmitSellItem()
+    {
+        if (SelectedClientState.SelectedClient is null || itemToSell is null)
+            return;
+
+        var command = new SellItemCommand(
+            ClientId: SelectedClientState.SelectedClient.Id,
+            ItemId: itemToSell.Id,
+            Amount: sellAmount,
+            SaleDate: DateTime.Parse(sellDateString)
+        );
+
+        try
+        {
+            await ClientService.SellItemOfClientAsync(command); // This assumes SellItemAsync method exists
+            isSellItemModalVisible = false;
+            await LoadSalesAsync(); // Refresh sales
+            saleSuccess = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
+
+
 
 
     private void ShowDeleteModal(ItemForGettingDto item)

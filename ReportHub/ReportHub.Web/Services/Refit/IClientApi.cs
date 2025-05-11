@@ -1,5 +1,6 @@
 ﻿using Refit;
 using ReportHub.Web.Models;
+using ReportHub.Web.Models.Items;
 
 namespace ReportHub.Web.Services.Refit
 {
@@ -38,5 +39,8 @@ namespace ReportHub.Web.Services.Refit
 
         [Delete("/api/clients/{clientId}/items/{itemId}")]
         Task DeleteItemOfClientAsync(string clientId, string itemId);
+
+        [Post("/api/clients/sell")]
+        Task<EndpointResponse> SellItemAsync([Body] SellItemCommand command);
     }
 }

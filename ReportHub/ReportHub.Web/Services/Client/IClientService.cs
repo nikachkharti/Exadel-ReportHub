@@ -12,6 +12,6 @@ namespace ReportHub.Web.Services.Client
         Task<IEnumerable<PlanForGettingDto>> GetPlansOfClientAsync(string clientId, int? page = 1, int? size = 10, string sortBy = "", bool ascending = true);
         Task<IEnumerable<SaleForGettingDto>> GetSalesOfClientAsync(string clientId, int? page = 1, int? size = 10, string sortBy = "", bool ascending = true);
         Task<bool> DeleteItemOfClientAsync(string clientId, string itemId);
-
+        Task<bool> SellItemOfClientAsync(SellItemCommand sellItem);
     }
 }
