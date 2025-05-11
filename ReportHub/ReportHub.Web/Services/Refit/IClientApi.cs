@@ -35,5 +35,8 @@ namespace ReportHub.Web.Services.Refit
             int? pageSize = 10,
             string sortingParameter = "",
             bool ascending = true);
+
+        [Delete("/api/clients/{clientId}/items/{itemId}")]
+        Task DeleteItemOfClientAsync(string clientId, string itemId);
     }
 }

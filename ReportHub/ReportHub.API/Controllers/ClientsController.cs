@@ -118,8 +118,8 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId">Client Id</param>
         /// <param name="itemId">Item Id</param>
         /// <returns>IActionResult</returns>
-        [HttpDelete("clients/{clientId}/items/{itemId}")]
-        [Authorize(Roles = "Owner, ClientAdmin")]
+        [HttpDelete("{clientId}/items/{itemId}")]
+        //[Authorize(Roles = "Owner, ClientAdmin")]
         public async Task<IActionResult> DeleteItem([FromRoute][Required] string clientId, [FromRoute][Required] string itemId)
         {
             var query = new DeleteItemOfClientCommand(clientId, itemId);
