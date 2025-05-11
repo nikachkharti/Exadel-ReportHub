@@ -4,6 +4,7 @@
     (
         string Id,
         string Name,
-        string Specialization
+        string Specialization,
+        bool IsDeleted
     );
 }

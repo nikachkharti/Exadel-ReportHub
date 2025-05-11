@@ -18,7 +18,8 @@ namespace ReportHub.Web.Services.Client
                 return Enumerable.Empty<ClientForGettingDto>();
             }
 
-            return JsonConvert.DeserializeObject<IEnumerable<ClientForGettingDto>>(response.Result.ToString());
+            return JsonConvert.DeserializeObject<IEnumerable<ClientForGettingDto>>(response.Result.ToString())
+                .Where(x => x.IsDeleted == false);
         }
 
         public async Task<IEnumerable<ItemForGettingDto>> GetItemsOfClientAsync(string clientId, int? page = 1, int? size = 10, string sortBy = "", bool ascending = true)
