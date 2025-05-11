@@ -3,6 +3,7 @@
 @inject IClientService ClientService
 @inject IJSRuntime JS
 @rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
 
 
 <div class="row text-center">
@@ -150,11 +151,18 @@ else
     private void CloseNewClientModal()
     {
         isNewClientModalVisible = false;
+        name = string.Empty;
+        specialization = string.Empty;
     }
 
     private async Task SubmitNewClient()
     {
         var command = new CreateClientCommand(name, specialization);
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(specialization))
+        {
+            await JS.InvokeVoidAsync("alert", "Both Name and Specialization are required.");
+            return;
+        }
 
         try
         {

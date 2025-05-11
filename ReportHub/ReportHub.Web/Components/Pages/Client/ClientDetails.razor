@@ -553,12 +553,19 @@ else
         if (SelectedClientState.SelectedClient is null || itemToSell is null)
             return;
 
+        if (string.IsNullOrWhiteSpace(sellDateString))
+        {
+            await JS.InvokeVoidAsync("alert", "Sell date field is required");
+            return;
+        }
+
         var command = new SellItemCommand(
             ClientId: SelectedClientState.SelectedClient.Id,
             ItemId: itemToSell.Id,
             Amount: sellAmount,
             SaleDate: DateTime.Parse(sellDateString)
         );
+
 
         try
         {
