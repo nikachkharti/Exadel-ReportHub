@@ -163,11 +163,11 @@ else
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Name</label>
-                            <input type="text" class="form-control" @bind="name" />
+                            <input type="text" class="form-control" @bind="updateName" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Specialization</label>
-                            <input type="text" class="form-control" @bind="specialization" />
+                            <input type="text" class="form-control" @bind="updateSpecialization" />
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -184,6 +184,7 @@ else
     @if (clientCreatedSuccessfully)
     {
         JS.InvokeVoidAsync("showAlert", "Client created successfully");
+        clientCreatedSuccessfully = false;
     }
 
     @* SUCCESSFUL CLIENT DELETE TOAST *@
@@ -222,13 +223,15 @@ else
     private ClientForGettingDto clientToUpdate;
     private bool isClientUpdateModalVisible = false;
     private bool clientUpdatedSuccessfully = false;
+    private string updateName;
+    private string updateSpecialization;
 
 
     private void ShowClientEditModal(ClientForGettingDto client)
     {
         clientToUpdate = client;
-        name = client.Name;
-        specialization = client.Specialization;
+        updateName = client.Name;
+        updateSpecialization = client.Specialization;
         isClientUpdateModalVisible = true;
     }
 
@@ -244,20 +247,20 @@ else
         if (clientToUpdate is null)
             return;
 
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(updateName))
         {
             await JS.InvokeVoidAsync("alert", "Name field is  required");
             return;
         }
 
 
-        if (string.IsNullOrWhiteSpace(specialization))
+        if (string.IsNullOrWhiteSpace(updateSpecialization))
         {
             await JS.InvokeVoidAsync("alert", "Specialization field is  required");
             return;
         }
 
-        var command = new UpdateClientCommand(clientToUpdate.Id, name, specialization);
+        var command = new UpdateClientCommand(clientToUpdate.Id, updateName, updateSpecialization);
 
         try
         {
