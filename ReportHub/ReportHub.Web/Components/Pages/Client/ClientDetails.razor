@@ -201,7 +201,7 @@ else
                                     {
                                         <tr>
                                             <td>@sale.ItemId</td>
-                                            <td>@sale.SaleDate.ToString("yyyy-MM-dd")</td>
+                                            <td>@sale.SaleDate.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz")</td>
                                             <td>@sale.Amount</td>
                                         </tr>
                                     }
@@ -531,7 +531,7 @@ else
     private bool isSellItemModalVisible = false;
     private ItemForGettingDto itemToSell;
     private decimal sellAmount;
-    private string sellDateString = DateTime.Today.ToString("yyyy-MM-dd");
+    private string sellDateString = DateTime.Today.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz");
     bool saleSuccess = false;
 
 
@@ -539,7 +539,7 @@ else
     {
         itemToSell = item;
         sellAmount = 0;
-        sellDateString = DateTime.Today.ToString("yyyy-MM-dd");
+        sellDateString = DateTime.Today.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz");
         isSellItemModalVisible = true;
     }
 
