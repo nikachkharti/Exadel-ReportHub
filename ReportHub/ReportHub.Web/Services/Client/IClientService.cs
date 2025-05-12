@@ -14,6 +14,7 @@ namespace ReportHub.Web.Services.Client
         Task<bool> DeleteItemOfClientAsync(string clientId, string itemId);
         Task<bool> SellItemOfClientAsync(SellItemCommand sellItem);
         Task<bool> AddNewClientAsync(CreateClientCommand createClientModel);
+        Task<bool> UpdateClientAsync(UpdateClientCommand updateClientModel);
         Task<bool> DeleteClientAsync(string clientId);
     }
 }

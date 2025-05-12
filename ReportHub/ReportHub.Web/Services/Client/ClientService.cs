@@ -115,5 +115,18 @@ namespace ReportHub.Web.Services.Client
                 return false;
             }
         }
+
+        public async Task<bool> UpdateClientAsync(UpdateClientCommand updateClientModel)
+        {
+            try
+            {
+                await clientApi.UpdateClientAsync(updateClientModel);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

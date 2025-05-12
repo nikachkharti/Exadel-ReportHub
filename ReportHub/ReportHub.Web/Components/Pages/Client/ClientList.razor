@@ -48,6 +48,10 @@ else
                             <td class="border px-4 py-2">@client.Name</td>
                             <td class="border px-4 py-2">@client.Specialization</td>
                             <td class="border px-4 py-2">
+                                <button class="btn btn-info text-white"
+                                        @onclick="() => ShowClientEditModal(client)">
+                                    Edit
+                                </button>
                                 <button class="btn btn-primary"
                                         @onclick="() => NavigateToDetails(client)">
                                     Details
@@ -146,6 +150,36 @@ else
     }
 
 
+    @* UPDATE CLIENT MODAL *@
+    @if (isClientUpdateModalVisible)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update Client</h5>
+                        <button type="button" class="btn-close" @onclick="CloseClientUpdateModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" @bind="name" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" class="form-control" @bind="specialization" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseClientUpdateModal">Cancel</button>
+                        <button class="btn btn-primary" @onclick="ConfirmClientUpdate">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
     @* SUCCESSFUL SALE TOAST *@
     @if (clientCreatedSuccessfully)
     {
@@ -157,6 +191,13 @@ else
     {
         JS.InvokeVoidAsync("showAlert", "Client deleted successfully");
         clientDeletedSuccessFully = false;
+    }
+
+    @* SUCCESSFUL CLIENT UPDATE TOAST *@
+    @if (clientUpdatedSuccessfully)
+    {
+        JS.InvokeVoidAsync("showAlert", "Client updated successfully");
+        clientUpdatedSuccessfully = false;
     }
 }
 
@@ -177,6 +218,59 @@ else
     private ClientForGettingDto clientToDelete;
     private bool isClientDeleteModalVisible = false;
     private bool clientDeletedSuccessFully = false;
+
+    private ClientForGettingDto clientToUpdate;
+    private bool isClientUpdateModalVisible = false;
+    private bool clientUpdatedSuccessfully = false;
+
+
+    private void ShowClientEditModal(ClientForGettingDto client)
+    {
+        clientToUpdate = client;
+        name = client.Name;
+        specialization = client.Specialization;
+        isClientUpdateModalVisible = true;
+    }
+
+    private void CloseClientUpdateModal()
+    {
+        isClientUpdateModalVisible = false;
+        clientToUpdate = null;
+    }
+
+
+    private async Task ConfirmClientUpdate()
+    {
+        if (clientToUpdate is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            await JS.InvokeVoidAsync("alert", "Name field is  required");
+            return;
+        }
+
+
+        if (string.IsNullOrWhiteSpace(specialization))
+        {
+            await JS.InvokeVoidAsync("alert", "Specialization field is  required");
+            return;
+        }
+
+        var command = new UpdateClientCommand(clientToUpdate.Id, name, specialization);
+
+        try
+        {
+            await ClientService.UpdateClientAsync(command);
+            isClientUpdateModalVisible = false;
+            await LoadClientsAsync(); //Refresh
+            clientUpdatedSuccessfully = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
 
 
     private void ShowClientDeleteModal(ClientForGettingDto client)

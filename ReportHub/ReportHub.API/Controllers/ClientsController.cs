@@ -136,11 +136,11 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPut("{clientId}")]
-        [Authorize(Roles = "Owner, SuperAdmin")]
-        public async Task<IActionResult> UpdateClient(string clientId, [FromForm][Required] ClientForUpdatingDto model)
+        [HttpPut]
+        //[Authorize(Roles = "Owner, SuperAdmin")]
+        public async Task<IActionResult> UpdateClient([FromBody][Required] UpdateClientCommand model)
         {
-            var result = await mediator.Send(new UpdateClientCommand(clientId, model.Name, model.Specialization));
+            var result = await mediator.Send(model);
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }

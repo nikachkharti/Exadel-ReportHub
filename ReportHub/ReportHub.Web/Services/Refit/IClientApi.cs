@@ -47,7 +47,11 @@ namespace ReportHub.Web.Services.Refit
         [Post("/api/clients")]
         Task<EndpointResponse> AddNewClientAsync([Body] CreateClientCommand command);
 
+        [Put("/api/clients")]
+        Task<EndpointResponse> UpdateClientAsync([Body] UpdateClientCommand command);
+
         [Delete("/api/clients/{clientId}")]
         Task DeleteClientAsync(string clientId);
+
     }
 }
