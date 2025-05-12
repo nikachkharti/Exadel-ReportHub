@@ -8,6 +8,7 @@ namespace ReportHub.Application.Features.ReportSchedule.DTOs
         string CustomerId,
         string CronExpression,
         ReportFormat Format,
-        bool IsActive
+        bool IsActive,
+        bool IsDeleted
     );
 }

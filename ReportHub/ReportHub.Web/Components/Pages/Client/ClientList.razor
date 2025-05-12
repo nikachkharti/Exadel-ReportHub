@@ -1,0 +1,396 @@
+﻿@page "/clients"
+@using ReportHub.Web.Models.Clients
+@inject IClientService ClientService
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+<PageTitle>Client List</PageTitle>
+
+
+<div class="row text-center">
+    <div class="col">
+        <h3 class="text-xl font-semibold mb-4">Clients</h3>
+    </div>
+    <div class="col">
+        <button type="button" class="btn btn-outline-success" @onclick="ShowNewClientModal">New Client</button>
+    </div>
+</div>
+
+
+@if (clients == null)
+{
+    <p>Loading clients...</p>
+}
+else
+{
+    if (clients.Any())
+    {
+        <div class="row">
+            <table class="table table-bordered table-striped">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Id))">
+                            ID @SortIndicator(nameof(ClientForGettingDto.Id))
+                        </th>
+                        <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Name))">
+                            Name @SortIndicator(nameof(ClientForGettingDto.Name))
+                        </th>
+                        <th class="border px-4 py-2 text-left cursor-pointer" @onclick="() => SortBy(nameof(ClientForGettingDto.Specialization))">
+                            Specialization @SortIndicator(nameof(ClientForGettingDto.Specialization))
+                        </th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var client in clients)
+                    {
+                        <tr>
+                            <td class="border px-4 py-2">@client.Id</td>
+                            <td class="border px-4 py-2">@client.Name</td>
+                            <td class="border px-4 py-2">@client.Specialization</td>
+                            <td class="border px-4 py-2">
+                                <button class="btn btn-info text-white"
+                                        @onclick="() => ShowClientEditModal(client)">
+                                    Edit
+                                </button>
+                                <button class="btn btn-primary"
+                                        @onclick="() => NavigateToDetails(client)">
+                                    Details
+                                </button>
+                                <button class="btn btn-danger"
+                                        @onclick="() => ShowClientDeleteModal(client)">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+    }
+    else
+    {
+        <p>No clients found on this page.</p>
+    }
+
+
+    <div class="row mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-start">
+
+                <li class="page-item @( _page == 1 ? "disabled" : "" )">
+                    <button class="page-link" @onclick="PreviousPage">Previous</button>
+                </li>
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page @_page
+                    </span>
+                </li>
+
+                <li class="page-item @(clients == null || clients.Count() < _pageSize ? "disabled" : "")">
+                    <button class="page-link" @onclick="NextPage">Next</button>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+
+
+
+    @* NEW CLIENT MODAL *@
+    @if (isNewClientModalVisible)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">New Client</h5>
+                        <button type="button" class="btn-close" @onclick="CloseNewClientModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" @bind="name" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" class="form-control" @bind="specialization" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseNewClientModal">Cancel</button>
+                        <button class="btn btn-primary" @onclick="SubmitNewClient">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* CLIENT DELETE MODAL *@
+    @if (isClientDeleteModalVisible)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Client</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CloseClientDeleteModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this client?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseClientDeleteModal">Cancel</button>
+                        <button class="btn btn-danger" @onclick="ConfirmClientDelete">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    @* UPDATE CLIENT MODAL *@
+    @if (isClientUpdateModalVisible)
+    {
+        <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update Client</h5>
+                        <button type="button" class="btn-close" @onclick="CloseClientUpdateModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" @bind="updateName" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" class="form-control" @bind="updateSpecialization" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CloseClientUpdateModal">Cancel</button>
+                        <button class="btn btn-primary" @onclick="ConfirmClientUpdate">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+    @* SUCCESSFUL SALE TOAST *@
+    @if (clientCreatedSuccessfully)
+    {
+        JS.InvokeVoidAsync("showAlert", "Client created successfully");
+        clientCreatedSuccessfully = false;
+    }
+
+    @* SUCCESSFUL CLIENT DELETE TOAST *@
+    @if (clientDeletedSuccessFully)
+    {
+        JS.InvokeVoidAsync("showAlert", "Client deleted successfully");
+        clientDeletedSuccessFully = false;
+    }
+
+    @* SUCCESSFUL CLIENT UPDATE TOAST *@
+    @if (clientUpdatedSuccessfully)
+    {
+        JS.InvokeVoidAsync("showAlert", "Client updated successfully");
+        clientUpdatedSuccessfully = false;
+    }
+}
+
+@code {
+    [Inject] SelectedClientState SelectedClientState { get; set; }
+    [Inject] NavigationManager NavigationManager { get; set; }
+
+    private IEnumerable<ClientForGettingDto> clients;
+    private int _page = 1;
+    private int _pageSize = 10;
+    private string _sortBy = nameof(ClientForGettingDto.Id);
+    private bool _ascending = true;
+    private bool isNewClientModalVisible = false;
+    private string name;
+    private string specialization;
+    private bool clientCreatedSuccessfully = false;
+
+    private ClientForGettingDto clientToDelete;
+    private bool isClientDeleteModalVisible = false;
+    private bool clientDeletedSuccessFully = false;
+
+    private ClientForGettingDto clientToUpdate;
+    private bool isClientUpdateModalVisible = false;
+    private bool clientUpdatedSuccessfully = false;
+    private string updateName;
+    private string updateSpecialization;
+
+
+    private void ShowClientEditModal(ClientForGettingDto client)
+    {
+        clientToUpdate = client;
+        updateName = client.Name;
+        updateSpecialization = client.Specialization;
+        isClientUpdateModalVisible = true;
+    }
+
+    private void CloseClientUpdateModal()
+    {
+        isClientUpdateModalVisible = false;
+        clientToUpdate = null;
+    }
+
+
+    private async Task ConfirmClientUpdate()
+    {
+        if (clientToUpdate is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(updateName))
+        {
+            await JS.InvokeVoidAsync("alert", "Name field is  required");
+            return;
+        }
+
+
+        if (string.IsNullOrWhiteSpace(updateSpecialization))
+        {
+            await JS.InvokeVoidAsync("alert", "Specialization field is  required");
+            return;
+        }
+
+        var command = new UpdateClientCommand(clientToUpdate.Id, updateName, updateSpecialization);
+
+        try
+        {
+            await ClientService.UpdateClientAsync(command);
+            isClientUpdateModalVisible = false;
+            await LoadClientsAsync(); //Refresh
+            clientUpdatedSuccessfully = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
+
+
+    private void ShowClientDeleteModal(ClientForGettingDto client)
+    {
+        clientToDelete = client;
+        isClientDeleteModalVisible = true;
+    }
+
+    private void CloseClientDeleteModal()
+    {
+        isClientDeleteModalVisible = false;
+        clientToDelete = null;
+    }
+
+    private async Task ConfirmClientDelete()
+    {
+        if (clientToDelete is not null)
+        {
+            await ClientService.DeleteClientAsync(clientToDelete.Id);
+            clientDeletedSuccessFully = true;
+
+            // Optional: Refresh client list
+            await LoadClientsAsync();
+
+            // Close modal
+            CloseClientDeleteModal();
+        }
+    }
+
+
+
+    private void ShowNewClientModal()
+    {
+        isNewClientModalVisible = true;
+    }
+
+    private void CloseNewClientModal()
+    {
+        isNewClientModalVisible = false;
+        name = string.Empty;
+        specialization = string.Empty;
+    }
+
+    private async Task SubmitNewClient()
+    {
+        var command = new CreateClientCommand(name, specialization);
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(specialization))
+        {
+            await JS.InvokeVoidAsync("alert", "Both Name and Specialization are required.");
+            return;
+        }
+
+        try
+        {
+            await ClientService.AddNewClientAsync(command);
+            isNewClientModalVisible = false;
+            clientCreatedSuccessfully = true;
+            await LoadClientsAsync();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClientsAsync();
+    }
+
+    private async Task LoadClientsAsync()
+    {
+        clients = await ClientService.GetClientsAsync(_page, _pageSize, _sortBy, _ascending);
+    }
+
+    private async Task NextPage()
+    {
+        _page++;
+        await LoadClientsAsync();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (_page > 1)
+        {
+            _page--;
+            await LoadClientsAsync();
+        }
+    }
+
+    private async Task SortBy(string column)
+    {
+        if (_sortBy == column)
+        {
+            _ascending = !_ascending; // toggle sort direction
+        }
+        else
+        {
+            _sortBy = column;
+            _ascending = true; // default ascending
+        }
+
+        _page = 1; // reset to first page on sort change
+        await LoadClientsAsync();
+    }
+
+    private MarkupString SortIndicator(string column)
+    {
+        if (_sortBy != column) return new MarkupString("");
+        var symbol = _ascending ? "↑" : "↓";
+        return new MarkupString($"<span>{symbol}</span>");
+    }
+
+    private void NavigateToDetails(ClientForGettingDto client)
+    {
+        SelectedClientState.SelectedClient = client;
+        NavigationManager.NavigateTo("/client-details");
+    }
+}

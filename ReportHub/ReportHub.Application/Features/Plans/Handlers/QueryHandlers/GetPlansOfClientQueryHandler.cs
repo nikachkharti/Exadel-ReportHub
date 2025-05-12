@@ -15,7 +15,8 @@ namespace ReportHub.Application.Features.Plans.Handlers.QueryHandlers
     {
         public async Task<IEnumerable<PlanForGettingDto>> Handle(GetPlansOfClientQuery request, CancellationToken cancellationToken)
         {
-            EnsureUserHasRoleForThisClient(request.Clientid);
+
+            //EnsureUserHasRoleForThisClient(request.Clientid); TODO Uncomment when I add authorization on web
 
             var sortExpression = ConfigureSortingExpression(request);
 

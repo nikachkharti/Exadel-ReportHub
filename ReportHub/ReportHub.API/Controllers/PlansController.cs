@@ -48,7 +48,7 @@ namespace ReportHub.API.Controllers
         /// <param name="id">Plan id</param>
         /// <returns>IActionResult</returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Owner")]
+        //[Authorize(Roles = "Owner")]
         public async Task<IActionResult> DeletePlan([FromRoute] string id)
         {
             var query = new DeletePlanCommand(id);
