@@ -10,5 +10,6 @@ public record InvoiceForGettingDto
     decimal Amount,
     string Currency,
     string PaymentStatus,
-    List<string> ItemIds
+    List<string> ItemIds,
+    bool IsDeleted
 );

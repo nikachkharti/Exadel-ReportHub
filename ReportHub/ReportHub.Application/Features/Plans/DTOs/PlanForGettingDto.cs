@@ -10,6 +10,7 @@ namespace ReportHub.Application.Features.Plans.DTOs
         decimal Amount,
         DateTime StartDate,
         DateTime EndDate,
-        PlanStatus Status
+        PlanStatus Status,
+        bool IsDeleted
     );
 }

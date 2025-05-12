@@ -7,7 +7,7 @@ using ReportHub.Application.Validators.Exceptions;
 
 namespace ReportHub.Application.Features.Plans.Handlers.CommandHandlers
 {
-    public class DeletePlanCommandHandler(IPlanRepository planRepository, IMapper mapper, IRequestContextService requestContext)
+    public class DeletePlanCommandHandler(IPlanRepository planRepository, IRequestContextService requestContext)
         : BaseFeature(requestContext), IRequestHandler<DeletePlanCommand, string>
     {
         public async Task<string> Handle(DeletePlanCommand request, CancellationToken cancellationToken)
@@ -15,7 +15,7 @@ namespace ReportHub.Application.Features.Plans.Handlers.CommandHandlers
             //TODO: [Add] validators.
             var plan = await planRepository.Get(p => p.Id == request.Id, cancellationToken);
 
-            EnsureUserHasRoleForThisClient(plan.ClientId);
+            //EnsureUserHasRoleForThisClient(plan.ClientId); TODO Uncomment when I add authorization on web
 
             if (plan is null)
             {
