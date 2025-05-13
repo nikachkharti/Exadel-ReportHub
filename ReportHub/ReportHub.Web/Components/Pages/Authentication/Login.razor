@@ -1,0 +1,46 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+
+
+<div class="mb-3">
+    <label class="form-label">Email</label>
+    <input type="text" class="form-control" @bind="userName" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-control" @bind="password" />
+</div>
+
+<div>
+    <button type="button" class="btn btn-primary" @onclick="SubmitLogin">Login</button>
+</div>
+
+@code {
+
+    [Inject] private IAuthService AuthService { get; set; }
+    private string userName;
+    private string password;
+    LoginRequest loginRequest;
+
+    private async Task SubmitLogin()
+    {
+        try
+        {
+            loginRequest = new LoginRequest();
+            loginRequest.Username = userName;
+            loginRequest.Password = password;
+
+            var tokenResponse = await AuthService.LoginAsync(loginRequest);
+
+            //How to store AccessToken
+            Console.WriteLine($"Access Token: {tokenResponse.AccessToken}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Login failed: {ex.Message}");
+        }
+
+    }
+
+}
