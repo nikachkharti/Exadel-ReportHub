@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Authentication.Cookies
 @using ReportHub.Web.Models.Auth.ViewModels
 @using System.Security.Claims
+@using System.IdentityModel.Tokens.Jwt
 @rendermode InteractiveServer
 @inject IAuthService authService;
 @inject NavigationManager navigationManager;
@@ -46,27 +47,26 @@
     {
         try
         {
-            LoginRequest loginRequest = new();
-            loginRequest.Username = Model.UserName;
-            loginRequest.Password = Model.Password;
+            var loginRequest = new LoginRequest
+            {
+                Username = Model.UserName,
+                Password = Model.Password
+            };
 
             var tokenResponse = await authService.LoginAsync(loginRequest);
 
             if (!string.IsNullOrWhiteSpace(tokenResponse.AccessToken))
             {
-                var claims = new List<Claim>()
-                {
-                    new Claim(ClaimTypes.Name,Model.UserName),
-                    new Claim(ClaimTypes.Role,"admin"),
-                };
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(tokenResponse.AccessToken);
+
+                var claims = jwtToken.Claims.ToList();
 
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
 
                 await Context.SignInAsync(principal);
             }
-
-
         }
         catch (Exception ex)
         {
