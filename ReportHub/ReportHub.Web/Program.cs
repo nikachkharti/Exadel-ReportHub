@@ -13,6 +13,10 @@ namespace ReportHub.Web
             builder.AddRefit();
             builder.AddServices();
             builder.AddSharedStates();
+            builder.AddAuthentication();
+            builder.AddAuthorization();
+            builder.AddCascadingAuthenticationState();
+            builder.Services.AddHttpContextAccessor();
 
 
             var app = builder.Build();
@@ -24,9 +28,9 @@ namespace ReportHub.Web
             }
 
             app.UseHttpsRedirection();
-
             app.UseAntiforgery();
-
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
