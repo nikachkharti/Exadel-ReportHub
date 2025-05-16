@@ -69,7 +69,7 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> GetAllInvoices()
         {
             var query = new GetAllInvoicesQuery();
@@ -85,7 +85,7 @@ namespace ReportHub.API.Controllers
         /// </summary>
         /// <returns>IActionResult</returns>
         [HttpGet("{id}")]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<ActionResult<InvoiceForGettingDto>> GetById([FromRoute] string id)
         {
             var result = await _mediator.Send(new GetInvoicesByIdQuery(id));
@@ -119,7 +119,7 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("export")]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> Export([FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
             var query = GetExportingQuery(fileType);
@@ -137,7 +137,7 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>File result</returns>
         [HttpGet("{id}/export")]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> ExportById([FromRoute] string id, [FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
             var query = GetExportingQueryById(id, fileType);
@@ -186,7 +186,7 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>IActionResult</returns>
         [HttpGet("logs/user/{userId}")]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
+        //[Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> ExportLogsOfUser
             ([FromRoute] string userId,
             [FromQuery] int? pageNumber = 1,
