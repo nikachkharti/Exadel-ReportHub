@@ -1,81 +1,37 @@
 ﻿@page "/login"
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authentication.Cookies
 @using ReportHub.Web.Models.Auth.ViewModels
-@using System.Security.Claims
-@using System.IdentityModel.Tokens.Jwt
+@inject NavigationManager NavigationManager
+@inject IAuthService AuthService
 @rendermode InteractiveServer
-@inject IAuthService authService;
-@inject NavigationManager navigationManager;
 
-<div class="row">
-    <div class="col pt-4 pb-4 border">
-        <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
-            <DataAnnotationsValidator />
-            <div class="mb-3">
-                <label>User Name</label>
-                <InputText @bind-Value="Model.UserName" class="form-control" placeholder="Username" />
-                <ValidationMessage For="() => Model.UserName" />
-            </div>
-            <div class="mb-3">
-                <label>Password</label>
-                <InputText @bind-Value="Model.Password" class="form-control" placeholder="Password" type="password" />
-                <ValidationMessage For="() => Model.Password" />
-            </div>
-            <div class="mb-3 text-center">
-                <span class="text-danger">@errorMessage</span>
-            </div>
-            <div class="mb-3 d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Login</button>
-            </div>
-        </EditForm>
-    </div>
-</div>
-
-
+<EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
+    <InputText @bind-Value="Model.UserName" />
+    <InputText @bind-Value="Model.Password" type="password" />
+    <button type="submit">Login</button>
+</EditForm>
 
 @code {
-    [CascadingParameter]
-    public HttpContext Context { get; set; }
-
-    [SupplyParameterFromForm]
-    public LoginViewModel Model { get; set; } = new();
-
+    private LoginViewModel Model = new();
     private string errorMessage;
 
     private async Task Authenticate()
     {
-        try
+        var request = new LoginRequest
         {
-            var loginRequest = new LoginRequest
-            {
-                Username = Model.UserName,
-                Password = Model.Password
-            };
+            Username = Model.UserName,
+            Password = Model.Password
+        };
 
-            var tokenResponse = await authService.LoginAsync(loginRequest);
+        var response = await AuthService.LoginAsync(request); // returns JWT token
 
-            if (!string.IsNullOrWhiteSpace(tokenResponse.AccessToken))
-            {
-                var handler = new JwtSecurityTokenHandler();
-                var jwtToken = handler.ReadJwtToken(tokenResponse.AccessToken);
-
-                var claims = jwtToken.Claims.ToList();
-
-                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                var principal = new ClaimsPrincipal(identity);
-
-                await Context.SignInAsync(principal);
-            }
+        if (!string.IsNullOrEmpty(response?.AccessToken))
+        {
+            // Redirect to controller to set cookie
+            NavigationManager.NavigateTo($"api/auth/signin?access_token={response.AccessToken}", forceLoad: true);
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Login failed: {ex.Message}");
+            errorMessage = "Login failed.";
         }
     }
-
-
-
-
-
 }
