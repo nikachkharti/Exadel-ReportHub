@@ -1,46 +1,81 @@
 ﻿@page "/login"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using ReportHub.Web.Models.Auth.ViewModels
+@using System.Security.Claims
 @rendermode InteractiveServer
+@inject IAuthService authService;
+@inject NavigationManager navigationManager;
 
-
-<div class="mb-3">
-    <label class="form-label">Email</label>
-    <input type="text" class="form-control" @bind="userName" />
+<div class="row">
+    <div class="col pt-4 pb-4 border">
+        <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label>User Name</label>
+                <InputText @bind-Value="Model.UserName" class="form-control" placeholder="Username" />
+                <ValidationMessage For="() => Model.UserName" />
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                <InputText @bind-Value="Model.Password" class="form-control" placeholder="Password" type="password" />
+                <ValidationMessage For="() => Model.Password" />
+            </div>
+            <div class="mb-3 text-center">
+                <span class="text-danger">@errorMessage</span>
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </EditForm>
+    </div>
 </div>
 
-<div class="mb-3">
-    <label class="form-label">Password</label>
-    <input type="password" class="form-control" @bind="password" />
-</div>
 
-<div>
-    <button type="button" class="btn btn-primary" @onclick="SubmitLogin">Login</button>
-</div>
 
 @code {
+    [CascadingParameter]
+    public HttpContext Context { get; set; }
 
-    [Inject] private IAuthService AuthService { get; set; }
-    private string userName;
-    private string password;
-    LoginRequest loginRequest;
+    [SupplyParameterFromForm]
+    public LoginViewModel Model { get; set; } = new();
 
-    private async Task SubmitLogin()
+    private string errorMessage;
+
+    private async Task Authenticate()
     {
         try
         {
-            loginRequest = new LoginRequest();
-            loginRequest.Username = userName;
-            loginRequest.Password = password;
+            LoginRequest loginRequest = new();
+            loginRequest.Username = Model.UserName;
+            loginRequest.Password = Model.Password;
 
-            var tokenResponse = await AuthService.LoginAsync(loginRequest);
+            var tokenResponse = await authService.LoginAsync(loginRequest);
 
-            //How to store AccessToken
-            Console.WriteLine($"Access Token: {tokenResponse.AccessToken}");
+            if (!string.IsNullOrWhiteSpace(tokenResponse.AccessToken))
+            {
+                var claims = new List<Claim>()
+                {
+                    new Claim(ClaimTypes.Name,Model.UserName),
+                    new Claim(ClaimTypes.Role,"admin"),
+                };
+
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+                await Context.SignInAsync(principal);
+            }
+
+
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Login failed: {ex.Message}");
         }
-
     }
+
+
+
+
 
 }

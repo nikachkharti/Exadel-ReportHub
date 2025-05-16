@@ -1,4 +1,5 @@
-﻿using Refit;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Refit;
 using ReportHub.Web.Components.Shared;
 using ReportHub.Web.Services.Auth;
 using ReportHub.Web.Services.Client;
@@ -40,6 +41,29 @@ namespace ReportHub.Web.Extensions
         public static void AddSharedStates(this WebApplicationBuilder builder)
         {
             builder.Services.AddSingleton<SelectedClientState>();
+        }
+
+        public static void AddAuthentication(this WebApplicationBuilder builder)
+        {
+            builder.Services
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.Cookie.Name = "auth_token";
+                    options.LoginPath = "/login";
+                    options.Cookie.MaxAge = TimeSpan.FromMinutes(30);
+                    options.AccessDeniedPath = "/access-denied";
+                });
+        }
+
+        public static void AddAuthorization(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddAuthorization();
+        }
+
+        public static void AddCascadingAuthenticationState(this WebApplicationBuilder builder)
+        {
+            builder.Services.AddCascadingAuthenticationState();
         }
     }
 }
