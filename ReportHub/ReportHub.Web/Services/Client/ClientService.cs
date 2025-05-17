@@ -7,7 +7,7 @@ using ReportHub.Web.Services.Refit;
 
 namespace ReportHub.Web.Services.Client
 {
-    public class ClientService(IClientApi clientApi) : IClientService
+    public class ClientService(IClientApi clientApi, IItemApi itemApi) : IClientService
     {
         public async Task<IEnumerable<ClientForGettingDto>> GetClientsAsync(int? page = 1, int? size = 10, string sortBy = "", bool ascending = true)
         {
@@ -121,6 +121,19 @@ namespace ReportHub.Web.Services.Client
             try
             {
                 await clientApi.UpdateClientAsync(updateClientModel);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> AddNewItemOfClientAsync(CreateItemCommand createItemModel)
+        {
+            try
+            {
+                await itemApi.AddNewItemAsync(createItemModel);
                 return true;
             }
             catch
