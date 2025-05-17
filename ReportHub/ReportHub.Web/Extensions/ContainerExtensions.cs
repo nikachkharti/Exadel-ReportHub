@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Refit;
 using ReportHub.Web.Components.Shared;
+using ReportHub.Web.Handlers;
 using ReportHub.Web.Services.Auth;
 using ReportHub.Web.Services.Client;
 using ReportHub.Web.Services.Plan;
 using ReportHub.Web.Services.Refit;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 
 namespace ReportHub.Web.Extensions
 {
@@ -18,8 +22,11 @@ namespace ReportHub.Web.Extensions
 
         public static void AddRefit(this WebApplicationBuilder builder)
         {
+            builder.Services.AddScoped<ITokenProvider, TokenProvider>();
+            builder.Services.AddScoped<ProtectedSessionStorage>();
+
             var baseAddressApi = builder.Configuration.GetValue<string>("Refit:BaseAddressApi");
-            var BaseAddressAuth = builder.Configuration.GetValue<string>("Refit:BaseAddressAuth");
+            var baseAddressAuth = builder.Configuration.GetValue<string>("Refit:BaseAddressAuth");
 
             builder.Services.AddRefitClient<IClientApi>()
                 .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressApi));
@@ -28,7 +35,11 @@ namespace ReportHub.Web.Extensions
                 .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressApi));
 
             builder.Services.AddRefitClient<IAuthApi>()
-                .ConfigureHttpClient(client => client.BaseAddress = new Uri(BaseAddressAuth));
+                .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressAuth));
+
+            builder.Services.AddRefitClient<IAuthApiWithToken>()
+                 .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressAuth))
+                 .AddHttpMessageHandler(sp => new AuthTokenHandler(sp.GetRequiredService<ITokenProvider>()));
         }
 
         public static void AddServices(this WebApplicationBuilder builder)
@@ -36,6 +47,7 @@ namespace ReportHub.Web.Extensions
             builder.Services.AddScoped<IClientService, ClientService>();
             builder.Services.AddScoped<IPlanService, PlanService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IAuthServiceWithToken, AuthServiceWithToken>();
         }
 
         public static void AddSharedStates(this WebApplicationBuilder builder)

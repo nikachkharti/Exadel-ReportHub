@@ -1,5 +1,7 @@
 ﻿@page "/login"
+@using ReportHub.Web.Models.Auth
 @using ReportHub.Web.Models.Auth.ViewModels
+@using ReportHub.Web.Services.Auth
 @inject NavigationManager NavigationManager
 @inject IAuthService AuthService
 @rendermode InteractiveServer
@@ -27,7 +29,7 @@
         if (!string.IsNullOrEmpty(response?.AccessToken))
         {
             // Redirect to controller to set cookie
-            NavigationManager.NavigateTo($"api/auth/signin?access_token={response.AccessToken}", forceLoad: true);
+            NavigationManager.NavigateTo("/select-client");
         }
         else
         {

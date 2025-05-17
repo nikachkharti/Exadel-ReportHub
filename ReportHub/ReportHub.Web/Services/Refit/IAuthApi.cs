@@ -1,5 +1,6 @@
 ﻿using Refit;
 using ReportHub.Web.Models.Auth;
+using ReportHub.Web.Models.Auth.ViewModels;
 
 namespace ReportHub.Web.Services.Refit
 {
@@ -8,6 +9,5 @@ namespace ReportHub.Web.Services.Refit
         [Post("/auth/login")]
         [Headers("Content-Type: application/x-www-form-urlencoded")]
         Task<TokenResponse> LoginAsync([Body(BodySerializationMethod.UrlEncoded)] LoginRequest request);
-
     }
 }
