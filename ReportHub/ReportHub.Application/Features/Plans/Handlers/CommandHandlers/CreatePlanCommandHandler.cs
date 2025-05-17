@@ -13,7 +13,7 @@ namespace ReportHub.Application.Features.Plans.Handlers.CommandHandlers
         public async Task<string> Handle(CreatePlanCommand request, CancellationToken cancellationToken)
         {
             //TODO: [Add] validators.
-            EnsureUserHasRoleForThisClient(request.ClientId);
+            //EnsureUserHasRoleForThisClient(request.ClientId);
 
             var plan = mapper.Map<Plan>(request);
 
