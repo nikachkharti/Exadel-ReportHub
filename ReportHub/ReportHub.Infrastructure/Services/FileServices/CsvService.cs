@@ -2,6 +2,7 @@
 using CsvHelper.Configuration;
 using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using System.Globalization;
@@ -16,19 +17,22 @@ namespace ReportHub.Infrastructure.Services.FileServices
         private readonly IItemRepository _itemRepo;
         private readonly IPlanRepository _planRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IExchangeCurrencyService _exchangeCurrencyService;
 
         public CsvService(
             IClientRepository clientRepo,
             ICustomerRepository customerRepo,
             IItemRepository itemRepo,
             IPlanRepository planRepo,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IExchangeCurrencyService exchangeCurrencyService)
         {
             _clientRepo = clientRepo;
             _customerRepo = customerRepo;
             _itemRepo = itemRepo;
             _planRepo = planRepo;
             _httpContextAccessor = httpContextAccessor;
+            _exchangeCurrencyService = exchangeCurrencyService;
         }
 
         public IAsyncEnumerable<T> ReadAllAsync<T>(Stream stream, CancellationToken cancellationToken) where T : class
@@ -178,32 +182,27 @@ namespace ReportHub.Infrastructure.Services.FileServices
 
             csv.WriteField("Item Name");
             csv.WriteField("Quantity");
-            csv.WriteField("Price");
-            csv.WriteField("Total");
+            csv.WriteField("Price (USD)");
+            csv.WriteField("Total (USD)");
             csv.NextRecord();
 
             decimal totalAmount = 0;
             foreach (var item in items)
             {
+                var priceInUsd = await ConvertToUsd(item.Price, item.Currency);
                 csv.WriteField(item.Name);
                 csv.WriteField(1);
-                csv.WriteField(item.Price);
-                csv.WriteField(item.Price);
-                totalAmount += item.Price;
+                csv.WriteField(priceInUsd);
+                csv.WriteField(priceInUsd);
+                totalAmount += priceInUsd;
                 csv.NextRecord();
             }
 
             // Total row
             csv.WriteField("");
             csv.WriteField("");
-            csv.WriteField("Total Amount:");
+            csv.WriteField("Total Amount (USD):");
             csv.WriteField(totalAmount);
-            csv.NextRecord();
-
-            csv.WriteField("");
-            csv.WriteField("");
-            csv.WriteField("");
-            csv.WriteField($"({invoice.Currency})");
             csv.NextRecord();
         }
 
@@ -222,8 +221,8 @@ namespace ReportHub.Infrastructure.Services.FileServices
             csv.WriteField("Issue Date");
             csv.WriteField("Due Date");
             csv.WriteField("Payment Status");
-            csv.WriteField("Currency");
-            csv.WriteField("Total Amount");
+            csv.WriteField("Original Currency");
+            csv.WriteField("Total Amount (USD)");
             csv.WriteField("Days Until Due");
             csv.NextRecord();
 
@@ -232,7 +231,11 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 var client = await _clientRepo.Get(c => c.Id == invoice.ClientId, token);
                 var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId, token);
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id), token);
-                decimal totalAmount = items.Sum(i => i.Price);
+                decimal totalAmount = 0;
+                foreach (var item in items)
+                {
+                    totalAmount += await ConvertToUsd(item.Price, item.Currency);
+                }
                 int daysUntilDue = (invoice.DueDate - DateTime.Today).Days;
 
                 // Fill data row
@@ -407,7 +410,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
             csv.WriteField("Plan ID");
             csv.WriteField("Client");
             csv.WriteField("Item");
-            csv.WriteField("Amount");
+            csv.WriteField("Amount (USD)");
             csv.WriteField("Start Date");
             csv.WriteField("End Date");
             csv.WriteField("Status");
@@ -425,11 +428,14 @@ namespace ReportHub.Infrastructure.Services.FileServices
                     var item = await _itemRepo.Get(i => i.Id == plan.ItemId, token);
                     int duration = (plan.EndDate - plan.StartDate).Days;
 
+                    // Convert amount to USD
+                    var amountInUsd = await ConvertToUsd(plan.Amount, item?.Currency ?? "USD");
+
                     // Fill data row
                     csv.WriteField(plan.Id);
                     csv.WriteField(client?.Name ?? "N/A");
                     csv.WriteField(item?.Name ?? "N/A");
-                    csv.WriteField(plan.Amount);
+                    csv.WriteField(amountInUsd);
                     csv.WriteField(plan.StartDate.ToString("yyyy-MM-dd"));
                     csv.WriteField(plan.EndDate.ToString("yyyy-MM-dd"));
                     csv.WriteField(plan.Status.ToString());
@@ -518,7 +524,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
             csv.WriteField("Start Date");
             csv.WriteField("End Date");
             csv.WriteField("Status");
-            csv.WriteField("Amount");
+            csv.WriteField("Amount (USD)");
             csv.NextRecord();
 
             bool hasData = false;
@@ -536,12 +542,15 @@ namespace ReportHub.Infrastructure.Services.FileServices
 
                     foreach (var plan in plans)
                     {
+                        // Convert amount to USD
+                        var amountInUsd = await ConvertToUsd(plan.Amount, item.Currency);
+
                         csv.WriteField(plan.Id);
                         csv.WriteField(item.Name);
                         csv.WriteField(plan.StartDate.ToString("yyyy-MM-dd"));
                         csv.WriteField(plan.EndDate.ToString("yyyy-MM-dd"));
                         csv.WriteField(plan.Status.ToString());
-                        csv.WriteField(plan.Amount);
+                        csv.WriteField(amountInUsd);
                         csv.NextRecord();
                     }
                 }
@@ -574,6 +583,13 @@ namespace ReportHub.Infrastructure.Services.FileServices
             }
         }
 
+        private async Task<decimal> ConvertToUsd(decimal amount, string fromCurrency)
+        {
+            if (fromCurrency == "USD") return amount;
+            var rate = await _exchangeCurrencyService.GetCurrencyAsync(fromCurrency, "USD");
+            return amount * rate;
+        }
+
         private async Task<decimal> CalculateAverageInvoiceAmount(IEnumerable<Invoice> invoices)
         {
             if (!invoices.Any())
@@ -585,7 +601,11 @@ namespace ReportHub.Infrastructure.Services.FileServices
             foreach (var invoice in invoices)
             {
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                decimal invoiceTotal = items.Sum(i => i.Price);
+                decimal invoiceTotal = 0;
+                foreach (var item in items)
+                {
+                    invoiceTotal += await ConvertToUsd(item.Price, item.Currency);
+                }
                 totalAmount += invoiceTotal;
                 count++;
             }
@@ -602,7 +622,11 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 if (invoice.PaymentStatus != "Paid")
                 {
                     var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                    decimal invoiceTotal = items.Sum(i => i.Price);
+                    decimal invoiceTotal = 0;
+                    foreach (var item in items)
+                    {
+                        invoiceTotal += await ConvertToUsd(item.Price, item.Currency);
+                    }
                     outstandingAmount += invoiceTotal;
                 }
             }
@@ -623,7 +647,10 @@ namespace ReportHub.Infrastructure.Services.FileServices
             foreach (var invoice in invoices)
             {
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                total += items.Sum(i => i.Price);
+                foreach (var item in items)
+                {
+                    total += await ConvertToUsd(item.Price, item.Currency);
+                }
             }
 
             return total;

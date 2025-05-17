@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using ClosedXML.Excel;
 using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using DocumentFormat.OpenXml.Spreadsheet;
@@ -16,19 +17,22 @@ namespace ReportHub.Infrastructure.Services.FileServices
         private readonly IItemRepository _itemRepo;
         private readonly IPlanRepository _planRepo; 
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IExchangeCurrencyService _exchangeCurrencyService;
 
         public ExcelService(
             IClientRepository clientRepo,
             ICustomerRepository customerRepo,
             IItemRepository itemRepo,
             IPlanRepository planRepo, 
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IExchangeCurrencyService exchangeCurrencyService)
         {
             _clientRepo = clientRepo;
             _customerRepo = customerRepo;
             _itemRepo = itemRepo;
             _planRepo = planRepo; 
             _httpContextAccessor = httpContextAccessor;
+            _exchangeCurrencyService = exchangeCurrencyService;
         }
 
         public async Task<Stream> WriteAllAsync<T>(
@@ -254,12 +258,20 @@ namespace ReportHub.Infrastructure.Services.FileServices
             IXLWorksheet sheet,
             IEnumerable<Invoice> invoices)
         {
-            // Create header row
-            string[] headers = new[] {
-                "Invoice ID", "Client", "Customer", "Issue Date", "Due Date",
-                "Payment Status", "Currency", "Total Amount", "Days Until Due", "Created By"
+            string[] headers = new[]
+            {
+                "Invoice ID",
+                "Client",
+                "Customer",
+                "Issue Date",
+                "Due Date",
+                "Payment Status",
+                "Original Currency",
+                "Total Amount (USD)",
+                "Days Until Due"
             };
 
+            // Write headers
             for (int i = 0; i < headers.Length; i++)
             {
                 sheet.Cell(1, i + 1).Value = headers[i];
@@ -271,7 +283,11 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 var client = await _clientRepo.Get(c => c.Id == invoice.ClientId);
                 var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId);
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                decimal totalAmount = items.Sum(i => i.Price);
+                decimal totalAmount = 0;
+                foreach (var item in items)
+                {
+                    totalAmount += await ConvertToUsd(item.Price, item.Currency);
+                }
                 int daysUntilDue = (invoice.DueDate - DateTime.Today).Days;
 
                 // Fill data row
@@ -326,7 +342,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
             int itemStartRow = headerData.GetLength(0) + 4;
             sheet.Cell(itemStartRow, 1).Value = "Invoice Items";
 
-            string[] itemHeaders = new[] { "Item Name", "Quantity", "Price", "Total" };
+            string[] itemHeaders = new[] { "Item Name", "Quantity", "Price (USD)", "Total (USD)" };
             for (int i = 0; i < itemHeaders.Length; i++)
             {
                 sheet.Cell(itemStartRow + 1, i + 1).Value = itemHeaders[i];
@@ -336,19 +352,19 @@ namespace ReportHub.Infrastructure.Services.FileServices
             decimal totalAmount = 0;
             foreach (var item in items)
             {
+                var priceInUsd = await ConvertToUsd(item.Price, item.Currency);
                 sheet.Cell(itemRow, 1).Value = item.Name;
                 sheet.Cell(itemRow, 2).Value = 1;
-                sheet.Cell(itemRow, 3).Value = item.Price;
-                sheet.Cell(itemRow, 4).Value = item.Price;
+                sheet.Cell(itemRow, 3).Value = priceInUsd;
+                sheet.Cell(itemRow, 4).Value = priceInUsd;
 
-                totalAmount += item.Price;
+                totalAmount += priceInUsd;
                 itemRow++;
             }
 
             // Total row
-            sheet.Cell(itemRow + 1, 3).Value = "Total Amount:";
+            sheet.Cell(itemRow + 1, 3).Value = "Total Amount (USD):";
             sheet.Cell(itemRow + 1, 4).Value = totalAmount;
-            sheet.Cell(itemRow + 2, 4).Value = $"({invoice.Currency})";
 
             // Format as tables
             var headerRange = sheet.Range(2, 1, headerData.GetLength(0) + 1, 2);
@@ -531,7 +547,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
         {
             // Create header row for plans
             string[] headers = new[] {
-                "Plan ID", "Client", "Item", "Amount", "Start Date", "End Date", "Status", "Duration (Days)"
+                "Plan ID", "Client", "Item", "Amount (USD)", "Start Date", "End Date", "Status", "Duration (Days)"
             };
 
             for (int i = 0; i < headers.Length; i++)
@@ -549,11 +565,14 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 var item = await _itemRepo.Get(i => i.Id == plan.ItemId, token);
                 int duration = (plan.EndDate - plan.StartDate).Days;
 
+                // Convert amount to USD
+                var amountInUsd = await ConvertToUsd(plan.Amount, item?.Currency ?? "USD");
+
                 // Fill data row
                 sheet.Cell(row, 1).Value = plan.Id;
                 sheet.Cell(row, 2).Value = client?.Name ?? "N/A";
                 sheet.Cell(row, 3).Value = item?.Name ?? "N/A";
-                sheet.Cell(row, 4).Value = plan.Amount;
+                sheet.Cell(row, 4).Value = amountInUsd;
                 sheet.Cell(row, 5).Value = plan.StartDate.ToString("yyyy-MM-dd");
                 sheet.Cell(row, 6).Value = plan.EndDate.ToString("yyyy-MM-dd");
                 sheet.Cell(row, 7).Value = plan.Status.ToString();
@@ -645,6 +664,13 @@ namespace ReportHub.Infrastructure.Services.FileServices
             sheet.Columns().AdjustToContents();
         }
 
+        private async Task<decimal> ConvertToUsd(decimal amount, string fromCurrency)
+        {
+            if (fromCurrency == "USD") return amount;
+            var rate = await _exchangeCurrencyService.GetCurrencyAsync(fromCurrency, "USD");
+            return amount * rate;
+        }
+
         private async Task<decimal> CalculateAverageInvoiceAmount(IEnumerable<Invoice> invoices)
         {
             if (!invoices.Any())
@@ -656,7 +682,11 @@ namespace ReportHub.Infrastructure.Services.FileServices
             foreach (var invoice in invoices)
             {
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                decimal invoiceTotal = items.Sum(i => i.Price);
+                decimal invoiceTotal = 0;
+                foreach (var item in items)
+                {
+                    invoiceTotal += await ConvertToUsd(item.Price, item.Currency);
+                }
                 totalAmount += invoiceTotal;
                 count++;
             }
@@ -673,18 +703,16 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 if (invoice.PaymentStatus != "Paid")
                 {
                     var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                    decimal invoiceTotal = items.Sum(i => i.Price);
+                    decimal invoiceTotal = 0;
+                    foreach (var item in items)
+                    {
+                        invoiceTotal += await ConvertToUsd(item.Price, item.Currency);
+                    }
                     outstandingAmount += invoiceTotal;
                 }
             }
 
             return outstandingAmount;
-        }
-
-        private async Task<string> GetClientName(string clientId)
-        {
-            var client = await _clientRepo.Get(c => c.Id == clientId);
-            return client?.Name ?? "Unknown Client";
         }
 
         private async Task<decimal> CalculateTotalForInvoices(IEnumerable<Invoice> invoices)
@@ -694,10 +722,19 @@ namespace ReportHub.Infrastructure.Services.FileServices
             foreach (var invoice in invoices)
             {
                 var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                total += items.Sum(i => i.Price);
+                foreach (var item in items)
+                {
+                    total += await ConvertToUsd(item.Price, item.Currency);
+                }
             }
 
             return total;
+        }
+
+        private async Task<string> GetClientName(string clientId)
+        {
+            var client = await _clientRepo.Get(c => c.Id == clientId);
+            return client?.Name ?? "Unknown Client";
         }
     }
 }
