@@ -223,7 +223,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
             var request = _httpContextAccessor.HttpContext.Request;
             var protocol = request.Scheme;
             var host = request.Host;
-            var url = $"{protocol}://{host}/invoice/download?invoiceId={invoice.Id}";
+            var url = $"{protocol}://{host}/api/invoice/{invoice.Id}/export?fileType=2";
 
             var qrTable = new iTextPdf.PdfPTable(1)
             {
