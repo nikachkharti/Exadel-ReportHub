@@ -258,8 +258,8 @@ namespace ReportHub.Infrastructure.Services.FileServices
             IReadOnlyDictionary<string, object> baseStatistics,
             CancellationToken token)
         {
-            // 1. General Statistics Table
-            csv.WriteField("General Statistics");
+            // 1. Invoice Statistics
+            csv.WriteField("Invoice Statistics");
             csv.NextRecord();
             csv.WriteField("Metric");
             csv.WriteField("Value");
@@ -273,14 +273,12 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 csv.NextRecord();
             }
 
-            // Add additional general statistics
+            // Add invoice statistics
             var now = DateTime.Today;
             var additionalStats = new Dictionary<string, object>
             {
                 { "Average Invoice Amount", await CalculateAverageInvoiceAmount(invoices) },
-                { "Invoices Due This Week", invoices.Count(i => (i.DueDate - now).Days <= 7 && (i.DueDate - now).Days >= 0 && i.PaymentStatus != "Paid") },
-                { "Invoices Overdue", invoices.Count(i => i.DueDate < now && i.PaymentStatus != "Paid") },
-                { "Total Outstanding Amount", await CalculateTotalOutstandingAmount(invoices) }
+                { "Total Amount", await CalculateTotalForInvoices(invoices) }
             };
 
             foreach (var kv in additionalStats)
@@ -292,7 +290,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
 
             csv.NextRecord();
 
-            // 2. Payment Status Distribution Table
+            // 2. Payment Status Distribution
             csv.WriteField("Payment Status Distribution");
             csv.NextRecord();
             csv.WriteField("Status");
@@ -317,19 +315,21 @@ namespace ReportHub.Infrastructure.Services.FileServices
 
             csv.NextRecord();
 
-            // 3. Monthly Invoice Summary
-            csv.WriteField("Monthly Invoice Summary");
+            // 3. Monthly Invoice Analysis
+            csv.WriteField("Monthly Invoice Analysis");
             csv.NextRecord();
             csv.WriteField("Month");
             csv.WriteField("Count");
             csv.WriteField("Total Amount");
+            csv.WriteField("Average Value");
             csv.NextRecord();
 
             var monthlyGroups = invoices.GroupBy(i => new { i.IssueDate.Year, i.IssueDate.Month })
                                        .Select(async g => new {
                                            YearMonth = $"{g.Key.Year}-{g.Key.Month:D2}",
                                            Count = g.Count(),
-                                           TotalAmount = await CalculateTotalForInvoices(g)
+                                           TotalAmount = await CalculateTotalForInvoices(g),
+                                           AverageValue = await CalculateAverageInvoiceAmount(g)
                                        })
                                        .ToList();
 
@@ -339,66 +339,192 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 csv.WriteField(month.YearMonth);
                 csv.WriteField(month.Count);
                 csv.WriteField($"{month.TotalAmount:N2}");
+                csv.WriteField($"{month.AverageValue:N2}");
                 csv.NextRecord();
             }
 
             csv.NextRecord();
 
-            // 4. Client Summary
-            if (invoices.Any())
+            // 4. Item Analysis
+            csv.WriteField("Item Analysis");
+            csv.NextRecord();
+            csv.WriteField("Item Name");
+            csv.WriteField("Total Sold");
+            csv.WriteField("Average Price (USD)");
+            csv.WriteField("Total Revenue (USD)");
+            csv.NextRecord();
+
+            var itemStats = await CalculateItemStatistics(invoices);
+            foreach (var item in itemStats.OrderByDescending(i => i.TotalRevenue))
             {
-                csv.WriteField("Client Summary");
+                csv.WriteField(item.Name);
+                csv.WriteField(item.TotalSold);
+                csv.WriteField($"{item.AveragePrice:N2}");
+                csv.WriteField($"{item.TotalRevenue:N2}");
                 csv.NextRecord();
-                csv.WriteField("Client");
-                csv.WriteField("Invoice Count");
-                csv.WriteField("Total Value");
+            }
+
+            csv.NextRecord();
+
+            // 5. Plan Analysis
+            csv.WriteField("Plan Analysis");
+            csv.NextRecord();
+            csv.WriteField("Item Name");
+            csv.WriteField("Planned Amount");
+            csv.WriteField("Actual Quantity");
+            csv.WriteField("Completion %");
+            csv.WriteField("Period");
+            csv.NextRecord();
+
+            var planStats = await CalculatePlanStatistics();
+            foreach (var plan in planStats.OrderByDescending(p => p.CompletionPercentage))
+            {
+                csv.WriteField(plan.ItemName);
+                csv.WriteField($"{plan.Amount:N2}");
+                csv.WriteField(plan.ActualQuantity);
+                csv.WriteField($"{plan.CompletionPercentage:P2}");
+                csv.WriteField($"{plan.StartDate:yyyy-MM-dd} to {plan.EndDate:yyyy-MM-dd}");
                 csv.NextRecord();
+            }
 
-                var clientGroups = invoices.GroupBy(i => i.ClientId)
-                                         .Select(async g => new {
-                                             ClientId = g.Key,
-                                             Client = await GetClientName(g.Key),
-                                             Count = g.Count(),
-                                             TotalAmount = await CalculateTotalForInvoices(g)
-                                         })
-                                         .ToList();
+            csv.NextRecord();
 
-                var clientResults = await Task.WhenAll(clientGroups);
-                foreach (var client in clientResults.OrderByDescending(c => c.TotalAmount))
+            // 6. Historical Plan Trends
+            csv.WriteField("Historical Plan Trends");
+            csv.NextRecord();
+            csv.WriteField("Period");
+            csv.WriteField("Total Plans");
+            csv.WriteField("Completed Plans");
+            csv.WriteField("Success Rate");
+            csv.NextRecord();
+
+            var historicalTrends = await CalculateHistoricalPlanTrends();
+            foreach (var trend in historicalTrends.OrderBy(t => t.Period))
+            {
+                csv.WriteField(trend.Period);
+                csv.WriteField(trend.TotalPlans);
+                csv.WriteField(trend.CompletedPlans);
+                csv.WriteField($"{trend.SuccessRate:P2}");
+                csv.NextRecord();
+            }
+        }
+
+        private async Task<List<ItemStatistics>> CalculateItemStatistics(IEnumerable<Invoice> invoices)
+        {
+            var itemStats = new List<ItemStatistics>();
+            var allItems = await _itemRepo.GetAll();
+
+            foreach (var item in allItems)
+            {
+                var itemInvoices = invoices.Where(i => i.ItemIds.Contains(item.Id));
+                var totalSold = itemInvoices.Count();
+                var totalRevenue = await CalculateTotalForInvoices(itemInvoices);
+                var averagePrice = totalSold > 0 ? totalRevenue / totalSold : 0;
+
+                itemStats.Add(new ItemStatistics
                 {
-                    csv.WriteField(client.Client);
-                    csv.WriteField(client.Count);
-                    csv.WriteField($"{client.TotalAmount:N2}");
-                    csv.NextRecord();
-                }
-
-                csv.NextRecord();
+                    Name = item.Name,
+                    TotalSold = totalSold,
+                    AveragePrice = averagePrice,
+                    TotalRevenue = totalRevenue
+                });
             }
 
-            // 5. Plan Status Distribution 
-            csv.WriteField("Plan Status Distribution");
-            csv.NextRecord();
-            csv.WriteField("Status");
-            csv.WriteField("Count");
-            csv.WriteField("Percentage");
-            csv.NextRecord();
+            return itemStats;
+        }
 
-            var plans = await _planRepo.GetAll(token);
-            var planStatusGroups = plans.GroupBy(p => p.Status)
-                                       .Select(g => new { Status = g.Key.ToString(), Count = g.Count() })
-                                       .OrderByDescending(g => g.Count)
-                                       .ToList();
+        private async Task<List<PlanStatistics>> CalculatePlanStatistics()
+        {
+            var planStats = new List<PlanStatistics>();
+            var plans = await _planRepo.GetAll();
+            var items = await _itemRepo.GetAll();
 
-            int totalPlans = plans.Count();
-            foreach (var group in planStatusGroups)
+            foreach (var plan in plans)
             {
-                csv.WriteField(group.Status);
-                csv.WriteField(group.Count);
-                csv.WriteField(totalPlans > 0
-                    ? $"{(double)group.Count / totalPlans:P2}"
-                    : "0.00%");
-                csv.NextRecord();
+                var item = items.FirstOrDefault(i => i.Id == plan.ItemId);
+                if (item != null)
+                {
+                    var actualQuantity = await CalculateActualQuantityForPlan(plan);
+                    var completionPercentage = plan.Amount > 0 
+                        ? (double)actualQuantity / (double)plan.Amount 
+                        : 0;
+
+                    planStats.Add(new PlanStatistics
+                    {
+                        ItemName = item.Name,
+                        Amount = plan.Amount,
+                        ActualQuantity = actualQuantity,
+                        CompletionPercentage = completionPercentage,
+                        StartDate = plan.StartDate,
+                        EndDate = plan.EndDate
+                    });
+                }
             }
+
+            return planStats;
+        }
+
+        private async Task<List<HistoricalTrend>> CalculateHistoricalPlanTrends()
+        {
+            var trends = new List<HistoricalTrend>();
+            var plans = await _planRepo.GetAll();
+            var now = DateTime.Today;
+
+            // Group plans by quarters
+            var quarterlyGroups = plans
+                .GroupBy(p => new { Year = p.StartDate.Year, Quarter = (p.StartDate.Month - 1) / 3 + 1 })
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Quarter);
+
+            foreach (var group in quarterlyGroups)
+            {
+                var totalPlans = group.Count();
+                var completedPlans = group.Count(p => p.Status == PlanStatus.Completed);
+                var successRate = totalPlans > 0 ? (double)completedPlans / totalPlans : 0;
+
+                trends.Add(new HistoricalTrend
+                {
+                    Period = $"Q{group.Key.Quarter} {group.Key.Year}",
+                    TotalPlans = totalPlans,
+                    CompletedPlans = completedPlans,
+                    SuccessRate = successRate
+                });
+            }
+
+            return trends;
+        }
+
+        private async Task<int> CalculateActualQuantityForPlan(Plan plan)
+        {
+            // This is a placeholder - implement actual logic based on your business rules
+            // For example, you might want to count completed invoices or actual deliveries
+            return 0;
+        }
+
+        private class ItemStatistics
+        {
+            public string Name { get; set; }
+            public int TotalSold { get; set; }
+            public decimal AveragePrice { get; set; }
+            public decimal TotalRevenue { get; set; }
+        }
+
+        private class PlanStatistics
+        {
+            public string ItemName { get; set; }
+            public decimal Amount { get; set; }
+            public int ActualQuantity { get; set; }
+            public double CompletionPercentage { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+        }
+
+        private class HistoricalTrend
+        {
+            public string Period { get; set; }
+            public int TotalPlans { get; set; }
+            public int CompletedPlans { get; set; }
+            public double SuccessRate { get; set; }
         }
 
         private async Task WritePlansTableAsync(CsvWriter csv, CancellationToken token)

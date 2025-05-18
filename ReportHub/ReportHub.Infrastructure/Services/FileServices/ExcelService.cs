@@ -381,13 +381,16 @@ namespace ReportHub.Infrastructure.Services.FileServices
             IEnumerable<Invoice> invoices,
             IReadOnlyDictionary<string, object> baseStatistics)
         {
-            // 1. General Statistics Table
-            sheet.Cell(1, 1).Value = "General Statistics";
-            sheet.Cell(2, 1).Value = "Metric";
-            sheet.Cell(2, 2).Value = "Value";
+            int row = 1;
+
+            // 1. Invoice Statistics
+            sheet.Cell(row, 1).Value = "Invoice Statistics";
+            row += 2;
+            sheet.Cell(row, 1).Value = "Metric";
+            sheet.Cell(row, 2).Value = "Value";
+            row++;
 
             // Add base statistics first
-            int row = 3;
             foreach (var kv in baseStatistics)
             {
                 sheet.Cell(row, 1).Value = kv.Key;
@@ -395,14 +398,12 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 row++;
             }
 
-            // Add additional general statistics
+            // Add invoice statistics
             var now = DateTime.Today;
             var additionalStats = new Dictionary<string, object>
             {
                 { "Average Invoice Amount", await CalculateAverageInvoiceAmount(invoices) },
-                { "Invoices Due This Week", invoices.Count(i => (i.DueDate - now).Days <= 7 && (i.DueDate - now).Days >= 0 && i.PaymentStatus != "Paid") },
-                { "Invoices Overdue", invoices.Count(i => i.DueDate < now && i.PaymentStatus != "Paid") },
-                { "Total Outstanding Amount", await CalculateTotalOutstandingAmount(invoices) }
+                { "Total Amount", await CalculateTotalForInvoices(invoices) }
             };
 
             foreach (var kv in additionalStats)
@@ -412,11 +413,11 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 row++;
             }
 
-            var generalStatsRange = sheet.Range(2, 1, row - 1, 2);
-            var generalStatsTable = generalStatsRange.CreateTable("GeneralStatistics");
+            var generalStatsRange = sheet.Range(3, 1, row - 1, 2);
+            var generalStatsTable = generalStatsRange.CreateTable("InvoiceStatistics");
 
-            // 2. Payment Status Distribution Table
-            row += 2; // Add space
+            // 2. Payment Status Distribution
+            row += 2;
             sheet.Cell(row, 1).Value = "Payment Status Distribution";
             row++;
             sheet.Cell(row, 1).Value = "Status";
@@ -443,20 +444,22 @@ namespace ReportHub.Infrastructure.Services.FileServices
             var statusRange = sheet.Range(row - statusGroups.Count() - 1, 1, row - 1, 3);
             var statusTable = statusRange.CreateTable("StatusDistribution");
 
-            // 3. Monthly Invoice Summary
-            row += 2; // Add space
-            sheet.Cell(row, 1).Value = "Monthly Invoice Summary";
+            // 3. Monthly Invoice Analysis
+            row += 2;
+            sheet.Cell(row, 1).Value = "Monthly Invoice Analysis";
             row++;
             sheet.Cell(row, 1).Value = "Month";
             sheet.Cell(row, 2).Value = "Count";
             sheet.Cell(row, 3).Value = "Total Amount";
+            sheet.Cell(row, 4).Value = "Average Value";
             row++;
 
             var monthlyGroups = invoices.GroupBy(i => new { i.IssueDate.Year, i.IssueDate.Month })
                                        .Select(async g => new {
                                            YearMonth = $"{g.Key.Year}-{g.Key.Month:D2}",
                                            Count = g.Count(),
-                                           TotalAmount = await CalculateTotalForInvoices(g)
+                                           TotalAmount = await CalculateTotalForInvoices(g),
+                                           AverageValue = await CalculateAverageInvoiceAmount(g)
                                        })
                                        .ToList();
 
@@ -466,81 +469,210 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 sheet.Cell(row, 1).Value = month.YearMonth;
                 sheet.Cell(row, 2).Value = month.Count;
                 sheet.Cell(row, 3).Value = month.TotalAmount;
+                sheet.Cell(row, 4).Value = month.AverageValue;
                 sheet.Cell(row, 3).Style.NumberFormat.Format = "#,##0.00";
+                sheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
                 row++;
             }
 
-            var monthlyRange = sheet.Range(row - monthlyResults.Length - 1, 1, row - 1, 3);
-            var monthlyTable = monthlyRange.CreateTable("MonthlyInvoices");
+            var monthlyRange = sheet.Range(row - monthlyResults.Length - 1, 1, row - 1, 4);
+            var monthlyTable = monthlyRange.CreateTable("MonthlyAnalysis");
 
-            // 4. Client Summary
-            if (invoices.Any())
-            {
-                row += 2; // Add space
-                sheet.Cell(row, 1).Value = "Client Summary";
-                row++;
-                sheet.Cell(row, 1).Value = "Client";
-                sheet.Cell(row, 2).Value = "Invoice Count";
-                sheet.Cell(row, 3).Value = "Total Value";
-                row++;
-
-                var clientGroups = invoices.GroupBy(i => i.ClientId)
-                                         .Select(async g => new {
-                                             ClientId = g.Key,
-                                             Client = await GetClientName(g.Key),
-                                             Count = g.Count(),
-                                             TotalAmount = await CalculateTotalForInvoices(g)
-                                         })
-                                         .ToList();
-
-                var clientResults = await Task.WhenAll(clientGroups);
-                foreach (var client in clientResults.OrderByDescending(c => c.TotalAmount))
-                {
-                    sheet.Cell(row, 1).Value = client.Client;
-                    sheet.Cell(row, 2).Value = client.Count;
-                    sheet.Cell(row, 3).Value = client.TotalAmount;
-                    sheet.Cell(row, 3).Style.NumberFormat.Format = "#,##0.00";
-                    row++;
-                }
-
-                var clientRange = sheet.Range(row - clientResults.Length - 1, 1, row - 1, 3);
-                var clientTable = clientRange.CreateTable("ClientSummary");
-            }
-
-            // 5. Plan Status Distribution 
-            row += 2; // Add space
-            sheet.Cell(row, 1).Value = "Plan Status Distribution";
+            // 4. Item Analysis
+            row += 2;
+            sheet.Cell(row, 1).Value = "Item Analysis";
             row++;
-            sheet.Cell(row, 1).Value = "Status";
-            sheet.Cell(row, 2).Value = "Count";
-            sheet.Cell(row, 3).Value = "Percentage";
+            sheet.Cell(row, 1).Value = "Item Name";
+            sheet.Cell(row, 2).Value = "Total Sold";
+            sheet.Cell(row, 3).Value = "Average Price (USD)";
+            sheet.Cell(row, 4).Value = "Total Revenue (USD)";
             row++;
 
-            var plans = await _planRepo.GetAll();
-            var planStatusGroups = plans.GroupBy(p => p.Status)
-                                       .Select(g => new { Status = g.Key.ToString(), Count = g.Count() })
-                                       .OrderByDescending(g => g.Count)
-                                       .ToList();
-
-            int totalPlans = plans.Count();
-            foreach (var group in planStatusGroups)
+            var itemStats = await CalculateItemStatistics(invoices);
+            foreach (var item in itemStats.OrderByDescending(i => i.TotalRevenue))
             {
-                sheet.Cell(row, 1).Value = group.Status;
-                sheet.Cell(row, 2).Value = group.Count;
-                sheet.Cell(row, 3).Value = totalPlans > 0
-                    ? (double)group.Count / totalPlans
-                    : 0;
-                sheet.Cell(row, 3).Style.NumberFormat.Format = "0.00%";
+                sheet.Cell(row, 1).Value = item.Name;
+                sheet.Cell(row, 2).Value = item.TotalSold;
+                sheet.Cell(row, 3).Value = item.AveragePrice;
+                sheet.Cell(row, 4).Value = item.TotalRevenue;
+                sheet.Cell(row, 3).Style.NumberFormat.Format = "#,##0.00";
+                sheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00";
                 row++;
             }
 
-            if (planStatusGroups.Any())
+            var itemRange = sheet.Range(row - itemStats.Count - 1, 1, row - 1, 4);
+            var itemTable = itemRange.CreateTable("ItemAnalysis");
+
+            // 5. Plan Analysis
+            row += 2;
+            sheet.Cell(row, 1).Value = "Plan Analysis";
+            row++;
+            sheet.Cell(row, 1).Value = "Item Name";
+            sheet.Cell(row, 2).Value = "Planned Amount";
+            sheet.Cell(row, 3).Value = "Actual Quantity";
+            sheet.Cell(row, 4).Value = "Completion %";
+            sheet.Cell(row, 5).Value = "Period";
+            row++;
+
+            var planStats = await CalculatePlanStatistics();
+            foreach (var plan in planStats.OrderByDescending(p => p.CompletionPercentage))
             {
-                var planStatusRange = sheet.Range(row - planStatusGroups.Count - 1, 1, row - 1, 3);
-                var planStatusTable = planStatusRange.CreateTable("PlanStatusDistribution");
+                sheet.Cell(row, 1).Value = plan.ItemName;
+                sheet.Cell(row, 2).Value = plan.Amount;
+                sheet.Cell(row, 3).Value = plan.ActualQuantity;
+                sheet.Cell(row, 4).Value = plan.CompletionPercentage;
+                sheet.Cell(row, 5).Value = $"{plan.StartDate:yyyy-MM-dd} to {plan.EndDate:yyyy-MM-dd}";
+                sheet.Cell(row, 2).Style.NumberFormat.Format = "#,##0.00";
+                sheet.Cell(row, 4).Style.NumberFormat.Format = "0.00%";
+                row++;
             }
+
+            var planRange = sheet.Range(row - planStats.Count - 1, 1, row - 1, 5);
+            var planTable = planRange.CreateTable("PlanAnalysis");
+
+            // 6. Historical Plan Trends
+            row += 2;
+            sheet.Cell(row, 1).Value = "Historical Plan Trends";
+            row++;
+            sheet.Cell(row, 1).Value = "Period";
+            sheet.Cell(row, 2).Value = "Total Plans";
+            sheet.Cell(row, 3).Value = "Completed Plans";
+            sheet.Cell(row, 4).Value = "Success Rate";
+            row++;
+
+            var historicalTrends = await CalculateHistoricalPlanTrends();
+            foreach (var trend in historicalTrends.OrderBy(t => t.Period))
+            {
+                sheet.Cell(row, 1).Value = trend.Period;
+                sheet.Cell(row, 2).Value = trend.TotalPlans;
+                sheet.Cell(row, 3).Value = trend.CompletedPlans;
+                sheet.Cell(row, 4).Value = trend.SuccessRate;
+                sheet.Cell(row, 4).Style.NumberFormat.Format = "0.00%";
+                row++;
+            }
+
+            var trendRange = sheet.Range(row - historicalTrends.Count - 1, 1, row - 1, 4);
+            var trendTable = trendRange.CreateTable("HistoricalTrends");
 
             sheet.Columns().AdjustToContents();
+        }
+
+        private async Task<List<ItemStatistics>> CalculateItemStatistics(IEnumerable<Invoice> invoices)
+        {
+            var itemStats = new List<ItemStatistics>();
+            var allItems = await _itemRepo.GetAll();
+
+            foreach (var item in allItems)
+            {
+                var itemInvoices = invoices.Where(i => i.ItemIds.Contains(item.Id));
+                var totalSold = itemInvoices.Count();
+                var totalRevenue = await CalculateTotalForInvoices(itemInvoices);
+                var averagePrice = totalSold > 0 ? totalRevenue / totalSold : 0;
+
+                itemStats.Add(new ItemStatistics
+                {
+                    Name = item.Name,
+                    TotalSold = totalSold,
+                    AveragePrice = averagePrice,
+                    TotalRevenue = totalRevenue
+                });
+            }
+
+            return itemStats;
+        }
+
+        private async Task<List<PlanStatistics>> CalculatePlanStatistics()
+        {
+            var planStats = new List<PlanStatistics>();
+            var plans = await _planRepo.GetAll();
+            var items = await _itemRepo.GetAll();
+
+            foreach (var plan in plans)
+            {
+                var item = items.FirstOrDefault(i => i.Id == plan.ItemId);
+                if (item != null)
+                {
+                    var actualQuantity = await CalculateActualQuantityForPlan(plan);
+                    var completionPercentage = plan.Amount > 0 
+                        ? (double)actualQuantity / (double)plan.Amount 
+                        : 0;
+
+                    planStats.Add(new PlanStatistics
+                    {
+                        ItemName = item.Name,
+                        Amount = plan.Amount,
+                        ActualQuantity = actualQuantity,
+                        CompletionPercentage = completionPercentage,
+                        StartDate = plan.StartDate,
+                        EndDate = plan.EndDate
+                    });
+                }
+            }
+
+            return planStats;
+        }
+
+        private async Task<List<HistoricalTrend>> CalculateHistoricalPlanTrends()
+        {
+            var trends = new List<HistoricalTrend>();
+            var plans = await _planRepo.GetAll();
+            var now = DateTime.Today;
+
+            // Group plans by quarters
+            var quarterlyGroups = plans
+                .GroupBy(p => new { Year = p.StartDate.Year, Quarter = (p.StartDate.Month - 1) / 3 + 1 })
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Quarter);
+
+            foreach (var group in quarterlyGroups)
+            {
+                var totalPlans = group.Count();
+                var completedPlans = group.Count(p => p.Status == PlanStatus.Completed);
+                var successRate = totalPlans > 0 ? (double)completedPlans / totalPlans : 0;
+
+                trends.Add(new HistoricalTrend
+                {
+                    Period = $"Q{group.Key.Quarter} {group.Key.Year}",
+                    TotalPlans = totalPlans,
+                    CompletedPlans = completedPlans,
+                    SuccessRate = successRate
+                });
+            }
+
+            return trends;
+        }
+
+        private async Task<int> CalculateActualQuantityForPlan(Plan plan)
+        {
+            // This is a placeholder - implement actual logic based on your business rules
+            // For example, you might want to count completed invoices or actual deliveries
+            return 0;
+        }
+
+        private class ItemStatistics
+        {
+            public string Name { get; set; }
+            public int TotalSold { get; set; }
+            public decimal AveragePrice { get; set; }
+            public decimal TotalRevenue { get; set; }
+        }
+
+        private class PlanStatistics
+        {
+            public string ItemName { get; set; }
+            public decimal Amount { get; set; }
+            public int ActualQuantity { get; set; }
+            public double CompletionPercentage { get; set; }
+            public DateTime StartDate { get; set; }
+            public DateTime EndDate { get; set; }
+        }
+
+        private class HistoricalTrend
+        {
+            public string Period { get; set; }
+            public int TotalPlans { get; set; }
+            public int CompletedPlans { get; set; }
+            public double SuccessRate { get; set; }
         }
 
         private async Task WritePlansTableAsync(IXLWorksheet sheet, CancellationToken token)
