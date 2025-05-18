@@ -119,7 +119,7 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpGet("export")]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        // [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> Export([FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
             var query = GetExportingQuery(fileType);
@@ -137,7 +137,7 @@ namespace ReportHub.API.Controllers
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>File result</returns>
         [HttpGet("{id}/export")]
-        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        // [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> ExportById([FromRoute] string id, [FromQuery] FileExportingType fileType, CancellationToken cancellationToken)
         {
             var query = GetExportingQueryById(id, fileType);
