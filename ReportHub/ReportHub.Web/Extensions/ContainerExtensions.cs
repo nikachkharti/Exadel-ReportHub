@@ -23,6 +23,9 @@ namespace ReportHub.Web.Extensions
 
             builder.Services.AddRefitClient<IPlanApi>()
                 .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddress));
+
+            builder.Services.AddRefitClient<IItemApi>()
+                .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddress));
         }
 
         public static void AddServices(this WebApplicationBuilder builder)

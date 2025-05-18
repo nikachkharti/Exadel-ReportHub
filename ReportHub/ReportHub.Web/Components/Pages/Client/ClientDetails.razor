@@ -42,6 +42,12 @@ else
                 </h2>
                 <div class="accordion-collapse collapse @(isItemsOpen ? "show" : "")">
                     <div class="accordion-body">
+                        <div class="row mb-3">
+                            <div class="col-2">
+                                <button class="btn btn-sm btn-success btn-sm" @onclick="() => ShowAddNewItemModal()">New Item</button>
+                            </div>
+                        </div>
+
                         @if (isItemsLoading)
                         {
                             <p>Loading items...</p>
@@ -69,6 +75,7 @@ else
                                             <td>
                                                 <button class="btn btn-danger btn-sm" @onclick="() => ShowDeleteModal(item)">Delete</button>
                                                 <button class="btn btn-success btn-sm" @onclick="() => ShowSellItemModal(item)">Sell</button>
+                                                <button class="btn btn-primary btn-sm" @onclick="() => ShowAddItemToPlanModal(item)">Add To Plans</button>
                                             </td>
                                         </tr>
                                     }
@@ -237,6 +244,107 @@ else
 }
 
 
+
+@* ADD PLAN MODAL *@
+@if (isPlanAddModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Plan</h5>
+                    <button type="button" class="btn-close" @onclick="CloseAddNewPlanItemModal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="mb-3">
+                            <label class="form-label">Amount</label>
+                            <input type="number" class="form-control" @bind="addItemToPlanAmount" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="datetime" class="form-control" @bind="addItemToPlanStartDate" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="datetime" class="form-control" @bind="addItemToPlanEndDate" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" @bind="addItemToPlanStatus">
+                                @foreach (PlanStatus status in Enum.GetValues(typeof(PlanStatus)))
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseAddNewPlanItemModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="SubmitAddNewPlan">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+@* ADD ITEM MODAL *@
+@if (isAddNewItemModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Item</h5>
+                    <button type="button" class="btn-close" @onclick="CloseAddNewItemModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" @bind="newItemName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" @bind="newItemDescription" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" class="form-control" @bind="newItemPrice" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Currency</label>
+                        <input type="text" class="form-control" @bind="newItemCurrency" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseAddNewItemModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="SubmitAddNewItem">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+
 @* ITEM DELETE MODAL *@
 @if (isDeleteModalVisible)
 {
@@ -313,6 +421,20 @@ else
 }
 
 
+
+@* SUCCESSFUL ADD PLAN *@
+@if (addNewPlanSuccess)
+{
+    JS.InvokeVoidAsync("showAlert", "New plan added successfully!");
+    addNewPlanSuccess = false;
+}
+
+@* SUCCESSFUL ADD ITEM *@
+@if (addNewItemSuccess)
+{
+    JS.InvokeVoidAsync("showAlert", "New item added successfully!");
+    addNewItemSuccess = false;
+}
 
 @* SUCCESSFUL SALE TOAST *@
 @if (saleSuccess)
@@ -416,6 +538,66 @@ else
     private bool _planSortByAscending = true;
     private bool isPlanDeleteModalVisible = false;
     private PlanForGettingDto planToDelete;
+    private bool isPlanAddModalVisible = false;
+    private string newPlanClientId;
+    private string newPlanItemId;
+    private decimal newPlanAmount;
+    private DateTime newPlanStartDate;
+    private DateTime newPlanEndDate;
+    private int newPlanStatus;
+
+    private string addItemToPlanClientId;
+    private string addItemToPlanItemId;
+    private decimal addItemToPlanAmount;
+    private DateTime addItemToPlanStartDate = DateTime.UtcNow;
+    private DateTime addItemToPlanEndDate = DateTime.UtcNow;
+    private PlanStatus addItemToPlanStatus;
+    private bool addNewPlanSuccess = false;
+
+    private void CloseAddNewPlanItemModal()
+    {
+        isPlanAddModalVisible = false;
+    }
+
+    private async Task SubmitAddNewPlan()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        if (addItemToPlanAmount <= 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Plan amount should be greater than zero");
+            return;
+        }
+
+        if (addItemToPlanStartDate > addItemToPlanEndDate)
+        {
+            await JS.InvokeVoidAsync("alert", "Plan start date can't be greater than plan end date");
+            return;
+        }
+
+        var command = new CreatePlanCommand
+        (
+            addItemToPlanClientId,
+            addItemToPlanItemId,
+            addItemToPlanAmount,
+            addItemToPlanStartDate,
+            addItemToPlanEndDate,
+            addItemToPlanStatus
+        );
+
+        try
+        {
+            await ClientService.AddNewPlanOfClientAsync(command);
+            isAddNewItemModalVisible = false;
+            await LoadPlansAsync(); // Refresh plans
+            addNewPlanSuccess = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
+
 
 
     private void ShowPlanDeleteModal(PlanForGettingDto plan)
@@ -529,10 +711,86 @@ else
     private bool isDeleteModalVisible = false;
     private ItemForGettingDto itemToDelete;
     private bool isSellItemModalVisible = false;
+    private bool isAddNewItemModalVisible = false;
     private ItemForGettingDto itemToSell;
     private decimal sellAmount;
     private string sellDateString = DateTime.Today.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz");
     bool saleSuccess = false;
+    bool addNewItemSuccess = false;
+    private string newItemName;
+    private string newItemDescription;
+    private decimal newItemPrice;
+    private string newItemCurrency;
+
+
+
+    private void ShowAddItemToPlanModal(ItemForGettingDto item)
+    {
+        addItemToPlanClientId = SelectedClientState.SelectedClient.Id;
+        addItemToPlanItemId = item.Id;
+        isPlanAddModalVisible = true;
+    }
+
+
+    private void ShowAddNewItemModal()
+    {
+        isAddNewItemModalVisible = true;
+    }
+
+    private void CloseAddNewItemModal()
+    {
+        isAddNewItemModalVisible = false;
+    }
+
+    private async Task SubmitAddNewItem()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        if (string.IsNullOrWhiteSpace(newItemName))
+        {
+            await JS.InvokeVoidAsync("alert", "Item name field is required");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newItemDescription))
+        {
+            await JS.InvokeVoidAsync("alert", "Item description field is required");
+            return;
+        }
+
+        if (newItemPrice <= 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Item price field is required");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newItemCurrency) || newItemCurrency.Length != 3)
+        {
+            await JS.InvokeVoidAsync("alert", "Item currency is required and have to be 3 length");
+            return;
+        }
+
+        var command = new CreateItemCommand
+        (
+            SelectedClientState.SelectedClient.Id,
+            newItemName,
+            newItemDescription,
+            newItemPrice,
+            newItemCurrency.ToUpper()
+        );
+
+        try
+        {
+            await ClientService.AddNewItemOfClientAsync(command);
+            isAddNewItemModalVisible = false;
+            await LoadItemsAsync(); // Refresh items
+            addNewItemSuccess = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
 
 
     private void ShowSellItemModal(ItemForGettingDto item)
@@ -579,7 +837,6 @@ else
             // Optionally log or show error
         }
     }
-
 
 
 

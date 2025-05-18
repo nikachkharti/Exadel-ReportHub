@@ -17,7 +17,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">New plan model</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        [Authorize(Roles = "Owner, ClientAdmin")]
+        //[Authorize(Roles = "Owner, ClientAdmin")]
         public async Task<IActionResult> AddNewPlan([FromBody] CreatePlanCommand model)
         {
             var result = await mediator.Send(model);
