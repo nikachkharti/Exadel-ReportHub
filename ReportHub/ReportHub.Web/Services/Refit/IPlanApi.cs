@@ -1,4 +1,5 @@
 ﻿using Refit;
+using ReportHub.Web.Models.Plans;
 
 namespace ReportHub.Web.Services.Refit
 {
@@ -6,5 +7,8 @@ namespace ReportHub.Web.Services.Refit
     {
         [Delete("/api/plans/{id}")]
         Task DeletePlanAsync(string id);
+
+        [Post("/api/plans")]
+        Task<bool> AddNewPlanAsync(CreatePlanCommand command);
     }
 }

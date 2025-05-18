@@ -20,7 +20,7 @@ namespace ReportHub.Application.Features.Items.Handlers.QueryHandlers
                 throw new NotFoundException($"Item with id {request.Id} not found");
             }
 
-            EnsureUserHasRoleForThisClient(item.ClientId);
+            //EnsureUserHasRoleForThisClient(item.ClientId);
 
             return mapper.Map<ItemForGettingDto>(item);
         }

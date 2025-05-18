@@ -14,7 +14,7 @@ namespace ReportHub.Application.Features.Plans.Handlers.CommandHandlers
         public async Task<string> Handle(UpdatePlanCommand request, CancellationToken cancellationToken)
         {
             //TODO: [Add] validators.
-            EnsureUserHasRoleForThisClient(request.ClientId);
+            //EnsureUserHasRoleForThisClient(request.ClientId);
 
             var existingPlan = await planRepository.Get(p => p.Id == request.Id, cancellationToken);
 

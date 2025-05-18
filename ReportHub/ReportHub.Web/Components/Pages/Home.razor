@@ -1,8 +1,19 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IJSRuntime js
 
 <PageTitle>Home</PageTitle>
 
 <div class="container">
+
+    <AuthorizeView>
+        <Authorized>
+            <div>
+                <button class="btn btn-outline-primary" @onclick="DisplayGreetingAlert">Greetings</button>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
     <div class="card border-0 mt-5">
         <div class="row g-0">
             <div class="col-md-4">
@@ -18,3 +29,17 @@
         </div>
     </div>
 </div>
+
+
+@code {
+
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private async Task DisplayGreetingAlert()
+    {
+        var authState = await AuthenticationStateTask;
+        var message = $"Hello {authState.User.Identity.Name}";
+        await js.InvokeVoidAsync("alert", message);
+    }
+}

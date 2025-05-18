@@ -20,7 +20,7 @@ namespace ReportHub.Application.Features.Customers.Handlers.CommandHandlers
                 throw new NotFoundException($"Customer with id {request.Id} not found");
             }
 
-            EnsureUserHasRoleForThisClient(customer.ClientId);
+            //EnsureUserHasRoleForThisClient(customer.ClientId);
             //TODO: [Optimization] we have to avoid double calling of database.
             await customerRepository.Delete(c => c.Id == request.Id, cancellationToken);
             return customer.Id;

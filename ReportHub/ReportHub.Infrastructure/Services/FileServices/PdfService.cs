@@ -4,6 +4,7 @@ using iTextPdf = iTextSharp.text.pdf;
 
 using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
+using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Domain.Entities;
 using iTextSharp.text.pdf;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +19,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
         private readonly ICustomerRepository _customerRepo;
         private readonly IItemRepository _itemRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IExchangeCurrencyService _exchangeCurrencyService;
 
         // Added color constants
         private readonly BaseColor LightGray = BaseColor.LIGHT_GRAY;
@@ -28,12 +30,21 @@ namespace ReportHub.Infrastructure.Services.FileServices
             IClientRepository clientRepo,
             ICustomerRepository customerRepo,
             IItemRepository itemRepo,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IExchangeCurrencyService exchangeCurrencyService)
         {
             _clientRepo = clientRepo;
             _customerRepo = customerRepo;
             _itemRepo = itemRepo;
             _httpContextAccessor = httpContextAccessor;
+            _exchangeCurrencyService = exchangeCurrencyService;
+        }
+
+        private async Task<decimal> ConvertToUsd(decimal amount, string fromCurrency)
+        {
+            if (fromCurrency == "USD") return amount;
+            var rate = await _exchangeCurrencyService.GetCurrencyAsync(fromCurrency, "USD");
+            return amount * rate;
         }
 
         public async Task<Stream> WriteAllAsync<T>(
@@ -116,10 +127,37 @@ namespace ReportHub.Infrastructure.Services.FileServices
             Invoice invoice,
             IReadOnlyDictionary<string, object> statistics)
         {
-            // fetch related data
+            Console.WriteLine($"[PDF Export] Start for InvoiceId: {invoice?.Id}");
             var client = await _clientRepo.Get(c => c.Id == invoice.ClientId);
+            if (client == null)
+            {
+                Console.WriteLine($"[PDF Export] Client not found: {invoice.ClientId}");
+                throw new Exception($"Client not found for invoice {invoice.Id}");
+            }
+            Console.WriteLine($"[PDF Export] Client found: {client.Id}");
+
             var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId);
+            if (customer == null)
+            {
+                Console.WriteLine($"[PDF Export] Customer not found: {invoice.CustomerId}");
+                throw new Exception($"Customer not found for invoice {invoice.Id}");
+            }
+            Console.WriteLine($"[PDF Export] Customer found: {customer.Id}");
+
             var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
+            if (items == null || !items.Any())
+            {
+                Console.WriteLine($"[PDF Export] No items found for invoice {invoice.Id}. ItemIds: {string.Join(",", invoice.ItemIds)}");
+                throw new Exception($"No items found for invoice {invoice.Id}");
+            }
+            Console.WriteLine($"[PDF Export] Items found: {string.Join(",", items.Select(i => i.Id))}");
+
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                Console.WriteLine($"[PDF Export] HttpContext is null");
+                throw new Exception("No HTTP context available for PDF export.");
+            }
+            Console.WriteLine($"[PDF Export] HttpContext is present");
 
             // Enhanced Title Section
             var titleFont = iText.FontFactory.GetFont(
@@ -169,35 +207,35 @@ namespace ReportHub.Infrastructure.Services.FileServices
             itemsTable.DefaultCell.BorderColor = LightGray;
             itemsTable.DefaultCell.Padding = 10;
 
-
             AddCell(itemsTable, "Item Name", true);
             AddCell(itemsTable, "Quantity", true);
-            AddCell(itemsTable, "Price", true);
-            AddCell(itemsTable, "Total", true);
+            AddCell(itemsTable, "Original Price", true);
+            AddCell(itemsTable, "Price (USD)", true);
 
             decimal totalAmount = 0m;
             foreach (var item in items)
             {
+                var priceInUsd = await ConvertToUsd(item.Price, item.Currency);
                 AddCell(itemsTable, item.Name);
                 AddCell(itemsTable, "1");
-                AddCell(itemsTable, $"{item.Price:N2} {invoice.Currency}");
-                AddCell(itemsTable, $"{item.Price:N2} {invoice.Currency}");
-                totalAmount += item.Price;
+                AddCell(itemsTable, $"{item.Price:N2} {item.Currency}");
+                AddCell(itemsTable, $"{priceInUsd:N2}");
+                totalAmount += priceInUsd;
             }
 
-            // Total Row
-            var totalCell = new iTextPdf.PdfPCell(new Phrase("Total Amount:",
+            // Total Row (spans last two columns, left-aligned)
+            var totalCell = new iTextPdf.PdfPCell(new Phrase("Total Amount (USD):",
                 iText.FontFactory.GetFont(iText.FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE)))
             {
                 Colspan = 3,
                 BackgroundColor = BrandColor,
-                HorizontalAlignment = iText.Element.ALIGN_CENTER,
+                HorizontalAlignment = iText.Element.ALIGN_LEFT,
                 Padding = 10
             };
             itemsTable.AddCell(totalCell);
 
             var amountCell = new iTextPdf.PdfPCell(new Phrase(
-                $"{totalAmount:N2} {invoice.Currency}",
+                $"{totalAmount:N2}",
                 iText.FontFactory.GetFont(iText.FontFactory.HELVETICA_BOLD, 12)))
             {
                 BackgroundColor = BrandColor,
@@ -212,7 +250,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
             var request = _httpContextAccessor.HttpContext.Request;
             var protocol = request.Scheme;
             var host = request.Host;
-            var url = $"{protocol}://{host}/invoice/download?invoiceId={invoice.Id}";
+            var url = $"{protocol}://{host}/api/invoice/{invoice.Id}/export?fileType=2";
 
             var qrTable = new iTextPdf.PdfPTable(1)
             {

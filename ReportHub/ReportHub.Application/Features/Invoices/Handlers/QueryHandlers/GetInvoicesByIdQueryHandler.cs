@@ -31,7 +31,7 @@ public class GetInvoicesByIdQueryHandler : BaseFeature, IRequestHandler<GetInvoi
             throw new NotFoundException($"There is no ivoice with id {request.Id}");
         }
 
-        EnsureUserHasRoleForThisClient(invoce.ClientId);
+        //EnsureUserHasRoleForThisClient(invoce.ClientId);
 
         var invoiceDto = _mapper.Map<InvoiceForGettingDto>(invoce);
 
