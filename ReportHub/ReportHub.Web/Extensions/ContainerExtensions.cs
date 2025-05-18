@@ -34,16 +34,15 @@ namespace ReportHub.Web.Extensions
             builder.Services.AddRefitClient<IPlanApi>()
                 .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressApi));
 
+            builder.Services.AddRefitClient<IItemApi>()
+                .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressApi));
+
             builder.Services.AddRefitClient<IAuthApi>()
                 .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressAuth));
 
             builder.Services.AddRefitClient<IAuthApiWithToken>()
                  .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddressAuth))
                  .AddHttpMessageHandler(sp => new AuthTokenHandler(sp.GetRequiredService<ITokenProvider>()));
-                .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddress));
-
-            builder.Services.AddRefitClient<IItemApi>()
-                .ConfigureHttpClient(client => client.BaseAddress = new Uri(baseAddress));
         }
 
         public static void AddServices(this WebApplicationBuilder builder)
