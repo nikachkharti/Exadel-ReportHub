@@ -31,7 +31,7 @@ public class CreateInvoiceCommandHandler : BaseFeature, IRequestHandler<CreateIn
     public async Task<Invoice> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
     {
 
-        EnsureUserHasRoleForThisClient(request.ClientId);
+        //EnsureUserHasRoleForThisClient(request.ClientId);
 
         var items = new List<Item>();
         foreach(var itemId in request.items)

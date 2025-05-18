@@ -21,7 +21,7 @@ namespace ReportHub.Application.Features.Plans.Handlers.QueryHandlers
                 throw new NotFoundException($"Plan with id {request.Id} not found");
             }
 
-            EnsureUserHasRoleForThisClient(plan.ClientId);
+            //EnsureUserHasRoleForThisClient(plan.ClientId);
 
             return mapper.Map<PlanForGettingDto>(plan);
         }

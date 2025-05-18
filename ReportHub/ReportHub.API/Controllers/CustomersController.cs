@@ -12,30 +12,10 @@ using System.Net;
 
 namespace ReportHub.API.Controllers
 {
-    [Route("api/clients/{clientId}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class CustomersController(IMediator mediator) : ControllerBase
     {
-        /// <summary>
-        /// Get all customers
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="pageNumber"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="sortingParameter"></param>
-        /// <param name="ascending"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Authorize(Roles = "Owner, ClientAdmin, Operator")]
-        public async Task<IActionResult> GetAllCustomers(string clientId, [FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
-        {
-            var query = new GetAllCustomersQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
-            var result = await mediator.Send(query);
-
-            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
-            return StatusCode(response.HttpStatusCode, response);
-        }
-
 
         /// <summary>
         /// Get customer by id

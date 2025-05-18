@@ -1,17 +1,18 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReportHub.Application.Common.Models;
 using ReportHub.Application.Features.Clients.Commands;
+using ReportHub.Application.Features.Clients.DTOs;
 using ReportHub.Application.Features.Clients.Queries;
 using ReportHub.Application.Features.CLientUsers.Commands;
 using ReportHub.Application.Features.CLientUsers.Queries;
+using ReportHub.Application.Features.Customers.Queries;
 using ReportHub.Application.Features.Items.Commands;
-using System.ComponentModel.DataAnnotations;
-using ReportHub.Application.Common.Models;
-using System.Net;
 using ReportHub.Application.Features.Plans.Queries;
 using ReportHub.Application.Features.Sale.Queries;
-using ReportHub.Application.Features.Clients.DTOs;
+using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace ReportHub.API.Controllers
 {
@@ -28,7 +29,7 @@ namespace ReportHub.API.Controllers
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
         [HttpGet]
-        //[Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> GetAllClients([FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
         {
             var query = new GetAllClientsQuery(pageNumber, pageSize, sortingParameter, ascending);
@@ -65,7 +66,7 @@ namespace ReportHub.API.Controllers
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
         [HttpGet("{clientId}/items")]
-        //[Authorize(Roles = "Owner, ClientAdmin,Operator")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator")]
         public async Task<IActionResult> GetAllItemsOfClient(
            [FromRoute][Required] string clientId,
            [FromQuery] int? pageNumber = 1,
@@ -87,7 +88,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Client model</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        //[Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> AddNewClient([FromBody] CreateClientCommand model)
         {
             var result = await mediator.Send(model);
@@ -102,7 +103,7 @@ namespace ReportHub.API.Controllers
         /// <param name="clientId">Client Id</param>
         /// <returns>IActionResult</returns>
         [HttpDelete("{clientId}")]
-        //[Authorize(Roles = "SuperAdmin")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteClient([FromRoute][Required] string clientId)
         {
             var command = new DeleteClientCommand(clientId);
@@ -119,7 +120,7 @@ namespace ReportHub.API.Controllers
         /// <param name="itemId">Item Id</param>
         /// <returns>IActionResult</returns>
         [HttpDelete("{clientId}/items/{itemId}")]
-        //[Authorize(Roles = "Owner, ClientAdmin")]
+        [Authorize(Roles = "Owner, ClientAdmin")]
         public async Task<IActionResult> DeleteItem([FromRoute][Required] string clientId, [FromRoute][Required] string itemId)
         {
             var query = new DeleteItemOfClientCommand(clientId, itemId);
@@ -137,7 +138,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
-        //[Authorize(Roles = "Owner, SuperAdmin")]
+        [Authorize(Roles = "Owner, SuperAdmin")]
         public async Task<IActionResult> UpdateClient([FromBody][Required] UpdateClientCommand model)
         {
             var result = await mediator.Send(model);
@@ -155,7 +156,7 @@ namespace ReportHub.API.Controllers
         /// <param name="sortingParameter">Sorting field</param>
         /// <param name="ascending">Is ascended</param>
         /// <returns>IActionResult</returns>
-        //[Authorize(Roles = "Owner, ClientAdmin")]
+        [Authorize(Roles = "Owner, ClientAdmin,SuperAdmin")]
         [HttpGet("{clientId}/plans")]
         public async Task<IActionResult> GetAllPlansOfClient(
             [FromRoute][Required] string clientId,
@@ -183,6 +184,7 @@ namespace ReportHub.API.Controllers
         /// <returns>IActionResult</returns>
         /// <returns>IActionResult</returns>
         [HttpGet("{clientId}/sales")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> GetAllSalesOfClient(
             [FromRoute][Required] string clientId,
             [FromQuery] int? pageNumber = 1,
@@ -203,6 +205,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Selling item model</param>
         /// <returns>IActionResult</returns>
         [HttpPost("sell")]
+        [Authorize(Roles = "Owner, ClientAdmin,Operator,SuperAdmin")]
         public async Task<IActionResult> SellItem([FromBody][Required] SellItemCommand model)
         {
             var result = await mediator.Send(model);
@@ -215,6 +218,27 @@ namespace ReportHub.API.Controllers
         public async Task<IActionResult> GetRevenue([FromQuery] GetRevenueInRangeQuery query)
         {
             var result = await mediator.Send(query);
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
+            return StatusCode(response.HttpStatusCode, response);
+        }
+
+
+        /// <summary>
+        /// Get all customers of client
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="sortingParameter"></param>
+        /// <param name="ascending"></param>
+        /// <returns></returns>
+        [HttpGet("{clientId}/customers")]
+        [Authorize(Roles = "Owner, ClientAdmin, Operator")]
+        public async Task<IActionResult> GetAllCustomers([FromRoute][Required] string clientId, [FromQuery] int? pageNumber = 1, [FromQuery] int? pageSize = 10, [FromQuery] string sortingParameter = "", [FromQuery] bool ascending = true)
+        {
+            var query = new GetAllCustomersQuery(clientId, pageNumber, pageSize, sortingParameter, ascending);
+            var result = await mediator.Send(query);
+
             var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.OK));
             return StatusCode(response.HttpStatusCode, response);
         }
