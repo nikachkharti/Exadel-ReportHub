@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +11,7 @@ using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
 using ReportHub.Identity.Application.Features.Auth.Commands;
 using ReportHub.Identity.Domain.Entities;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 

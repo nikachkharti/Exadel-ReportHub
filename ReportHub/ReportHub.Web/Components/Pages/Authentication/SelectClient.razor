@@ -1,0 +1,111 @@
+﻿@page "/select-client"
+@using ReportHub.Web.Models.Auth.ViewModels
+@using ReportHub.Web.Services.Auth
+@inject IAuthServiceWithToken AuthService
+
+<h3>Select Client</h3>
+
+@if (!_isInitialized)
+{
+    <p><em>Loading clients...</em></p>
+}
+else if (userClients == null)
+{
+    <p><em>userClients is null</em></p>
+}
+else if (userClients.Count == 0)
+{
+    <p><em>No clients found.</em></p>
+}
+else
+{
+    <p>Loaded @userClients.Count clients.</p>
+
+    <EditForm Model="formModel" OnValidSubmit="HandleSubmit">
+        <InputRadioGroup @bind-Value="formModel.SelectedClientId">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>ID</th>
+                        <th>Client ID</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var client in userClients)
+                    {
+                        <tr>
+                            <td>
+                                <InputRadio Value="@client.Id" />
+                            </td>
+                            <td>@client.Id</td>
+                            <td>@client.ClientId</td>
+                            <td>@client.Role</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </InputRadioGroup>
+
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(resultMessage))
+    {
+        <p class="mt-2">@resultMessage</p>
+    }
+}
+
+@code {
+    private IList<UserClients> userClients;
+    private string resultMessage;
+    private bool _isInitialized;
+
+    private ClientSelectionModel formModel = new();
+
+    public class ClientSelectionModel
+    {
+        public string SelectedClientId { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClients();
+        _isInitialized = true;
+        StateHasChanged();
+    }
+
+    private async Task LoadClients()
+    {
+        try
+        {
+            userClients = await AuthService.GetMyClients();
+            Console.WriteLine($"Clients loaded: {userClients?.Count ?? 0}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to load clients: {ex.Message}");
+            userClients = new List<UserClients>();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(formModel.SelectedClientId))
+        {
+            resultMessage = "Please select a client.";
+            return;
+        }
+
+        try
+        {
+            await AuthService.Authorize(formModel.SelectedClientId);
+            resultMessage = "Client authorized successfully.";
+        }
+        catch (Exception ex)
+        {
+            resultMessage = $"Authorization failed: {ex.Message}";
+        }
+    }
+}
