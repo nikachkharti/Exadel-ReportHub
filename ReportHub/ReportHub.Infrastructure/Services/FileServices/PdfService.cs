@@ -127,10 +127,37 @@ namespace ReportHub.Infrastructure.Services.FileServices
             Invoice invoice,
             IReadOnlyDictionary<string, object> statistics)
         {
-            // fetch related data
+            Console.WriteLine($"[PDF Export] Start for InvoiceId: {invoice?.Id}");
             var client = await _clientRepo.Get(c => c.Id == invoice.ClientId);
+            if (client == null)
+            {
+                Console.WriteLine($"[PDF Export] Client not found: {invoice.ClientId}");
+                throw new Exception($"Client not found for invoice {invoice.Id}");
+            }
+            Console.WriteLine($"[PDF Export] Client found: {client.Id}");
+
             var customer = await _customerRepo.Get(c => c.Id == invoice.CustomerId);
+            if (customer == null)
+            {
+                Console.WriteLine($"[PDF Export] Customer not found: {invoice.CustomerId}");
+                throw new Exception($"Customer not found for invoice {invoice.Id}");
+            }
+            Console.WriteLine($"[PDF Export] Customer found: {customer.Id}");
+
             var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
+            if (items == null || !items.Any())
+            {
+                Console.WriteLine($"[PDF Export] No items found for invoice {invoice.Id}. ItemIds: {string.Join(",", invoice.ItemIds)}");
+                throw new Exception($"No items found for invoice {invoice.Id}");
+            }
+            Console.WriteLine($"[PDF Export] Items found: {string.Join(",", items.Select(i => i.Id))}");
+
+            if (_httpContextAccessor.HttpContext == null)
+            {
+                Console.WriteLine($"[PDF Export] HttpContext is null");
+                throw new Exception("No HTTP context available for PDF export.");
+            }
+            Console.WriteLine($"[PDF Export] HttpContext is present");
 
             // Enhanced Title Section
             var titleFont = iText.FontFactory.GetFont(
