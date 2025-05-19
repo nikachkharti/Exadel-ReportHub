@@ -17,7 +17,7 @@ namespace ReportHub.Application.Features.Customers.Handlers.QueryHandlers
         {
             var sortExpression = ConfigureSortingExpression(request);
 
-            var clientId = requestContext.GetClientId();
+            //EnsureUserHasRoleForThisClient(request.ClientId);
 
             var customers = await customerRepository.GetAll
             (

@@ -1,0 +1,39 @@
+﻿@page "/login"
+@using ReportHub.Web.Models.Auth
+@using ReportHub.Web.Models.Auth.ViewModels
+@using ReportHub.Web.Services.Auth
+@inject NavigationManager NavigationManager
+@inject IAuthService AuthService
+@rendermode InteractiveServer
+
+<EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
+    <InputText @bind-Value="Model.UserName" />
+    <InputText @bind-Value="Model.Password" type="password" />
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginViewModel Model = new();
+    private string errorMessage;
+
+    private async Task Authenticate()
+    {
+        var request = new LoginRequest
+        {
+            Username = Model.UserName,
+            Password = Model.Password
+        };
+
+        var response = await AuthService.LoginAsync(request); // returns JWT token
+
+        if (!string.IsNullOrEmpty(response?.AccessToken))
+        {
+            // Redirect to controller to set cookie
+            NavigationManager.NavigateTo("/select-client");
+        }
+        else
+        {
+            errorMessage = "Login failed.";
+        }
+    }
+}

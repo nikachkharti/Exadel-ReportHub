@@ -20,7 +20,7 @@ namespace ReportHub.Application.Features.Plans.Handlers.CommandHandlers
                 throw new NotFoundException($"Plan with id {request.Id} not found");
             }
 
-            EnsureUserHasRoleForThisClient(existingPlan.ClientId);
+            //EnsureUserHasRoleForThisClient(existingPlan.ClientId);
 
             if (existingPlan.Status == request.Status)
             {

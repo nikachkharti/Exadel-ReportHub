@@ -13,7 +13,7 @@ namespace ReportHub.Application.Features.Items.Handlers.CommandHandlers
         {
             //TODO: [Add] validators.
 
-            EnsureUserHasRoleForThisClient(request.ClientId);
+            //EnsureUserHasRoleForThisClient(request.ClientId); TODO Uncomment when I add authorization on web
 
             var item = await itemRepository.Get(i => i.Id == request.ItemId, cancellationToken);
 

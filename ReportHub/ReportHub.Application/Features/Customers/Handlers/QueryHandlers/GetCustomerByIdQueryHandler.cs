@@ -23,6 +23,8 @@ namespace ReportHub.Application.Features.Customers.Handlers.QueryHandlers
                 throw new NotFoundException($"Customer with id {request.Id} not found");
             }
 
+            //EnsureUserHasRoleForThisClient(customer.ClientId);
+
             return mapper.Map<CustomerForGettingDto>(customer);
         }
     }

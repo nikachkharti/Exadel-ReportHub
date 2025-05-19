@@ -17,7 +17,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">New plan model</param>
         /// <returns>IActionResult</returns>
         [HttpPost]
-        [Authorize(Roles = "Owner, ClientAdmin")]
+        [Authorize(Roles = "Owner, ClientAdmin,SuperAdmin")]
         public async Task<IActionResult> AddNewPlan([FromBody] CreatePlanCommand model)
         {
             var result = await mediator.Send(model);
@@ -33,7 +33,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Update plan model</param>
         /// <returns>IActionResult</returns>
         [HttpPut]
-        [Authorize(Roles = "Owner, ClientAdmin")]
+        [Authorize(Roles = "Owner, ClientAdmin,SuperAdmin")]
         public async Task<IActionResult> UpdatePlan([FromBody] UpdatePlanCommand model)
         {
             var result = await mediator.Send(model);
@@ -65,7 +65,7 @@ namespace ReportHub.API.Controllers
         /// <param name="model">Status update model</param>
         /// <returns>IActionResult</returns>
         [HttpPatch("status")]
-        [Authorize(Roles = "Owner, ClientAdmin")]
+        [Authorize(Roles = "Owner, ClientAdmin,SuperAdmin")]
         public async Task<IActionResult> ChangePlanStatus([FromBody] UpdatePlanStatusCommand model)
         {
             var result = await mediator.Send(model);

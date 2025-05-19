@@ -12,7 +12,8 @@ namespace ReportHub.Application.Features.Items.Handlers.CommandHandlers
     {
         public async Task<string> Handle(CreateItemCommand request, CancellationToken cancellationToken)
         {
-            var clientId = requestContext.GetClientId();
+            //TODO: [Add] validators.
+            //EnsureUserHasRoleForThisClient(request.ClientId);
 
             var item = mapper.Map<Item>(request);
 

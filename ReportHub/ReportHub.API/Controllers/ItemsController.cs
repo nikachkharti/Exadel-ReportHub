@@ -38,6 +38,7 @@ namespace ReportHub.API.Controllers
         /// <returns>IActionResult</returns>
         [Authorize(Roles = "Owner, ClientAdmin, Operator")]
         [HttpPost]
+        [Authorize(Roles = "SuperAdmin,Owner, ClientAdmin, Operator")]
         public async Task<IActionResult> CreateItem([FromBody] CreateItemCommand command)
         {
             Log.Information("Creating a new item.");

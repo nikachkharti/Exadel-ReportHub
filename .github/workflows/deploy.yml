@@ -15,13 +15,16 @@ jobs:
       - name: Find Dockerfiles
         run: find . -name "Dockerfile"
 
-      - name: Verify both Dockerfiles exist
+      - name: Verify Dockerfiles exist
         run: |
           if [ ! -f ReportHub/ReportHub.API/Dockerfile ]; then echo "❌ Dockerfile for API not found!"; exit 1; fi
           echo "✅ Dockerfile found at ReportHub/ReportHub.API/"
 
           if [ ! -f ReportHub/ReportHub.Identity/Dockerfile ]; then echo "❌ Dockerfile for Identity not found!"; exit 1; fi
           echo "✅ Dockerfile found at ReportHub/ReportHub.Identity/"
+
+          if [ ! -f ReportHub/ReportHub.Web/Dockerfile ]; then echo "❌ Dockerfile for Identity not found!"; exit 1; fi
+          echo "✅ Dockerfile found at ReportHub/ReportHub.Web/"
 
       - name: Deploy ReportHub.API
         if: github.ref == 'refs/heads/main'
@@ -38,3 +41,11 @@ jobs:
         run: |
           echo "🚀 Triggering deployment for ReportHub.Identity..."
           curl "$deploy_url_identity"
+
+      - name: Deploy ReportHub.Web
+        if: github.ref == 'refs/heads/main'
+        env:
+          deploy_url_web: https://api.render.com/deploy/srv-d0gqjsje5dus73ajk4bg?key=f2QsjoIIduI
+        run: |
+          echo "🚀 Triggering deployment for ReportHub.Web..."
+          curl "$deploy_url_web"

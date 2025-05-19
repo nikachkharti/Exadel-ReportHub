@@ -32,6 +32,7 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount))
             .ForMember(dest => dest.Currency, options => options.MapFrom(src => src.Currency))
             .ForMember(dest => dest.PaymentStatus, options => options.MapFrom(src => src.PaymentStatus))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.ItemIds, options => options.MapFrom(src => src.ItemIds));
         #endregion
 
@@ -39,6 +40,7 @@ public class ReportHubMappingProfile : Profile
         CreateMap<Client, ClientForGettingDto>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.Specialization, options => options.MapFrom(src => src.Specialization));
 
         CreateMap<CreateClientCommand, Client>()
@@ -58,6 +60,7 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Email, options => options.MapFrom(src => src.Email))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.CountryId, options => options.MapFrom(src => src.CountryId));
 
         CreateMap<CreateCustomerCommand, Customer>()
@@ -83,6 +86,7 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Name, options => options.MapFrom(src => src.Name))
             .ForMember(dest => dest.Description, options => options.MapFrom(src => src.Description))
             .ForMember(dest => dest.Price, options => options.MapFrom(src => src.Price))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.Currency, options => options.MapFrom(src => src.Currency));
 
         CreateMap<CreateItemCommand, Item>()
@@ -104,6 +108,8 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.StartDate, options => options.MapFrom(src => src.StartDate))
             .ForMember(dest => dest.EndDate, options => options.MapFrom(src => src.EndDate))
             .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status))
+            .ForMember(dest => dest.Status, options => options.MapFrom(src => src.Status))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount));
 
         CreateMap<CreatePlanCommand, Plan>()
@@ -139,6 +145,7 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.ClientId, options => options.MapFrom(src => src.ClientId))
             .ForMember(dest => dest.ItemId, options => options.MapFrom(src => src.ItemId))
             .ForMember(dest => dest.Amount, options => options.MapFrom(src => src.Amount))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.SaleDate, options => options.MapFrom(src => src.SaleDate));
 
         CreateMap<CreateSaleCommand, Domain.Entities.Sale>()
@@ -166,6 +173,7 @@ public class ReportHubMappingProfile : Profile
 
         CreateMap<InvoiceLog, InvoiceLogForGettingDto>()
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.UserId, options => options.MapFrom(src => src.UserId))
             .ForMember(dest => dest.InvoiceId, options => options.MapFrom(src => src.InvoiceId))
             .ForMember(dest => dest.TimeStamp, options => options.MapFrom(src => src.TimeStamp))
@@ -186,6 +194,7 @@ public class ReportHubMappingProfile : Profile
             .ForMember(dest => dest.Id, options => options.MapFrom(src => src.Id))
             .ForMember(dest => dest.CustomerId, options => options.MapFrom(src => src.CustomerId))
             .ForMember(dest => dest.CronExpression, options => options.MapFrom(src => src.CronExpression))
+            .ForMember(dest => dest.IsDeleted, options => options.MapFrom(src => src.IsDeleted))
             .ForMember(dest => dest.Format, options => options.MapFrom(src => src.Format))
             .ForMember(dest => dest.IsActive, options => options.MapFrom(src => src.IsActive));
 

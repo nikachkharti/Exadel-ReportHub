@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Tests", "ReportHu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Identity.IntegrationTests", "ReportHub.Identity.IntegrationTests\ReportHub.Identity.IntegrationTests.csproj", "{49504CBA-C795-4154-AD1D-890C25930348}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Web", "ReportHub.Web\ReportHub.Web.csproj", "{7E0C893E-46DA-4AC0-9129-43A5966B3A45}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{49504CBA-C795-4154-AD1D-890C25930348}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49504CBA-C795-4154-AD1D-890C25930348}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49504CBA-C795-4154-AD1D-890C25930348}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E0C893E-46DA-4AC0-9129-43A5966B3A45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E0C893E-46DA-4AC0-9129-43A5966B3A45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E0C893E-46DA-4AC0-9129-43A5966B3A45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E0C893E-46DA-4AC0-9129-43A5966B3A45}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

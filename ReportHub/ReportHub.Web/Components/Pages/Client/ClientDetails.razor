@@ -1,0 +1,939 @@
+﻿@page "/client-details"
+@inject SelectedClientState SelectedClientState
+@inject IClientService ClientService
+@inject IPlanService PlanService
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+<PageTitle>Client Details</PageTitle>
+
+
+<h3>Client Details</h3>
+
+@if (SelectedClientState.SelectedClient == null)
+{
+    <p>No client selected.</p>
+}
+else
+{
+    var client = SelectedClientState.SelectedClient;
+
+    <div class="card">
+        @* CARD INFO *@
+        <div class="card-header d-flex justify-content-between align-content-center">
+            @client.Id
+            <a href="/clients" class="btn btn-primary">Back</a>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">@client.Name</h5>
+            <p class="card-text">@client.Specialization</p>
+        </div>
+
+        <div class="accordion">
+
+            @* ITEMS *@
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button @(!isItemsOpen ? "collapsed" : "")"
+                            @onclick="ToggleItemsAccordion"
+                            type="button"
+                            aria-expanded="@isItemsOpen">
+                        Items
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse @(isItemsOpen ? "show" : "")">
+                    <div class="accordion-body">
+                        <div class="row mb-3">
+                            <div class="col-2">
+                                <button class="btn btn-sm btn-success btn-sm" @onclick="() => ShowAddNewItemModal()">New Item</button>
+                            </div>
+                        </div>
+
+                        @if (isItemsLoading)
+                        {
+                            <p>Loading items...</p>
+                        }
+                        else if (items != null && items.Any())
+                        {
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th @onclick="() => ChangeSorting(nameof(ItemForGettingDto.Name))">
+                                            Name @SortIcon(nameof(ItemForGettingDto.Name))
+                                        </th>
+                                        <th @onclick="() => ChangeSorting(nameof(ItemForGettingDto.Id))">
+                                            ID @SortIcon(nameof(ItemForGettingDto.Id))
+                                        </th>
+                                        <th>Edit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in items)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>@item.Id</td>
+                                            <td>
+                                                <button class="btn btn-danger btn-sm" @onclick="() => ShowDeleteModal(item)">Delete</button>
+                                                <button class="btn btn-success btn-sm" @onclick="() => ShowSellItemModal(item)">Sell</button>
+                                                <button class="btn btn-primary btn-sm" @onclick="() => ShowAddItemToPlanModal(item)">Add To Plans</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p>No items found.</p>
+                        }
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item @( _itemPage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PreviousPage">Previous</button>
+                                </li>
+                                <li class="page-item">
+                                    <span class="page-link">@_itemPage</span>
+                                </li>
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="NextPage">Next</button>
+                                </li>
+                            </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLANS -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button @(!isPlansOpen ? "collapsed" : "")"
+                            @onclick="TogglePlansAccordion"
+                            type="button"
+                            aria-expanded="@isPlansOpen">
+                        Plans
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse @(isPlansOpen ? "show" : "")">
+                    <div class="accordion-body">
+                        @if (isPlansLoading)
+                        {
+                            <p>Loading plans...</p>
+                        }
+                        else if (plans != null && plans.Any())
+                        {
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th @onclick="() => ChangePlanSorting(nameof(PlanForGettingDto.Id))">
+                                            ID @SortPlanIcon(nameof(PlanForGettingDto.Id))
+                                        </th>
+                                        <th @onclick="() => ChangePlanSorting(nameof(PlanForGettingDto.Status))">
+                                            Status @SortPlanIcon(nameof(PlanForGettingDto.Status))
+                                        </th>
+                                        <th>Edit</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var plan in plans)
+                                    {
+                                        <tr>
+                                            <td>@plan.Id</td>
+                                            <td>@plan.Status</td>
+                                            <td>
+                                                <button class="btn btn-danger btn-sm" @onclick="() => ShowPlanDeleteModal(plan)">Delete</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p>No plans found.</p>
+                        }
+
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item @( _planPage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PreviousPlanPage">Previous</button>
+                                </li>
+                                <li class="page-item">
+                                    <span class="page-link">@_planPage</span>
+                                </li>
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="NextPlanPage">Next</button>
+                                </li>
+                            </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- SALES -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button @(!isSalesOpen ? "collapsed" : "")"
+                            @onclick="ToggleSalesAccordion"
+                            type="button"
+                            aria-expanded="@isSalesOpen">
+                        Sales
+                    </button>
+                </h2>
+                <div class="accordion-collapse collapse @(isSalesOpen ? "show" : "")">
+                    <div class="accordion-body">
+                        @if (isSalesLoading)
+                        {
+                            <p>Loading sales...</p>
+                        }
+                        else if (sales != null && sales.Any())
+                        {
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th @onclick="() => ChangeSaleSorting(nameof(SaleForGettingDto.ItemId))">
+                                            Item Id @SortSaleIcon(nameof(SaleForGettingDto.ItemId))
+                                        </th>
+                                        <th @onclick="() => ChangeSaleSorting(nameof(SaleForGettingDto.SaleDate))">
+                                            Sale Date @SortSaleIcon(nameof(SaleForGettingDto.SaleDate))
+                                        </th>
+                                        <th @onclick="() => ChangeSaleSorting(nameof(SaleForGettingDto.Amount))">
+                                            Amount @SortSaleIcon(nameof(SaleForGettingDto.Amount))
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sale in sales)
+                                    {
+                                        <tr>
+                                            <td>@sale.ItemId</td>
+                                            <td>@sale.SaleDate.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz")</td>
+                                            <td>@sale.Amount</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p>No sales found.</p>
+                        }
+
+                        <nav>
+                            <ul class="pagination">
+                                <li class="page-item @( _salePage == 1 ? "disabled" : "")">
+                                    <button class="page-link" @onclick="PreviousSalePage">Previous</button>
+                                </li>
+                                <li class="page-item">
+                                    <span class="page-link">@_salePage</span>
+                                </li>
+                                <li class="page-item">
+                                    <button class="page-link" @onclick="NextSalePage">Next</button>
+                                </li>
+                            </ul>
+                        </nav>
+
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+}
+
+
+
+@* ADD PLAN MODAL *@
+@if (isPlanAddModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Plan</h5>
+                    <button type="button" class="btn-close" @onclick="CloseAddNewPlanItemModal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="mb-3">
+                            <label class="form-label">Amount</label>
+                            <input type="number" class="form-control" @bind="addItemToPlanAmount" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="datetime" class="form-control" @bind="addItemToPlanStartDate" />
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="datetime" class="form-control" @bind="addItemToPlanEndDate" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" @bind="addItemToPlanStatus">
+                                @foreach (PlanStatus status in Enum.GetValues(typeof(PlanStatus)))
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseAddNewPlanItemModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="SubmitAddNewPlan">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+@* ADD ITEM MODAL *@
+@if (isAddNewItemModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Item</h5>
+                    <button type="button" class="btn-close" @onclick="CloseAddNewItemModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" @bind="newItemName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" @bind="newItemDescription" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" class="form-control" @bind="newItemPrice" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Currency</label>
+                        <input type="text" class="form-control" @bind="newItemCurrency" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseAddNewItemModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="SubmitAddNewItem">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+
+@* ITEM DELETE MODAL *@
+@if (isDeleteModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>@itemToDelete?.Name</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteConfirmed">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@* PLAN DELETE MODAL *@
+@if (isPlanDeleteModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Plan</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="ClosePlanDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this plan?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="ClosePlanDeleteModal">Cancel</button>
+                    <button class="btn btn-danger" @onclick="ConfirmPlanDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+@* SELL ITEM MODAL *@
+@if (isSellItemModalVisible)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sell Item</h5>
+                    <button type="button" class="btn-close" @onclick="CloseSellItemModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Amount</label>
+                        <input type="number" class="form-control" @bind="sellAmount" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sale Date</label>
+                        <input type="datetime" class="form-control" @bind="sellDateString" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseSellItemModal">Cancel</button>
+                    <button class="btn btn-primary" @onclick="SubmitSellItem">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@* SUCCESSFUL ADD PLAN *@
+@if (addNewPlanSuccess)
+{
+    JS.InvokeVoidAsync("showAlert", "New plan added successfully!");
+    addNewPlanSuccess = false;
+}
+
+@* SUCCESSFUL ADD ITEM *@
+@if (addNewItemSuccess)
+{
+    JS.InvokeVoidAsync("showAlert", "New item added successfully!");
+    addNewItemSuccess = false;
+}
+
+@* SUCCESSFUL SALE TOAST *@
+@if (saleSuccess)
+{
+    JS.InvokeVoidAsync("showAlert", "Sale completed successfully!");
+    saleSuccess = false;
+}
+
+
+
+@code {
+
+    // SALES section
+    private bool isSalesOpen = false;
+    private bool isSalesLoading = false;
+    private List<SaleForGettingDto> sales;
+    private int _salePage = 1;
+    private int _salePageSize = 10;
+    private string _saleSortBy = nameof(SaleForGettingDto.SaleDate);
+    private bool _saleSortByAscending = false;
+
+    private async Task ToggleSalesAccordion()
+    {
+        isSalesOpen = !isSalesOpen;
+
+        if (isSalesOpen && sales == null)
+        {
+            await LoadSalesAsync();
+        }
+    }
+
+    private async Task LoadSalesAsync()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        isSalesLoading = true;
+
+        try
+        {
+            var clientId = SelectedClientState.SelectedClient.Id;
+            var response = await ClientService.GetSalesOfClientAsync(clientId, _salePage, _salePageSize, _saleSortBy, _saleSortByAscending);
+            sales = new();
+            sales.AddRange(response);
+        }
+        catch (Exception)
+        {
+            // Optionally log error
+        }
+        finally
+        {
+            isSalesLoading = false;
+        }
+    }
+
+    private async Task ChangeSaleSorting(string sortBy)
+    {
+        if (_saleSortBy == sortBy)
+        {
+            _saleSortByAscending = !_saleSortByAscending;
+        }
+        else
+        {
+            _saleSortBy = sortBy;
+            _saleSortByAscending = true;
+        }
+
+        await LoadSalesAsync();
+    }
+
+    private async Task NextSalePage()
+    {
+        _salePage++;
+        await LoadSalesAsync();
+    }
+
+    private async Task PreviousSalePage()
+    {
+        if (_salePage > 1)
+        {
+            _salePage--;
+            await LoadSalesAsync();
+        }
+    }
+
+    private MarkupString SortSaleIcon(string column)
+    {
+        if (_saleSortBy != column) return new MarkupString("");
+        return _saleSortByAscending
+            ? new MarkupString("&#9650;")
+            : new MarkupString("&#9660;");
+    }
+
+
+    // Plans Section
+    private bool isPlansOpen = false;
+    private bool isPlansLoading = false;
+    private List<PlanForGettingDto> plans;
+    private int _planPage = 1;
+    private int _planPageSize = 10;
+    private string _planSortBy = nameof(PlanForGettingDto.Id);
+    private bool _planSortByAscending = true;
+    private bool isPlanDeleteModalVisible = false;
+    private PlanForGettingDto planToDelete;
+    private bool isPlanAddModalVisible = false;
+    private string newPlanClientId;
+    private string newPlanItemId;
+    private decimal newPlanAmount;
+    private DateTime newPlanStartDate;
+    private DateTime newPlanEndDate;
+    private int newPlanStatus;
+
+    private string addItemToPlanClientId;
+    private string addItemToPlanItemId;
+    private decimal addItemToPlanAmount;
+    private DateTime addItemToPlanStartDate = DateTime.UtcNow;
+    private DateTime addItemToPlanEndDate = DateTime.UtcNow;
+    private PlanStatus addItemToPlanStatus;
+    private bool addNewPlanSuccess = false;
+
+    private void CloseAddNewPlanItemModal()
+    {
+        isPlanAddModalVisible = false;
+    }
+
+    private async Task SubmitAddNewPlan()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        if (addItemToPlanAmount <= 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Plan amount should be greater than zero");
+            return;
+        }
+
+        if (addItemToPlanStartDate > addItemToPlanEndDate)
+        {
+            await JS.InvokeVoidAsync("alert", "Plan start date can't be greater than plan end date");
+            return;
+        }
+
+        var command = new CreatePlanCommand
+        (
+            addItemToPlanClientId,
+            addItemToPlanItemId,
+            addItemToPlanAmount,
+            addItemToPlanStartDate,
+            addItemToPlanEndDate,
+            addItemToPlanStatus
+        );
+
+        try
+        {
+            await ClientService.AddNewPlanOfClientAsync(command);
+            isAddNewItemModalVisible = false;
+            await LoadPlansAsync(); // Refresh plans
+            addNewPlanSuccess = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
+
+
+
+    private void ShowPlanDeleteModal(PlanForGettingDto plan)
+    {
+        planToDelete = plan;
+        isPlanDeleteModalVisible = true;
+    }
+
+    private void ClosePlanDeleteModal()
+    {
+        isPlanDeleteModalVisible = false;
+        planToDelete = null;
+    }
+
+    private async Task ConfirmPlanDelete()
+    {
+        if (planToDelete is not null)
+        {
+            await PlanService.DeletePlanAsync(planToDelete.Id);
+
+            // Optional: Refresh plan list
+            await LoadPlansAsync();
+
+            // Close modal
+            ClosePlanDeleteModal();
+        }
+    }
+
+
+    private async Task TogglePlansAccordion()
+    {
+        isPlansOpen = !isPlansOpen;
+
+        if (isPlansOpen && plans == null)
+        {
+            await LoadPlansAsync();
+        }
+    }
+
+    private async Task LoadPlansAsync()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        isPlansLoading = true;
+
+        try
+        {
+            var clientId = SelectedClientState.SelectedClient.Id;
+            var response = await ClientService.GetPlansOfClientAsync(clientId, _planPage, _planPageSize, _planSortBy, _planSortByAscending);
+            plans = new();
+            plans.AddRange(response);
+        }
+        catch (Exception)
+        {
+            // Handle or log exception
+        }
+        finally
+        {
+            isPlansLoading = false;
+        }
+    }
+
+    private async Task ChangePlanSorting(string sortBy)
+    {
+        if (_planSortBy == sortBy)
+        {
+            _planSortByAscending = !_planSortByAscending;
+        }
+        else
+        {
+            _planSortBy = sortBy;
+            _planSortByAscending = true;
+        }
+
+        await LoadPlansAsync();
+    }
+
+    private async Task NextPlanPage()
+    {
+        _planPage++;
+        await LoadPlansAsync();
+    }
+
+    private async Task PreviousPlanPage()
+    {
+        if (_planPage > 1)
+        {
+            _planPage--;
+            await LoadPlansAsync();
+        }
+    }
+
+    private MarkupString SortPlanIcon(string column)
+    {
+        if (_planSortBy != column) return new MarkupString("");
+        return _planSortByAscending
+            ? new MarkupString("&#9650;")
+            : new MarkupString("&#9660;");
+    }
+
+
+
+    //Item section
+    private bool isItemsOpen = false;
+    private bool isItemsLoading = false;
+    private List<ItemForGettingDto> items;
+    private int _itemPage = 1;
+    private int _itemPageSize = 10;
+    private string _itemSortBy = nameof(ItemForGettingDto.Id);
+    private bool _itemSortByAscending = true;
+    private bool isDeleteModalVisible = false;
+    private ItemForGettingDto itemToDelete;
+    private bool isSellItemModalVisible = false;
+    private bool isAddNewItemModalVisible = false;
+    private ItemForGettingDto itemToSell;
+    private decimal sellAmount;
+    private string sellDateString = DateTime.Today.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz");
+    bool saleSuccess = false;
+    bool addNewItemSuccess = false;
+    private string newItemName;
+    private string newItemDescription;
+    private decimal newItemPrice;
+    private string newItemCurrency;
+
+
+
+    private void ShowAddItemToPlanModal(ItemForGettingDto item)
+    {
+        addItemToPlanClientId = SelectedClientState.SelectedClient.Id;
+        addItemToPlanItemId = item.Id;
+        isPlanAddModalVisible = true;
+    }
+
+
+    private void ShowAddNewItemModal()
+    {
+        isAddNewItemModalVisible = true;
+    }
+
+    private void CloseAddNewItemModal()
+    {
+        isAddNewItemModalVisible = false;
+    }
+
+    private async Task SubmitAddNewItem()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        if (string.IsNullOrWhiteSpace(newItemName))
+        {
+            await JS.InvokeVoidAsync("alert", "Item name field is required");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newItemDescription))
+        {
+            await JS.InvokeVoidAsync("alert", "Item description field is required");
+            return;
+        }
+
+        if (newItemPrice <= 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Item price field is required");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(newItemCurrency) || newItemCurrency.Length != 3)
+        {
+            await JS.InvokeVoidAsync("alert", "Item currency is required and have to be 3 length");
+            return;
+        }
+
+        var command = new CreateItemCommand
+        (
+            SelectedClientState.SelectedClient.Id,
+            newItemName,
+            newItemDescription,
+            newItemPrice,
+            newItemCurrency.ToUpper()
+        );
+
+        try
+        {
+            await ClientService.AddNewItemOfClientAsync(command);
+            isAddNewItemModalVisible = false;
+            await LoadItemsAsync(); // Refresh items
+            addNewItemSuccess = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
+
+
+    private void ShowSellItemModal(ItemForGettingDto item)
+    {
+        itemToSell = item;
+        sellAmount = 0;
+        sellDateString = DateTime.Today.ToString("yyyy-MM-dd'T'HH:mm:ss.fffzzz");
+        isSellItemModalVisible = true;
+    }
+
+    private void CloseSellItemModal()
+    {
+        isSellItemModalVisible = false;
+    }
+
+    private async Task SubmitSellItem()
+    {
+        if (SelectedClientState.SelectedClient is null || itemToSell is null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(sellDateString))
+        {
+            await JS.InvokeVoidAsync("alert", "Sell date field is required");
+            return;
+        }
+
+        var command = new SellItemCommand(
+            ClientId: SelectedClientState.SelectedClient.Id,
+            ItemId: itemToSell.Id,
+            Amount: sellAmount,
+            SaleDate: DateTime.Parse(sellDateString)
+        );
+
+
+        try
+        {
+            await ClientService.SellItemOfClientAsync(command);
+            isSellItemModalVisible = false;
+            await LoadSalesAsync(); // Refresh sales
+            saleSuccess = true;
+        }
+        catch (Exception)
+        {
+            // Optionally log or show error
+        }
+    }
+
+
+
+    private void ShowDeleteModal(ItemForGettingDto item)
+    {
+        itemToDelete = item;
+        isDeleteModalVisible = true;
+    }
+
+    private void CloseDeleteModal()
+    {
+        isDeleteModalVisible = false;
+        itemToDelete = null;
+    }
+
+    private async Task DeleteConfirmed()
+    {
+        if (itemToDelete is not null)
+        {
+            await ClientService.DeleteItemOfClientAsync(SelectedClientState.SelectedClient.Id, itemToDelete.Id);
+
+            // Optional: Refresh item list
+            await LoadItemsAsync();
+
+            // Close modal
+            CloseDeleteModal();
+        }
+    }
+
+    private async Task ToggleItemsAccordion()
+    {
+        isItemsOpen = !isItemsOpen;
+
+        if (isItemsOpen && items == null)
+        {
+            await LoadItemsAsync();
+        }
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        if (SelectedClientState.SelectedClient is null) return;
+
+        isItemsLoading = true;
+
+        try
+        {
+            var clientId = SelectedClientState.SelectedClient.Id;
+            var response = await ClientService.GetItemsOfClientAsync(clientId, _itemPage, _itemPageSize, _itemSortBy, _itemSortByAscending);
+            items = new();
+            items.AddRange(response);
+        }
+        catch (Exception)
+        {
+            // Optionally handle/log the error
+        }
+        finally
+        {
+            isItemsLoading = false;
+        }
+    }
+
+    private async Task ChangeSorting(string sortBy)
+    {
+        if (_itemSortBy == sortBy)
+        {
+            _itemSortByAscending = !_itemSortByAscending;
+        }
+        else
+        {
+            _itemSortBy = sortBy;
+            _itemSortByAscending = true;
+        }
+
+        await LoadItemsAsync();
+    }
+
+    private async Task NextPage()
+    {
+        _itemPage++;
+        await LoadItemsAsync();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (_itemPage > 1)
+        {
+            _itemPage--;
+            await LoadItemsAsync();
+        }
+    }
+
+    private MarkupString SortIcon(string column)
+    {
+        if (_itemSortBy != column) return new MarkupString("");
+        return _itemSortByAscending
+            ? new MarkupString("&#9650;") // ▲
+            : new MarkupString("&#9660;"); // ▼
+    }
+}
