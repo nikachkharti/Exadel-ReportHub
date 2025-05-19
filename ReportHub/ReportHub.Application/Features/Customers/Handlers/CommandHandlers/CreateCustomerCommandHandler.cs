@@ -17,6 +17,8 @@ namespace ReportHub.Application.Features.Customers.Handlers.CommandHandlers
 
             var customer = mapper.Map<Customer>(request);
 
+            var clientId = requestContext.GetClientId();
+
             customer.ClientId = clientId;
 
             await customerRepository.Insert(customer);

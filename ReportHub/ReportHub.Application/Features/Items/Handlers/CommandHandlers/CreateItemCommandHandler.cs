@@ -17,6 +17,8 @@ namespace ReportHub.Application.Features.Items.Handlers.CommandHandlers
 
             var item = mapper.Map<Item>(request);
 
+            var clientId = requestContext.GetClientId();
+
             item.ClientId = clientId;
 
             await itemRepository.Insert(item);

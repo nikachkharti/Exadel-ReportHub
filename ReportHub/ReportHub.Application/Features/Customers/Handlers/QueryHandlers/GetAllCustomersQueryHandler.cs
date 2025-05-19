@@ -19,6 +19,8 @@ namespace ReportHub.Application.Features.Customers.Handlers.QueryHandlers
 
             //EnsureUserHasRoleForThisClient(request.ClientId);
 
+            var clientId = requestContext.GetClientId();
+
             var customers = await customerRepository.GetAll
             (
                 c => c.ClientId == clientId,
