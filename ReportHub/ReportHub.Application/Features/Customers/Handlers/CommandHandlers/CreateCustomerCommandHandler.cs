@@ -8,7 +8,7 @@ using ReportHub.Domain.Entities;
 namespace ReportHub.Application.Features.Customers.Handlers.CommandHandlers
 {
     public class CreateCustomerCommandHandler(ICustomerRepository customerRepository, IMapper mapper, IRequestContextService requestContext)
-        : BaseFeature(requestContext), IRequestHandler<CreateCustomerCommand, string>
+        : IRequestHandler<CreateCustomerCommand, string>
     {
         public async Task<string> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
         {
@@ -17,7 +17,12 @@ namespace ReportHub.Application.Features.Customers.Handlers.CommandHandlers
 
             var customer = mapper.Map<Customer>(request);
 
+            var clientId = requestContext.GetClientId();
+
+            customer.ClientId = clientId;
+
             await customerRepository.Insert(customer);
+
             return customer.Id;
         }
     }

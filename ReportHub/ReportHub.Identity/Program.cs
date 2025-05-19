@@ -89,7 +89,7 @@ if (mongoDbSettings == null)
 
 builder.Services.AddSingleton<IdentityDbContext>();
 
-builder.Services.AddIdentityMongoDbProvider<User, Role,string>(identity =>
+builder.Services.AddIdentityMongoDbProvider<User, Role, string>(identity =>
         {
             identity.Password.RequiredLength = 6;
             identity.Password.RequiredLength = 6;
@@ -165,9 +165,16 @@ builder.Services
         options.SetIssuer(authSettings.Issuer);
         options.AddAudiences("report-hub-api-audience");
 
-        options.UseIntrospection()
-            .SetClientId("report-hub")
-            .SetClientSecret("client_secret_key");
+        if (builder.Environment.IsEnvironment("Testing"))
+        {
+            options.UseLocalServer();
+        }
+        else
+        {
+            options.UseIntrospection()
+                .SetClientId("report-hub")
+                .SetClientSecret("client_secret_key");
+        }
 
         options.UseSystemNetHttp();
         options.UseAspNetCore();
@@ -220,3 +227,6 @@ pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 app.Run();
+
+
+public partial class Program { }

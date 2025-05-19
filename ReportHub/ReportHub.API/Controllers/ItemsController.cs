@@ -30,13 +30,13 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
-
         /// <summary>
         /// Create new item
         /// </summary>
         /// <param name="command">Create item command</param>
         /// <returns>IActionResult</returns>
         /// <returns>IActionResult</returns>
+        [Authorize(Roles = "Owner, ClientAdmin, Operator")]
         [HttpPost]
         [Authorize(Roles = "SuperAdmin,Owner, ClientAdmin, Operator")]
         public async Task<IActionResult> CreateItem([FromBody] CreateItemCommand command)
@@ -48,5 +48,15 @@ namespace ReportHub.API.Controllers
             return StatusCode(response.HttpStatusCode, response);
         }
 
+        [Authorize(Roles = "Owner, ClientAdmin, Operator")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var result = await mediator.Send(new DeleteItemCommand(id));
+
+            var response = new EndpointResponse(result, EndpointMessage.successMessage, isSuccess: true, Convert.ToInt32(HttpStatusCode.NoContent));
+
+            return StatusCode(response.HttpStatusCode, response);
+        }
     }
 }

@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Identity", "Repor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Tests", "ReportHub.Tests\ReportHub.Tests.csproj", "{39A47619-8B80-4587-8E42-F9C4F1BEE071}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Identity.IntegrationTests", "ReportHub.Identity.IntegrationTests\ReportHub.Identity.IntegrationTests.csproj", "{49504CBA-C795-4154-AD1D-890C25930348}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportHub.Web", "ReportHub.Web\ReportHub.Web.csproj", "{7E0C893E-46DA-4AC0-9129-43A5966B3A45}"
 EndProject
 Global
@@ -47,6 +49,10 @@ Global
 		{39A47619-8B80-4587-8E42-F9C4F1BEE071}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39A47619-8B80-4587-8E42-F9C4F1BEE071}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{39A47619-8B80-4587-8E42-F9C4F1BEE071}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49504CBA-C795-4154-AD1D-890C25930348}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49504CBA-C795-4154-AD1D-890C25930348}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49504CBA-C795-4154-AD1D-890C25930348}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49504CBA-C795-4154-AD1D-890C25930348}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E0C893E-46DA-4AC0-9129-43A5966B3A45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7E0C893E-46DA-4AC0-9129-43A5966B3A45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E0C893E-46DA-4AC0-9129-43A5966B3A45}.Release|Any CPU.ActiveCfg = Release|Any CPU

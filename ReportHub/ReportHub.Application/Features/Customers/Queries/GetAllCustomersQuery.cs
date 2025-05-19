@@ -5,11 +5,10 @@ namespace ReportHub.Application.Features.Customers.Queries
 {
     public record GetAllCustomersQuery
     (
-        string ClientId,
+        string clientId,
         int? PageNumber,
         int? PageSize,
         string SortingParameter,
-        bool Ascending = false,
-        CancellationToken CancellationToken = default
+        bool Ascending = false
     ) : IRequest<IEnumerable<CustomerForGettingDto>>;
 }

@@ -9,11 +9,14 @@ using ReportHub.Application.Validators.Exceptions;
 namespace ReportHub.Application.Features.Customers.Handlers.QueryHandlers
 {
     public class GetCustomerByIdQueryHandler(ICustomerRepository customerRepository, IMapper mapper, IRequestContextService requestContext)
-        : BaseFeature(requestContext), IRequestHandler<GetCustomerByIdQuery, CustomerForGettingDto>
+        : IRequestHandler<GetCustomerByIdQuery, CustomerForGettingDto>
     {
         public async Task<CustomerForGettingDto> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken)
         {
-            var customer = await customerRepository.Get(c => c.Id == request.Id, cancellationToken);
+            var clientId = requestContext.GetClientId();
+
+            var customer = await customerRepository.Get(c => 
+                                        c.ClientId == clientId && c.Id == request.Id, cancellationToken);
 
             if (customer is null)
             {
