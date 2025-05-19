@@ -1,12 +1,10 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using ClosedXML.Excel;
 using ReportHub.Application.Contracts.FileContracts;
 using ReportHub.Application.Contracts.RepositoryContracts;
 using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.AspNetCore.Http;
-using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace ReportHub.Infrastructure.Services.FileServices
 {
@@ -592,16 +590,15 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 var item = items.FirstOrDefault(i => i.Id == plan.ItemId);
                 if (item != null)
                 {
-                    var actualQuantity = await CalculateActualQuantityForPlan(plan);
                     var completionPercentage = plan.Amount > 0 
-                        ? (double)actualQuantity / (double)plan.Amount 
+                        ? (double)0 / (double)plan.Amount 
                         : 0;
 
                     planStats.Add(new PlanStatistics
                     {
                         ItemName = item.Name,
                         Amount = plan.Amount,
-                        ActualQuantity = actualQuantity,
+                        ActualQuantity = 0,
                         CompletionPercentage = completionPercentage,
                         StartDate = plan.StartDate,
                         EndDate = plan.EndDate
@@ -642,12 +639,6 @@ namespace ReportHub.Infrastructure.Services.FileServices
             return trends;
         }
 
-        private async Task<int> CalculateActualQuantityForPlan(Plan plan)
-        {
-            // This is a placeholder - implement actual logic based on your business rules
-            // For example, you might want to count completed invoices or actual deliveries
-            return 0;
-        }
 
         private class ItemStatistics
         {
@@ -771,7 +762,7 @@ namespace ReportHub.Infrastructure.Services.FileServices
                             sheet.Cell(row, 1).Value = invoice.Id;
                             sheet.Cell(row, 2).Value = client?.Name ?? "N/A";
                             sheet.Cell(row, 3).Value = item.Name;
-                            sheet.Cell(row, 4).Value = plan.Id;  // FIX: Removed sheet.Cell(row, 4).Value = plan.sheet
+                            sheet.Cell(row, 4).Value = plan.Id;  
                             sheet.Cell(row, 5).Value = plan.Status.ToString();
                             sheet.Cell(row, 6).Value = plan.StartDate.ToString("yyyy-MM-dd");
                             sheet.Cell(row, 7).Value = plan.EndDate.ToString("yyyy-MM-dd");
@@ -826,27 +817,6 @@ namespace ReportHub.Infrastructure.Services.FileServices
             return count > 0 ? totalAmount / count : 0;
         }
 
-        private async Task<decimal> CalculateTotalOutstandingAmount(IEnumerable<Invoice> invoices)
-        {
-            decimal outstandingAmount = 0;
-
-            foreach (var invoice in invoices)
-            {
-                if (invoice.PaymentStatus != "Paid")
-                {
-                    var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                    decimal invoiceTotal = 0;
-                    foreach (var item in items)
-                    {
-                        invoiceTotal += await ConvertToUsd(item.Price, item.Currency);
-                    }
-                    outstandingAmount += invoiceTotal;
-                }
-            }
-
-            return outstandingAmount;
-        }
-
         private async Task<decimal> CalculateTotalForInvoices(IEnumerable<Invoice> invoices)
         {
             decimal total = 0;
@@ -861,12 +831,6 @@ namespace ReportHub.Infrastructure.Services.FileServices
             }
 
             return total;
-        }
-
-        private async Task<string> GetClientName(string clientId)
-        {
-            var client = await _clientRepo.Get(c => c.Id == clientId);
-            return client?.Name ?? "Unknown Client";
         }
     }
 }

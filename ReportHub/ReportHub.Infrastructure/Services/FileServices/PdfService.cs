@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using iText = iTextSharp.text;
+﻿using iText = iTextSharp.text;
 using iTextPdf = iTextSharp.text.pdf;
 
 using ReportHub.Application.Contracts.FileContracts;

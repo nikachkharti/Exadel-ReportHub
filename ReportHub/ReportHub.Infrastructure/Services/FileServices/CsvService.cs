@@ -6,7 +6,6 @@ using ReportHub.Application.Contracts.CurrencyContracts;
 using ReportHub.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using System.Globalization;
-using System.Reflection;
 
 namespace ReportHub.Infrastructure.Services.FileServices
 {
@@ -444,16 +443,15 @@ namespace ReportHub.Infrastructure.Services.FileServices
                 var item = items.FirstOrDefault(i => i.Id == plan.ItemId);
                 if (item != null)
                 {
-                    var actualQuantity = await CalculateActualQuantityForPlan(plan);
                     var completionPercentage = plan.Amount > 0 
-                        ? (double)actualQuantity / (double)plan.Amount 
+                        ? (double)0 / (double)plan.Amount 
                         : 0;
 
                     planStats.Add(new PlanStatistics
                     {
                         ItemName = item.Name,
                         Amount = plan.Amount,
-                        ActualQuantity = actualQuantity,
+                        ActualQuantity = 0,
                         CompletionPercentage = completionPercentage,
                         StartDate = plan.StartDate,
                         EndDate = plan.EndDate
@@ -492,13 +490,6 @@ namespace ReportHub.Infrastructure.Services.FileServices
             }
 
             return trends;
-        }
-
-        private async Task<int> CalculateActualQuantityForPlan(Plan plan)
-        {
-            // This is a placeholder - implement actual logic based on your business rules
-            // For example, you might want to count completed invoices or actual deliveries
-            return 0;
         }
 
         private class ItemStatistics
@@ -737,33 +728,6 @@ namespace ReportHub.Infrastructure.Services.FileServices
             }
 
             return count > 0 ? totalAmount / count : 0;
-        }
-
-        private async Task<decimal> CalculateTotalOutstandingAmount(IEnumerable<Invoice> invoices)
-        {
-            decimal outstandingAmount = 0;
-
-            foreach (var invoice in invoices)
-            {
-                if (invoice.PaymentStatus != "Paid")
-                {
-                    var items = await _itemRepo.GetAll(i => invoice.ItemIds.Contains(i.Id));
-                    decimal invoiceTotal = 0;
-                    foreach (var item in items)
-                    {
-                        invoiceTotal += await ConvertToUsd(item.Price, item.Currency);
-                    }
-                    outstandingAmount += invoiceTotal;
-                }
-            }
-
-            return outstandingAmount;
-        }
-
-        private async Task<string> GetClientName(string clientId)
-        {
-            var client = await _clientRepo.Get(c => c.Id == clientId);
-            return client?.Name ?? "Unknown Client";
         }
 
         private async Task<decimal> CalculateTotalForInvoices(IEnumerable<Invoice> invoices)
